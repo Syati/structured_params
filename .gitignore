@@ -1,3 +1,5 @@
+.env
+.envrc
 # rspec failure tracking
 .rspec_status
 .idea
