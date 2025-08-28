@@ -1,0 +1,5 @@
+# Generated from lib/structured_params/version.rb with RBS::Inline
+
+module StructuredParams
+  VERSION: string
+end
