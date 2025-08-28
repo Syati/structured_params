@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'lib/structured_params'
+require_relative 'lib/structured_params/version'
 
 Gem::Specification.new do |spec|
   spec.name = 'structured_params'
