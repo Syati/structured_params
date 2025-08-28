@@ -6,5 +6,11 @@ plugins:
 AllCops:
   NewCops: enable
 
-LeadingCommentSpace:
+Layout/LeadingCommentSpace:
   Enabled: false
+
+RSpec/SpecFilePathFormat:
+  Enabled: false
+
+RSpec/MultipleExpectations:
+  Max: 5
