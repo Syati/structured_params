@@ -1,0 +1,116 @@
+---
+path: ".gem_rbs_collection"
+gems:
+- name: actionpack
+  version: '7.2'
+  source:
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: 14112a82013860a7d2e5246b4c4f36fbb8c349dc
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
+- name: actionview
+  version: '6.0'
+  source:
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: 14112a82013860a7d2e5246b4c4f36fbb8c349dc
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
+- name: activemodel
+  version: '7.1'
+  source:
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: 14112a82013860a7d2e5246b4c4f36fbb8c349dc
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
+- name: activesupport
+  version: '7.0'
+  source:
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: 14112a82013860a7d2e5246b4c4f36fbb8c349dc
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
+- name: base64
+  version: 0.3.0
+  source:
+    type: rubygems
+- name: benchmark
+  version: '0'
+  source:
+    type: stdlib
+- name: bigdecimal
+  version: '3.1'
+  source:
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: 14112a82013860a7d2e5246b4c4f36fbb8c349dc
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
+- name: date
+  version: '0'
+  source:
+    type: stdlib
+- name: digest
+  version: '0'
+  source:
+    type: stdlib
+- name: erb
+  version: '0'
+  source:
+    type: stdlib
+- name: i18n
+  version: '1.10'
+  source:
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: 14112a82013860a7d2e5246b4c4f36fbb8c349dc
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
+- name: logger
+  version: '0'
+  source:
+    type: stdlib
+- name: monitor
+  version: '0'
+  source:
+    type: stdlib
+- name: openssl
+  version: '0'
+  source:
+    type: stdlib
+- name: securerandom
+  version: '0'
+  source:
+    type: stdlib
+- name: singleton
+  version: '0'
+  source:
+    type: stdlib
+- name: socket
+  version: '0'
+  source:
+    type: stdlib
+- name: stringio
+  version: '0'
+  source:
+    type: stdlib
+- name: time
+  version: '0'
+  source:
+    type: stdlib
+- name: tzinfo
+  version: '2.0'
+  source:
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: 14112a82013860a7d2e5246b4c4f36fbb8c349dc
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
+- name: uri
+  version: '0'
+  source:
+    type: stdlib
+gemfile_lock_path: Gemfile.lock
