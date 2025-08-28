@@ -6,5 +6,5 @@ plugins:
 AllCops:
   NewCops: enable
 
-Layout/SpaceAfterHashAnnotation:
+LeadingCommentSpace:
   Enabled: false
