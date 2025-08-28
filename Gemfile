@@ -24,5 +24,6 @@ group :development, :test do
   gem 'rubocop'
   gem 'rubocop-rake', require: false
   gem 'rubocop-rspec', require: false
+  gem "rubocop-rbs_inline", require: false
   gem 'steep', require: false
 end

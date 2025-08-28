@@ -1,6 +1,10 @@
 plugins:
   - rubocop-rspec
   - rubocop-rake
+  - rubocop-rbs_inline
 
 AllCops:
   NewCops: enable
+
+Layout/SpaceAfterHashAnnotation:
+  Enabled: false

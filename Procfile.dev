@@ -1,1 +1,1 @@
-rbs-inline: fswatch -0 lib | xargs -0 -n1 bundle exec rbs-inline --output
+rbs-inline: fswatch -0 lib | xargs -0 -n1 bundle exec rbs-inline --output=sig
