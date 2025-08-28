@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+
+if ! command -v fswatch >/dev/null 2>&1; then
+  echo "Error: fswatch is not installed."
+  echo "Please install fswatch with: brew install fswatch (or your package manager)"
+  exit 1
+fi
+
+if ! gem list foreman -i --silent; then
+  echo "Installing foreman..."
+  gem install foreman
+fi
+
+exec foreman start -f Procfile.dev "$@"
