@@ -19,6 +19,7 @@ end
 
 group :development, :test do
   gem 'rake', '~> 13.0'
+  gem 'rbs-inline', require: false
   gem 'rspec', '~> 3.0'
   gem 'rubocop'
   gem 'rubocop-rake', require: false
