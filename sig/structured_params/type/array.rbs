@@ -1,0 +1,58 @@
+# Generated from lib/structured_params/type/array.rb with RBS::Inline
+
+module StructuredParams
+  module Type
+    # Custom type for arrays of both StructuredParams::Params objects and primitive types
+    #
+    # Usage examples:
+    #   # Array of nested objects
+    #   attribute :hobbies, :array, value_class: HobbyParameter
+    #
+    #   # Array of primitive types
+    #   attribute :tags, :array, value_type: :string
+    class Array < ActiveModel::Type::Value
+      attr_reader item_type: ActiveModel::Type::Value
+
+      # value_class or value_type is required
+      # : (?value_class: singleton(StructuredParams::Params)?, ?value_type: Symbol?, **untyped) -> void
+      def initialize: (?value_class: singleton(StructuredParams::Params)?, ?value_type: Symbol?, **untyped) -> void
+
+      # : () -> Symbol
+      def type: () -> Symbol
+
+      # Cast value to array and convert each element to appropriate type
+      # : (untyped) -> ::Array[untyped]?
+      def cast: (untyped) -> ::Array[untyped]?
+
+      # Get permitted parameter names for use with Strong Parameters
+      # : () -> ::Array[untyped]
+      def permit_attribute_names: () -> ::Array[untyped]
+
+      # Serialize array (convert each element to Hash)
+      # : (::Array[untyped]?) -> ::Array[untyped]?
+      def serialize: (::Array[untyped]?) -> ::Array[untyped]?
+
+      private
+
+      # Cast single item (delegate to new method)
+      # : (untyped) -> untyped
+      def cast_item: (untyped) -> untyped
+
+      # Parameter validation
+      # : (singleton(StructuredParams::Params)?, Symbol?) -> void
+      def validate_parameters!: (singleton(StructuredParams::Params)?, Symbol?) -> void
+
+      # Build item type
+      # : (singleton(StructuredParams::Params)?, Symbol?, Hash[untyped, untyped]) -> ActiveModel::Type::Value
+      def build_item_type: (singleton(StructuredParams::Params)?, Symbol?, Hash[untyped, untyped]) -> ActiveModel::Type::Value
+
+      # Convert value to array
+      # : (untyped) -> ::Array[untyped]
+      def ensure_array: (untyped) -> ::Array[untyped]
+
+      # Determine if item type is StructuredParams::Object
+      # : () -> bool
+      def item_type_is_structured_params_object?: () -> bool
+    end
+  end
+end

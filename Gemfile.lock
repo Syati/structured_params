@@ -43,11 +43,14 @@ GEM
     base64 (0.3.0)
     benchmark (0.4.1)
     bigdecimal (3.2.2)
+    binding_of_caller (1.0.1)
+      debug_inspector (>= 1.2.0)
     builder (3.3.0)
     concurrent-ruby (1.3.5)
     connection_pool (2.5.3)
     crass (1.0.6)
     csv (3.3.5)
+    debug_inspector (1.2.0)
     diff-lcs (1.6.2)
     drb (2.2.3)
     erubi (1.13.1)
@@ -95,6 +98,10 @@ GEM
       ast (~> 2.4.1)
       racc
     prism (1.2.0)
+    proc_to_ast (0.2.0)
+      parser
+      rouge
+      unparser
     racc (1.8.1)
     rack (3.2.0)
     rack-session (2.1.1)
@@ -120,6 +127,7 @@ GEM
       prism (>= 0.29, < 1.3)
       rbs (>= 3.5.0)
     regexp_parser (2.11.2)
+    rouge (4.6.0)
     rspec (3.13.1)
       rspec-core (~> 3.13.0)
       rspec-expectations (~> 3.13.0)
@@ -132,6 +140,18 @@ GEM
     rspec-mocks (3.13.5)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
+    rspec-parameterized (2.0.0)
+      rspec-parameterized-core (>= 2, < 3)
+      rspec-parameterized-table_syntax (>= 2, < 3)
+    rspec-parameterized-core (2.0.0)
+      parser
+      prism
+      proc_to_ast (>= 0.2.0)
+      rspec (>= 2.13, < 4)
+      unparser
+    rspec-parameterized-table_syntax (2.0.0)
+      binding_of_caller
+      rspec-parameterized-core (>= 2, < 3)
     rspec-support (3.13.5)
     rubocop (1.74.0)
       json (~> 2.3)
@@ -183,6 +203,9 @@ GEM
     unicode-display_width (3.1.5)
       unicode-emoji (~> 4.0, >= 4.0.4)
     unicode-emoji (4.0.4)
+    unparser (0.7.0)
+      diff-lcs (~> 1.6)
+      parser (>= 3.3.0)
     uri (1.0.3)
     useragent (0.16.11)
 
@@ -202,6 +225,7 @@ DEPENDENCIES
   rake (~> 13.0)
   rbs-inline
   rspec (~> 3.0)
+  rspec-parameterized
   rubocop
   rubocop-rake
   rubocop-rbs_inline

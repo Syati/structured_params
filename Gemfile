@@ -20,3 +20,7 @@ group :development, :test do
   gem 'rubocop-rspec', require: false
   gem 'steep', require: false
 end
+
+group :test do
+  gem 'rspec-parameterized'
+end

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'structured_params'
+require 'rspec-parameterized'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
