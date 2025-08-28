@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'structured_params/type/object'
 
 RSpec.describe StructuredParams::Type::Object do
   subject(:type_instance) { described_class.new(value_class: dummy_model_class) }
@@ -38,7 +37,7 @@ RSpec.describe StructuredParams::Type::Object do
   describe '#type' do
     subject { type_instance.type }
 
-    it { is_expected.to eq(:structured_object) }
+    it { is_expected.to eq(:nested) }
   end
 
   describe '#cast' do

@@ -1,13 +1,15 @@
 # rbs_inline: enabled
 # frozen_string_literal: true
 
-require 'active_model/type'
-
 module StructuredParams
   module Type
     # Custom type for single StructuredParams::Params objects
     class Object < ActiveModel::Type::Value
       attr_reader :value_class #: singleton(StructuredParams::Params)
+
+      # Get permitted parameter names for use with Strong Parameters
+      #: () -> Array[untyped]
+      delegate :permit_attribute_names, to: :value_class
 
       #: (value_class: singleton(StructuredParams::Params), **untyped) -> void
       def initialize(value_class:, **_options)
@@ -18,7 +20,7 @@ module StructuredParams
 
       #: () -> Symbol
       def type
-        :structured_object
+        :nested
       end
 
       # Cast value to StructuredParams::Params instance
@@ -30,23 +32,12 @@ module StructuredParams
         @value_class.new(value) # call new directly instead of cast_value method
       end
 
-      # Get permitted parameter names for use with Strong Parameters
-      #: () -> Array[untyped]
-      def permit_attribute_names
-        @value_class.permit_attribute_names
-      end
-
       # Serialize (convert to Hash) the object
       #: (untyped) -> untyped
       def serialize(value)
         return nil if value.nil?
 
         value.is_a?(@value_class) ? value.attributes : value
-      end
-
-      #: (untyped) -> StructuredParams::Params?
-      def deserialize(value)
-        cast(value)
       end
 
       private
