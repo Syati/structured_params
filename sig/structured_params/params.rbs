@@ -1,0 +1,71 @@
+# Generated from lib/structured_params/params.rb with RBS::Inline
+
+module StructuredParams
+  # Parameter model that supports nested structures
+  #
+  # Usage example:
+  #   class UserParameter < StructuredParams::Params
+  #     attribute :name, :string
+  #     attribute :address, :nested, value_class: AddressParameter
+  #     attribute :hobbies, :array, value_class: HobbyParameter
+  #     attribute :tags, :array, value_type: :string
+  #   end
+  class Params
+    include ActiveModel::Model
+
+    include ActiveModel::Attributes
+
+    # Generate permitted parameter structure for Strong Parameters
+    # : () -> Array[untyped]
+    def self.permit_attribute_names: () -> Array[untyped]
+
+    # Get names of nested StructuredParams attributes
+    # : () { (String) -> void } -> void
+    def self.each_nested_attribute_name: () { (String) -> void } -> void
+
+    # Determine if the specified type is a nested parameter type
+    # : (untyped) -> bool
+    private def self.structured_params_type?: (untyped) -> bool
+
+    # : (untyped) -> void
+    def initialize: (untyped) -> void
+
+    # Convert nested objects to Hash and get attributes
+    # : (symbolize: bool) -> Hash[untyped, untyped]
+    def attributes: (symbolize: bool) -> Hash[untyped, untyped]
+
+    private
+
+    # Process input parameters
+    # : (untyped) -> Hash[untyped, untyped]
+    def process_input_parameters: (untyped) -> Hash[untyped, untyped]
+
+    # Deeply convert symbol hash to string hash (including child elements)
+    # : (untyped) -> untyped
+    def deep_stringify_keys: (untyped) -> untyped
+
+    # Generic method to deeply transform keys (Rails-style deep_transform_keys)
+    # : (untyped) { (untyped) -> untyped } -> untyped
+    def deep_transform_keys: (untyped) { (untyped) -> untyped } -> untyped
+
+    # Execute nested parameter validation
+    # : () -> void
+    def validate_nested_parameters: () -> void
+
+    # Validate nested arrays
+    # : (String, Array[untyped]) -> void
+    def validate_nested_array: (String, Array[untyped]) -> void
+
+    # Validate nested objects
+    # : (String, StructuredParams::Params) -> void
+    def validate_nested_object: (String, StructuredParams::Params) -> void
+
+    # Integrate nested errors into parent errors
+    # : (untyped, String) -> void
+    def import_nested_errors: (untyped, String) -> void
+
+    # Serialize nested values
+    # : (untyped) -> untyped
+    def serialize_nested_value: (untyped) -> untyped
+  end
+end
