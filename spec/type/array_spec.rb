@@ -66,7 +66,7 @@ RSpec.describe StructuredParams::Type::Array do
   end
 
   describe '#cast' do
-    context 'with nested model type' do
+    context 'with object type' do
       subject(:cast) { described_class.new(value_class: dummy_model_class).cast(value) }
 
       context 'with array of hashes' do
@@ -115,7 +115,7 @@ RSpec.describe StructuredParams::Type::Array do
   end
 
   describe '#serialize' do
-    context 'with nested model type' do
+    context 'with object type' do
       subject(:serialize) { described_class.new(value_class: dummy_model_class).serialize(value) }
 
       context 'with array of model instances' do
@@ -183,7 +183,7 @@ RSpec.describe StructuredParams::Type::Array do
       described_class.new(**params).item_type_is_structured_params_object?
     end
 
-    context 'with nested model type' do
+    context 'with object type' do
       let(:params) { { value_class: dummy_model_class } }
 
       it { is_expected.to be true }

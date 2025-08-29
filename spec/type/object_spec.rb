@@ -37,7 +37,7 @@ RSpec.describe StructuredParams::Type::Object do
   describe '#type' do
     subject { type_instance.type }
 
-    it { is_expected.to eq(:nested) }
+    it { is_expected.to eq(:object) }
   end
 
   describe '#cast' do

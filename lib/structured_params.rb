@@ -18,13 +18,13 @@ require_relative 'structured_params/params'
 module StructuredParams
   # Helper method to register types
   def self.register_types
-    ActiveModel::Type.register(:nested, StructuredParams::Type::Object)
+    ActiveModel::Type.register(:object, StructuredParams::Type::Object)
     ActiveModel::Type.register(:array, StructuredParams::Type::Array)
   end
 
   # Helper method to register types with custom names
-  def self.register_types_as(nested_name: :nested, array_name: :array)
-    ActiveModel::Type.register(nested_name, StructuredParams::Type::Object)
+  def self.register_types_as(object_name: :object, array_name: :array)
+    ActiveModel::Type.register(object_name, StructuredParams::Type::Object)
     ActiveModel::Type.register(array_name, StructuredParams::Type::Array)
   end
 end

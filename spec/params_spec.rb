@@ -49,7 +49,7 @@ RSpec.describe StructuredParams::Params do
       attribute :name, :string
       attribute :email, :string
       attribute :age, :integer
-      attribute :address, :nested, value_class: address_class
+      attribute :address, :object, value_class: address_class
       attribute :hobbies, :array, value_class: hobby_class
       attribute :tags, :array, value_type: :string
 
@@ -101,7 +101,7 @@ RSpec.describe StructuredParams::Params do
         )
       }
 
-      context 'with nested parameters' do
+      context 'with object parameters' do
         subject(:address) { user_param.address }
 
         it { is_expected.to be_instance_of(address_parameter_class) }
@@ -116,7 +116,7 @@ RSpec.describe StructuredParams::Params do
         }
       end
 
-      context 'with nested array parameters' do
+      context 'with object array parameters' do
         subject(:hobbies) { user_param.hobbies }
 
         it { is_expected.to be_an(Array) }
@@ -153,7 +153,7 @@ RSpec.describe StructuredParams::Params do
   end
 
   describe '#valid?' do
-    context 'with valid nested parameters' do
+    context 'with valid object parameters' do
       subject(:user_param) { user_parameter_class.new(valid_params) }
 
       let(:valid_params) do
@@ -201,7 +201,7 @@ RSpec.describe StructuredParams::Params do
       end
     end
 
-    context 'with invalid nested single object' do
+    context 'with invalid object single object' do
       subject(:user_param) { user_parameter_class.new(invalid_address_params) }
 
       let(:invalid_address_params) do
@@ -218,14 +218,14 @@ RSpec.describe StructuredParams::Params do
         }
       end
 
-      it 'returns false and includes nested validation errors' do
+      it 'returns false and includes object validation errors' do
         expect(user_param).not_to be_valid
         expect(user_param.errors['address_postal_code']).to include('is invalid')
         expect(user_param.errors['address_prefecture']).to include("can't be blank")
       end
     end
 
-    context 'with invalid nested array objects' do
+    context 'with invalid object array objects' do
       subject(:user_param) { user_parameter_class.new(invalid_hobbies_params) }
 
       let(:invalid_hobbies_params) do
@@ -272,7 +272,7 @@ RSpec.describe StructuredParams::Params do
       }
     end
 
-    it 'returns attributes with nested objects converted to hashes' do
+    it 'returns attributes with objects converted to hashes' do
       expect(attributes).to include(
         'name' => '田中太郎',
         'address' => hash_including(
@@ -310,7 +310,7 @@ RSpec.describe StructuredParams::Params do
   end
 
   describe 'edge cases' do
-    context 'with nil nested values' do
+    context 'with nil object values' do
       subject(:user_param) { user_parameter_class.new(params_with_nil) }
 
       let(:params_with_nil) do

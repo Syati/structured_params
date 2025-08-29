@@ -24,13 +24,17 @@ module StructuredParams
       # : (untyped) -> ::Array[untyped]?
       def cast: (untyped) -> ::Array[untyped]?
 
+      # Serialize array (convert each element to Hash)
+      # : (::Array[untyped]?) -> ::Array[untyped]?
+      def serialize: (::Array[untyped]?) -> ::Array[untyped]?
+
       # Get permitted parameter names for use with Strong Parameters
       # : () -> ::Array[untyped]
       def permit_attribute_names: () -> ::Array[untyped]
 
-      # Serialize array (convert each element to Hash)
-      # : (::Array[untyped]?) -> ::Array[untyped]?
-      def serialize: (::Array[untyped]?) -> ::Array[untyped]?
+      # Determine if item type is StructuredParams::Object
+      # : () -> bool
+      def item_type_is_structured_params_object?: () -> bool
 
       private
 
@@ -49,10 +53,6 @@ module StructuredParams
       # Convert value to array
       # : (untyped) -> ::Array[untyped]
       def ensure_array: (untyped) -> ::Array[untyped]
-
-      # Determine if item type is StructuredParams::Object
-      # : () -> bool
-      def item_type_is_structured_params_object?: () -> bool
     end
   end
 end

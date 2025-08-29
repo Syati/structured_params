@@ -8,7 +8,8 @@ module StructuredParams
       attr_reader :value_class #: singleton(StructuredParams::Params)
 
       # Get permitted parameter names for use with Strong Parameters
-      #: () -> Array[untyped]
+      # @rbs!
+      #  def permit_attribute_names: () -> ::Array[untyped]
       delegate :permit_attribute_names, to: :value_class
 
       #: (value_class: singleton(StructuredParams::Params), **untyped) -> void
@@ -20,7 +21,7 @@ module StructuredParams
 
       #: () -> Symbol
       def type
-        :nested
+        :object
       end
 
       # Cast value to StructuredParams::Params instance
