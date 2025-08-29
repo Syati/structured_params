@@ -79,31 +79,10 @@ module StructuredParams
       when ActionController::Parameters
         params.permit(self.class.permit_attribute_names).to_h
       when Hash
-        # Convert symbol hash to string hash and recursively transform nested child elements
-        deep_stringify_keys(params)
+        # ActiveModel::Attributes can handle both symbol and string keys
+        params
       else
         raise ArgumentError, "params must be ActionController::Parameters or Hash, got #{params.class}"
-      end
-    end
-
-    # Deeply convert symbol hash to string hash (including child elements)
-    #: (untyped) -> untyped
-    def deep_stringify_keys(value)
-      deep_transform_keys(value, &:to_s)
-    end
-
-    # Generic method to deeply transform keys (Rails-style deep_transform_keys)
-    #: (untyped) { (untyped) -> untyped } -> untyped
-    def deep_transform_keys(value, &block)
-      case value
-      when Hash
-        value.each_with_object({}) do |(key, val), result|
-          result[yield(key)] = deep_transform_keys(val, &block)
-        end
-      when Array
-        value.map { |item| deep_transform_keys(item, &block) }
-      else
-        value
       end
     end
 
@@ -129,7 +108,8 @@ module StructuredParams
       array_value.each_with_index do |item, index|
         next if item.valid?(validation_context)
 
-        import_nested_errors(item.errors, "#{attr_name}.#{index}")
+        error_path = format_error_path(attr_name, index)
+        import_nested_errors(item.errors, error_path)
       end
     end
 
@@ -138,15 +118,23 @@ module StructuredParams
     def validate_nested_object(attr_name, object_value)
       return if object_value.valid?(validation_context)
 
-      import_nested_errors(object_value.errors, attr_name)
+      error_path = format_error_path(attr_name)
+      import_nested_errors(object_value.errors, error_path)
+    end
+
+    # Format error path using dot notation (always consistent)
+    #: (String, Integer?) -> String
+    def format_error_path(attr_name, index = nil)
+      path_parts = [attr_name]
+      path_parts << index.to_s if index
+      path_parts.join('.')
     end
 
     # Integrate nested errors into parent errors
     #: (untyped, String) -> void
     def import_nested_errors(nested_errors, prefix)
       nested_errors.each do |error|
-        error_key = "#{prefix}.#{error.attribute}"
-        errors.import(error, attribute: error_key)
+        errors.import(error, attribute: "#{prefix}.#{error.attribute}")
       end
     end
 
