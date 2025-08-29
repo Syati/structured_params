@@ -40,14 +40,6 @@ module StructuredParams
     # : (untyped) -> Hash[untyped, untyped]
     def process_input_parameters: (untyped) -> Hash[untyped, untyped]
 
-    # Deeply convert symbol hash to string hash (including child elements)
-    # : (untyped) -> untyped
-    def deep_stringify_keys: (untyped) -> untyped
-
-    # Generic method to deeply transform keys (Rails-style deep_transform_keys)
-    # : (untyped) { (untyped) -> untyped } -> untyped
-    def deep_transform_keys: (untyped) { (untyped) -> untyped } -> untyped
-
     # Execute nested parameter validation
     # : () -> void
     def validate_nested_parameters: () -> void
@@ -59,6 +51,10 @@ module StructuredParams
     # Validate nested objects
     # : (String, StructuredParams::Params) -> void
     def validate_nested_object: (String, StructuredParams::Params) -> void
+
+    # Format error path using dot notation (always consistent)
+    # : (String, Integer?) -> String
+    def format_error_path: (String, Integer?) -> String
 
     # Integrate nested errors into parent errors
     # : (untyped, String) -> void
