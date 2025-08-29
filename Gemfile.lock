@@ -67,6 +67,7 @@ GEM
       concurrent-ruby (~> 1.0)
     json (2.13.2)
     language_server-protocol (3.17.0.5)
+    lefthook (1.12.3)
     lint_roller (1.1.0)
     listen (3.9.0)
       rb-fsevent (~> 0.10, >= 0.10.3)
@@ -222,6 +223,7 @@ PLATFORMS
 DEPENDENCIES
   actionpack (~> 8.0.0)
   activemodel (~> 8.0.0)
+  lefthook
   rake (~> 13.0)
   rbs-inline
   rspec (~> 3.0)

@@ -9,6 +9,7 @@ AllCops:
 Layout/LeadingCommentSpace:
   Enabled: false
 
+# ========= RSpec ===========
 RSpec/SpecFilePathFormat:
   Enabled: false
 
@@ -17,3 +18,10 @@ RSpec/MultipleExpectations:
 
 RSpec/NestedGroups:
   Max: 5
+
+RSpec/ExampleLength:
+  Max: 15
+
+# ========= Metrics:
+Metrics/ClassLength:
+  Max: 150

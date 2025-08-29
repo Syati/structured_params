@@ -11,6 +11,7 @@ gem 'actionpack', gem_version
 gem 'activemodel', gem_version
 
 group :development, :test do
+  gem 'lefthook', require: false
   gem 'rake', '~> 13.0'
   gem 'rbs-inline', require: false
   gem 'rspec', '~> 3.0'
