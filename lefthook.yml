@@ -9,3 +9,5 @@ pre-commit:
       run: bundle exec rubocop
     rspec:
       run: bundle exec rspec
+    steep:
+      run: bundle exec steep check
