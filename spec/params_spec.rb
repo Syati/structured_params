@@ -73,17 +73,17 @@ RSpec.describe StructuredParams::Params do
   describe '.new' do
     let(:valid_params) do
       {
-        name: '田中太郎',
+        name: 'Tanaka Taro',
         email: 'tanaka@example.com',
         age: 30,
         address: {
           postal_code: '123-4567',
-          prefecture: '東京都',
-          city: '渋谷区',
-          street: '道玄坂1-2-3'
+          prefecture: 'Tokyo',
+          city: 'Shibuya-ku',
+          street: 'Saka 1-2-3'
         },
         hobbies: [
-          { name: 'プログラミング', level: 3, years_experience: 10 },
+          { name: 'programming', level: 3, years_experience: 10 },
           { name: '読書', level: 2, years_experience: 5 }
         ],
         tags: %w[Ruby Rails 技術書]
@@ -95,7 +95,7 @@ RSpec.describe StructuredParams::Params do
 
       it {
         expect(user_param).to have_attributes(
-          name: '田中太郎',
+          name: 'Tanaka Taro',
           email: 'tanaka@example.com',
           age: 30
         )
@@ -109,9 +109,9 @@ RSpec.describe StructuredParams::Params do
         it {
           expect(address).to have_attributes(
             postal_code: '123-4567',
-            prefecture: '東京都',
-            city: '渋谷区',
-            street: '道玄坂1-2-3'
+            prefecture: 'Tokyo',
+            city: 'Shibuya-ku',
+            street: 'Saka 1-2-3'
           )
         }
       end
@@ -121,7 +121,7 @@ RSpec.describe StructuredParams::Params do
 
         it { is_expected.to be_an(Array) }
         it { is_expected.to contain_exactly(hobby_parameter_class, hobby_parameter_class) }
-        it { expect(hobbies[0]).to have_attributes(name: 'プログラミング', level: 3, years_experience: 10) }
+        it { expect(hobbies[0]).to have_attributes(name: 'programming', level: 3, years_experience: 10) }
         it { expect(hobbies[1]).to have_attributes(name: '読書', level: 2, years_experience: 5) }
       end
 
@@ -140,7 +140,7 @@ RSpec.describe StructuredParams::Params do
       end
 
       it 'filters unpermitted parameters' do
-        expect(user_param.name).to eq('田中太郎')
+        expect(user_param.name).to eq('Tanaka Taro')
         expect { user_param.unpermitted }.to raise_error(NoMethodError)
       end
     end
@@ -158,17 +158,17 @@ RSpec.describe StructuredParams::Params do
 
       let(:valid_params) do
         {
-          name: '田中太郎',
+          name: 'Tanaka Taro',
           email: 'tanaka@example.com',
           age: 30,
           address: {
             postal_code: '123-4567',
-            prefecture: '東京都',
-            city: '渋谷区',
-            street: '道玄坂1-2-3'
+            prefecture: 'Tokyo',
+            city: 'Shibuya-ku',
+            street: 'Saka 1-2-3'
           },
           hobbies: [
-            { name: 'プログラミング', level: 3, years_experience: 10 }
+            { name: 'programming', level: 3, years_experience: 10 }
           ]
         }
       end
@@ -186,9 +186,9 @@ RSpec.describe StructuredParams::Params do
           age: -1, # invalid
           address: {
             postal_code: '123-4567',
-            prefecture: '東京都',
-            city: '渋谷区',
-            street: '道玄坂1-2-3'
+            prefecture: 'Tokyo',
+            city: 'Shibuya-ku',
+            street: 'Saka 1-2-3'
           }
         }
       end
@@ -206,14 +206,14 @@ RSpec.describe StructuredParams::Params do
 
       let(:invalid_address_params) do
         {
-          name: '田中太郎',
+          name: 'Tanaka Taro',
           email: 'tanaka@example.com',
           age: 30,
           address: {
             postal_code: 'invalid', # invalid format
             prefecture: '', # blank
-            city: '渋谷区',
-            street: '道玄坂1-2-3'
+            city: 'Shibuya-ku',
+            street: 'Saka 1-2-3'
           }
         }
       end
@@ -230,7 +230,7 @@ RSpec.describe StructuredParams::Params do
 
       let(:invalid_hobbies_params) do
         {
-          name: '田中太郎',
+          name: 'Tanaka Taro',
           email: 'tanaka@example.com',
           age: 30,
           hobbies: [
@@ -256,17 +256,17 @@ RSpec.describe StructuredParams::Params do
 
     let(:params) do
       {
-        name: '田中太郎',
+        name: 'Tanaka Taro',
         email: 'tanaka@example.com',
         age: 30,
         address: {
           postal_code: '123-4567',
-          prefecture: '東京都',
-          city: '渋谷区',
-          street: '道玄坂1-2-3'
+          prefecture: 'Tokyo',
+          city: 'Shibuya-ku',
+          street: 'Saka 1-2-3'
         },
         hobbies: [
-          { name: 'プログラミング', level: 3, years_experience: 10 }
+          { name: 'programming', level: 3, years_experience: 10 }
         ],
         tags: %w[Ruby Rails]
       }
@@ -274,15 +274,15 @@ RSpec.describe StructuredParams::Params do
 
     it 'returns attributes with objects converted to hashes' do
       expect(attributes).to include(
-        'name' => '田中太郎',
+        'name' => 'Tanaka Taro',
         'address' => hash_including(
           'postal_code' => '123-4567',
-          'prefecture' => '東京都',
-          'city' => '渋谷区',
-          'street' => '道玄坂1-2-3'
+          'prefecture' => 'Tokyo',
+          'city' => 'Shibuya-ku',
+          'street' => 'Saka 1-2-3'
         ),
         'hobbies' => array_including(
-          hash_including('name' => 'プログラミング', 'level' => 3, 'years_experience' => 10)
+          hash_including('name' => 'programming', 'level' => 3, 'years_experience' => 10)
         ),
         'tags' => %w[Ruby Rails]
       )
@@ -293,15 +293,15 @@ RSpec.describe StructuredParams::Params do
 
       it 'returns symbolized attributes' do
         expect(attributes).to include(
-          name: '田中太郎',
+          name: 'Tanaka Taro',
           address: hash_including(
             postal_code: '123-4567',
-            prefecture: '東京都',
-            city: '渋谷区',
-            street: '道玄坂1-2-3'
+            prefecture: 'Tokyo',
+            city: 'Shibuya-ku',
+            street: 'Saka 1-2-3'
           ),
           hobbies: array_including(
-            hash_including(name: 'プログラミング', level: 3, years_experience: 10)
+            hash_including(name: 'programming', level: 3, years_experience: 10)
           ),
           tags: %w[Ruby Rails]
         )
@@ -315,7 +315,7 @@ RSpec.describe StructuredParams::Params do
 
       let(:params_with_nil) do
         {
-          name: '田中太郎',
+          name: 'Tanaka Taro',
           email: 'tanaka@example.com',
           age: 30,
           address: nil,
@@ -338,7 +338,7 @@ RSpec.describe StructuredParams::Params do
 
       let(:params_with_empty_arrays) do
         {
-          name: '田中太郎',
+          name: 'Tanaka Taro',
           email: 'tanaka@example.com',
           age: 30,
           hobbies: [],
