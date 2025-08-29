@@ -220,8 +220,8 @@ RSpec.describe StructuredParams::Params do
 
       it 'returns false and includes object validation errors' do
         expect(user_param).not_to be_valid
-        expect(user_param.errors['address_postal_code']).to include('is invalid')
-        expect(user_param.errors['address_prefecture']).to include("can't be blank")
+        expect(user_param.errors['address.postal_code']).to include('is invalid')
+        expect(user_param.errors['address.prefecture']).to include("can't be blank")
       end
     end
 
@@ -242,9 +242,9 @@ RSpec.describe StructuredParams::Params do
 
       it 'returns false and includes array validation errors with index' do
         expect(user_param).not_to be_valid
-        expect(user_param.errors['hobbies_0_name']).to include("can't be blank")
-        expect(user_param.errors['hobbies_0_level']).to include('is not included in the list')
-        expect(user_param.errors['hobbies_0_years_experience']).to include('must be greater than or equal to 0')
+        expect(user_param.errors['hobbies.0.name']).to include("can't be blank")
+        expect(user_param.errors['hobbies.0.level']).to include('is not included in the list')
+        expect(user_param.errors['hobbies.0.years_experience']).to include('must be greater than or equal to 0')
       end
     end
   end

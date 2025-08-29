@@ -129,7 +129,7 @@ module StructuredParams
       array_value.each_with_index do |item, index|
         next if item.valid?(validation_context)
 
-        import_nested_errors(item.errors, "#{attr_name}_#{index}")
+        import_nested_errors(item.errors, "#{attr_name}.#{index}")
       end
     end
 
@@ -145,8 +145,8 @@ module StructuredParams
     #: (untyped, String) -> void
     def import_nested_errors(nested_errors, prefix)
       nested_errors.each do |error|
-        error_key = "#{prefix}_#{error.attribute}"
-        errors.add(error_key, error.message)
+        error_key = "#{prefix}.#{error.attribute}"
+        errors.import(error, attribute: error_key)
       end
     end
 
