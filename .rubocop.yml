@@ -22,6 +22,6 @@ RSpec/NestedGroups:
 RSpec/ExampleLength:
   Max: 15
 
-# ========= Metrics:
+# ========= Metrics =========
 Metrics/ClassLength:
   Max: 150
