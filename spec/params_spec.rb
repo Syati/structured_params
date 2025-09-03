@@ -206,7 +206,7 @@ RSpec.describe StructuredParams::Params do
 
       let(:invalid_address_params) do
         {
-          name: 'Tanaka Taro',
+          name: '', # invalid
           email: 'tanaka@example.com',
           age: 30,
           address: {
@@ -220,8 +220,9 @@ RSpec.describe StructuredParams::Params do
 
       it 'returns false and includes object validation errors' do
         expect(user_param).not_to be_valid
-        expect(user_param.errors['address.postal_code']).to include('is invalid')
-        expect(user_param.errors['address.prefecture']).to include("can't be blank")
+        expect(user_param.errors[:name]).to include("can't be blank")
+        expect(user_param.errors[:'address.postal_code']).to include('is invalid')
+        expect(user_param.errors[:'address.prefecture']).to include("can't be blank")
       end
     end
 

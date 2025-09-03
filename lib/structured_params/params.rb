@@ -2,12 +2,12 @@
 # frozen_string_literal: true
 
 module StructuredParams
-  # Parameter model that supports nested structures
+  # Parameter model that supports structured objects and arrays
   #
   # Usage example:
   #   class UserParameter < StructuredParams::Params
   #     attribute :name, :string
-  #     attribute :address, :nested, value_class: AddressParameter
+  #     attribute :address, :object, value_class: AddressParameter
   #     attribute :hobbies, :array, value_class: HobbyParameter
   #     attribute :tags, :array, value_type: :string
   #   end
@@ -30,9 +30,9 @@ module StructuredParams
         end
       end
 
-      # Get names of nested StructuredParams attributes
+      # Get names of StructuredParams attributes (object and array types)
       #: () { (String) -> void } -> void
-      def each_nested_attribute_name
+      def each_structured_attribute_name
         attribute_types.each do |name, type|
           yield name if structured_params_type?(type)
         end
@@ -40,7 +40,7 @@ module StructuredParams
 
       private
 
-      # Determine if the specified type is a nested parameter type
+      # Determine if the specified type is a StructuredParams type
       #: (untyped) -> bool
       def structured_params_type?(type)
         type.is_a?(StructuredParams::Type::Object) ||
@@ -48,8 +48,8 @@ module StructuredParams
       end
     end
 
-    # Integrate validation of nested objects
-    validate :validate_nested_parameters
+    # Integrate validation of structured objects
+    validate :validate_structured_parameters
 
     #: (untyped) -> void
     def initialize(params)
@@ -57,14 +57,14 @@ module StructuredParams
       super(**processed_params)
     end
 
-    # Convert nested objects to Hash and get attributes
+    # Convert structured objects to Hash and get attributes
     #: (symbolize: bool) -> Hash[untyped, untyped]
     def attributes(symbolize: false)
       attrs = super()
 
-      self.class.each_nested_attribute_name do |name|
+      self.class.each_structured_attribute_name do |name|
         value = attrs[name.to_s]
-        attrs[name.to_s] = serialize_nested_value(value)
+        attrs[name.to_s] = serialize_structured_value(value)
       end
 
       symbolize ? attrs.deep_symbolize_keys : attrs
@@ -86,40 +86,40 @@ module StructuredParams
       end
     end
 
-    # Execute nested parameter validation
+    # Execute structured parameter validation
     #: () -> void
-    def validate_nested_parameters
-      self.class.each_nested_attribute_name do |attr_name|
+    def validate_structured_parameters
+      self.class.each_structured_attribute_name do |attr_name|
         value = attribute(attr_name)
         next if value.blank?
 
         case value
         when Array
-          validate_nested_array(attr_name, value)
+          validate_structured_array(attr_name, value)
         else
-          validate_nested_object(attr_name, value)
+          validate_structured_object(attr_name, value)
         end
       end
     end
 
-    # Validate nested arrays
+    # Validate structured arrays
     #: (String, Array[untyped]) -> void
-    def validate_nested_array(attr_name, array_value)
+    def validate_structured_array(attr_name, array_value)
       array_value.each_with_index do |item, index|
         next if item.valid?(validation_context)
 
         error_path = format_error_path(attr_name, index)
-        import_nested_errors(item.errors, error_path)
+        import_structured_errors(item.errors, error_path)
       end
     end
 
-    # Validate nested objects
+    # Validate structured objects
     #: (String, StructuredParams::Params) -> void
-    def validate_nested_object(attr_name, object_value)
+    def validate_structured_object(attr_name, object_value)
       return if object_value.valid?(validation_context)
 
-      error_path = format_error_path(attr_name)
-      import_nested_errors(object_value.errors, error_path)
+      error_path = format_error_path(attr_name, nil)
+      import_structured_errors(object_value.errors, error_path)
     end
 
     # Format error path using dot notation (always consistent)
@@ -130,22 +130,22 @@ module StructuredParams
       path_parts.join('.')
     end
 
-    # Integrate nested errors into parent errors
+    # Integrate structured parameter errors into parent errors
     #: (untyped, String) -> void
-    def import_nested_errors(nested_errors, prefix)
-      nested_errors.each do |error|
-        errors.import(error, attribute: "#{prefix}.#{error.attribute}")
+    def import_structured_errors(structured_errors, prefix)
+      structured_errors.each do |error|
+        errors.import(error, attribute: :"#{prefix}.#{error.attribute}")
       end
     end
 
-    # Serialize nested values
+    # Serialize structured values
     #: (untyped) -> untyped
-    def serialize_nested_value(value)
+    def serialize_structured_value(value)
       case value
       when Array
-        value.map(&:attributes)
+        value.map { |item| item.attributes(symbolize: false) }
       when StructuredParams::Params
-        value.attributes
+        value.attributes(symbolize: false)
       else
         value
       end

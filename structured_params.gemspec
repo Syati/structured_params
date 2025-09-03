@@ -22,13 +22,13 @@ Gem::Specification.new do |spec|
   ]
 
   spec.metadata = {
-    'homepage_uri' => spec.homepage,
+    'homepage_uri' => 'https://github.com/Syati/structured_params#readme',
     'changelog_uri' => 'https://github.com/Syati/structured_params/blob/main/CHANGELOG.md',
     'bug_tracker_uri' => 'https://github.com/Syati/structured_params/issues',
     'source_code_uri' => 'https://github.com/Syati/structured_params',
     'rubygems_mfa_required' => 'true'
   }
 
-  spec.add_dependency 'actionpack'
-  spec.add_dependency 'activemodel'
+  spec.add_dependency 'actionpack', '~> 8.0.0'
+  spec.add_dependency 'activemodel', '~> 8.0.0'
 end
