@@ -11,7 +11,7 @@ class HobbyParameter < StructuredParams::Params
 end
 
 FactoryBot.define do
-  factory :hobby_parameter, class: HobbyParameter do
+  factory :hobby_parameter, class: 'HobbyParameter' do
     name { 'programming' }
     level { 3 }
     years_experience { 10 }

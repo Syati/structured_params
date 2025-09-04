@@ -2,6 +2,7 @@ plugins:
   - rubocop-rspec
   - rubocop-rake
   - rubocop-rbs_inline
+  - rubocop-factory_bot
 
 AllCops:
   NewCops: enable

@@ -12,7 +12,7 @@ class AddressParameter < StructuredParams::Params
 end
 
 FactoryBot.define do
-  factory :address_parameter, class: AddressParameter do
+  factory :address_parameter, class: 'AddressParameter' do
     postal_code { '123-4567' }
     prefecture { 'Tokyo' }
     city { 'Shibuya-ku' }

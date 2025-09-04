@@ -14,7 +14,7 @@ class UserParameter < StructuredParams::Params
 end
 
 FactoryBot.define do
-  factory :user_parameter, class: UserParameter do
+  factory :user_parameter, class: 'UserParameter' do
     name { 'Tanaka Taro' }
     email { 'tanaka@example.com' }
     age { 30 }

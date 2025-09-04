@@ -18,6 +18,7 @@ group :development, :test do
   gem 'rspec', '~> 3.0'
   gem 'rspec-parameterized'
   gem 'rubocop'
+  gem 'rubocop-factory_bot', require: false
   gem 'rubocop-rake', require: false
   gem 'rubocop-rbs_inline', require: false
   gem 'rubocop-rspec', require: false
