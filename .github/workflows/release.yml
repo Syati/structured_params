@@ -54,11 +54,21 @@ jobs:
         # Get current date
         CURRENT_DATE=$(date +%Y-%m-%d)
         
-        # Create new changelog entry using template
-        sed -e "s/{{VERSION}}/${{ steps.version.outputs.version }}/g" \
-            -e "s/{{DATE}}/$CURRENT_DATE/g" \
-            -e "s/{{RELEASE_NOTES}}/$RELEASE_NOTES/g" \
+        # Create new changelog entry using template with safer substitution
+        # Use | as delimiter instead of / to avoid conflicts with URLs in release notes
+        sed -e "s|{{VERSION}}|${{ steps.version.outputs.version }}|g" \
+            -e "s|{{DATE}}|$CURRENT_DATE|g" \
             .github/changelog_template.md > temp_changelog.md
+        
+        # Add release notes separately to avoid sed escaping issues
+        if [ -n "$RELEASE_NOTES" ]; then
+          # Replace the placeholder with actual release notes
+          awk -v notes="$RELEASE_NOTES" '{gsub(/{{RELEASE_NOTES}}/, notes); print}' temp_changelog.md > temp_changelog2.md
+          mv temp_changelog2.md temp_changelog.md
+        else
+          # Remove the placeholder if no release notes
+          sed -i 's/{{RELEASE_NOTES}}//' temp_changelog.md
+        fi
         
         # Append existing changelog content (skip the header)
         echo "" >> temp_changelog.md
