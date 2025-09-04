@@ -19,8 +19,8 @@ FactoryBot.define do
     email { 'tanaka@example.com' }
     age { 30 }
     address { attributes_for(:address_parameter) }
-    hobbies { attributes_for_list(:hobby_parameter, 3) }
-    tags { [] }
+    hobbies { attributes_for_list(:hobby_parameter, 2) }
+    tags { %w[Ruby Rails Web] }
 
     initialize_with { new(attributes) }
   end
