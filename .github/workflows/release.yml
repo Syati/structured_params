@@ -15,6 +15,7 @@ jobs:
       with:
         fetch-depth: 0
         token: ${{ secrets.GITHUB_TOKEN }}
+        ref: main  # Ensure we checkout main branch explicitly
 
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
@@ -84,5 +85,5 @@ jobs:
           echo "No changes to commit"
         else
           git commit -m "Update CHANGELOG for v${{ steps.version.outputs.version }}"
-          git push origin main
+          git push origin HEAD:main
         fi
