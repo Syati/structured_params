@@ -4,6 +4,8 @@ require 'structured_params'
 require 'rspec-parameterized'
 require 'factory_bot'
 
+StructuredParams.register_types
+
 RSpec.configure do |config|
   config.include FactoryBot::Syntax::Methods
   # Enable flags like --only-failures and --next-failure
@@ -20,5 +22,3 @@ RSpec.configure do |config|
     FactoryBot.find_definitions
   end
 end
-
-StructuredParams.register_types

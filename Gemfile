@@ -11,18 +11,15 @@ gem 'actionpack', gem_version
 gem 'activemodel', gem_version
 
 group :development, :test do
+  gem 'factory_bot'
   gem 'lefthook', require: false
   gem 'rake', '~> 13.0'
   gem 'rbs-inline', require: false
   gem 'rspec', '~> 3.0'
+  gem 'rspec-parameterized'
   gem 'rubocop'
   gem 'rubocop-rake', require: false
   gem 'rubocop-rbs_inline', require: false
   gem 'rubocop-rspec', require: false
   gem 'steep', require: false
-end
-
-group :test do
-  gem 'factory_bot'
-  gem 'rspec-parameterized'
 end
