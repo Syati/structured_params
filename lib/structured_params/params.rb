@@ -14,6 +14,7 @@ module StructuredParams
   class Params
     include ActiveModel::Model
     include ActiveModel::Attributes
+    include ErrorFormatter
 
     class << self
       # Generate permitted parameter structure for Strong Parameters

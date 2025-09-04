@@ -7,6 +7,9 @@ require 'action_controller/metal/strong_parameters'
 # version
 require_relative 'structured_params/version'
 
+# error formatter
+require_relative 'structured_params/error_formatter'
+
 # types (load first for module definition)
 require_relative 'structured_params/type/object'
 require_relative 'structured_params/type/array'
