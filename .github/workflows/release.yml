@@ -59,22 +59,14 @@ jobs:
         # Get current date
         CURRENT_DATE=$(date +%Y-%m-%d)
         
-        # Create temporary file with new changelog entry
-        cat > temp_changelog.md << EOF
-# Changelog
-
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [${{ steps.version.outputs.version }}] - $CURRENT_DATE
-
-$RELEASE_NOTES
-
-EOF
+        # Create new changelog entry using template
+        sed -e "s/{{VERSION}}/${{ steps.version.outputs.version }}/g" \
+            -e "s/{{DATE}}/$CURRENT_DATE/g" \
+            -e "s/{{RELEASE_NOTES}}/$RELEASE_NOTES/g" \
+            .github/changelog_template.md > temp_changelog.md
         
         # Append existing changelog content (skip the header)
+        echo "" >> temp_changelog.md
         tail -n +9 CHANGELOG.md >> temp_changelog.md
         mv temp_changelog.md CHANGELOG.md
 
