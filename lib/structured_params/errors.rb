@@ -18,6 +18,24 @@ module StructuredParams
     end
     # rubocop:enable Style/OptionalBooleanParameter
 
+    # Get error messages with custom key transformation
+    # Users can provide a block to transform attribute keys
+    #
+    # Examples:
+    #   errors.messages_with { |attr| "/#{attr.gsub('.', '/')}" }  # JSON Pointer
+    #   errors.messages_with { |attr| attr.upcase }               # Uppercase keys
+    #   errors.messages_with(true) { |attr| "custom_#{attr}" }    # With full messages
+    #
+    #: (?bool) { (String) -> String } -> Hash[String, Array[String]]
+    def messages_with(full_messages = false)
+      message_method = full_messages ? :full_message : :message
+
+      group_by_attribute.each_with_object({}) do |(attribute, error_list), result|
+        key = yield attribute.to_s
+        result[key] = error_list.map(&message_method)
+      end
+    end
+
     private
 
     # Build a nested hash structure from flat dot-notation keys

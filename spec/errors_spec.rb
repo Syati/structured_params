@@ -233,4 +233,75 @@ RSpec.describe StructuredParams::Errors do
       end
     end
   end
+
+  describe '#messages_with' do
+    before do
+      errors.add('name', "can't be blank")
+      errors.add('address.postal_code', "can't be blank")
+      errors.add('hobbies.0.name', 'is required')
+      errors.add('hobbies.1.level', 'is invalid')
+    end
+
+    context 'with JSON Pointer transformation' do
+      it 'converts attribute keys to JSON Pointer format' do
+        result = errors.messages_with { |attr| "/#{attr.gsub('.', '/')}" }
+
+        expect(result).to eq({
+          '/name' => ["can't be blank"],
+          '/address/postal_code' => ["can't be blank"],
+          '/hobbies/0/name' => ['is required'],
+          '/hobbies/1/level' => ['is invalid']
+        })
+      end
+    end
+
+    context 'with uppercase transformation' do
+      it 'converts attribute keys to uppercase' do
+        result = errors.messages_with { |attr| attr.upcase }
+
+        expect(result).to eq({
+          'NAME' => ["can't be blank"],
+          'ADDRESS.POSTAL_CODE' => ["can't be blank"],
+          'HOBBIES.0.NAME' => ['is required'],
+          'HOBBIES.1.LEVEL' => ['is invalid']
+        })
+      end
+    end
+
+    context 'with custom prefix transformation' do
+      it 'adds custom prefix to attribute keys' do
+        result = errors.messages_with { |attr| "error_#{attr}" }
+
+        expect(result).to eq({
+          'error_name' => ["can't be blank"],
+          'error_address.postal_code' => ["can't be blank"],
+          'error_hobbies.0.name' => ['is required'],
+          'error_hobbies.1.level' => ['is invalid']
+        })
+      end
+    end
+
+    context 'with full_messages = true' do
+      it 'returns full error messages with transformed keys' do
+        result = errors.messages_with(true) { |attr| "/#{attr.gsub('.', '/')}" }
+
+        expect(result).to be_a(Hash)
+        expect(result.keys).to include('/name', '/address/postal_code', '/hobbies/0/name')
+
+        # Check that full messages are used (they include attribute names)
+        expect(result['/name']).to contain_exactly("Name can't be blank")
+        expect(result['/address/postal_code']).to contain_exactly("Address postal code can't be blank")
+        expect(result['/hobbies/0/name']).to contain_exactly("Hobbies 0 name is required")
+      end
+    end
+
+    context 'with empty errors' do
+      before { errors.clear }
+
+      it 'returns empty hash' do
+        result = errors.messages_with { |attr| attr.upcase }
+        expect(result).to eq({})
+      end
+    end
+  end
 end

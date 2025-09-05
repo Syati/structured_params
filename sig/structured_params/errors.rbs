@@ -9,6 +9,17 @@ module StructuredParams
     # : (?bool) -> Hash[String, String]
     def to_hash: (?bool) -> Hash[String, String]
 
+    # Get error messages with custom key transformation
+    # Users can provide a block to transform attribute keys
+    #
+    # Examples:
+    #   errors.messages_with { |attr| "/#{attr.gsub('.', '/')}" }  # JSON Pointer
+    #   errors.messages_with { |attr| attr.upcase }               # Uppercase keys
+    #   errors.messages_with(true) { |attr| "custom_#{attr}" }    # With full messages
+    #
+    # : (?bool) { (String) -> String } -> Hash[String, Array[String]]
+    def messages_with: (?bool) { (String) -> String } -> Hash[String, Array[String]]
+
     private
 
     # Build a nested hash structure from flat dot-notation keys
