@@ -2,29 +2,20 @@
 
 module StructuredParams
   # Custom errors collection that handles nested attribute names
-  # rubocop:disable Style/OptionalBooleanParameter
   class Errors < ActiveModel::Errors
     # Override to_hash to maintain compatibility with ActiveModel::Errors by default
     # Add structured option to get nested structure for dot-notation attributes
-    # : (?bool, ?structured: bool) -> Hash[String, Array[String]]
-    def to_hash: (?bool, ?structured: bool) -> Hash[String, Array[String]]
-
-    # Get error messages with custom key transformation
-    # Users can provide a block to transform attribute keys
-    #
-    # Examples:
-    #   errors.messages_with { |attr| "/#{attr.gsub('.', '/')}" }  # JSON Pointer
-    #   errors.messages_with { |attr| attr.upcase }               # Uppercase keys
-    #   errors.messages_with(true) { |attr| "custom_#{attr}" }    # With full messages
-    #
-    # : (?bool) { (String) -> String } -> Hash[String, Array[String]]
-    def messages_with: (?bool) { (String) -> String } -> Hash[String, Array[String]]
+    # rubocop:disable Style/OptionalBooleanParameter
+    # : (?bool, ?structured: false) -> Hash[Symbol, String]
+    # : (?bool, structured: true) -> Hash[Symbol, untyped]
+    def to_hash: (?bool, ?structured: false) -> Hash[Symbol, String]
+               | (?bool, structured: true) -> Hash[Symbol, untyped]
 
     private
 
     # Build a nested hash structure from flat dot-notation keys
     # Converts "address.postal_code" to {address: {postal_code: value}}
-    # : (Hash[untyped, untyped], Hash[Symbol, untyped], ?String) -> Hash[String, String]
-    def build_nested_hash: (Hash[untyped, untyped], Hash[Symbol, untyped], ?String) -> Hash[String, String]
+    # : (Hash[untyped, untyped], Hash[Symbol, Array[String]], ?String) -> Hash[Symbol, untyped]
+    def build_nested_hash: (Hash[untyped, untyped], Hash[Symbol, Array[String]], ?String) -> Hash[Symbol, untyped]
   end
 end
