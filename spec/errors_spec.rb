@@ -8,12 +8,12 @@ RSpec.describe StructuredParams::Errors do
   before { errors.clear }
 
   describe '#to_hash' do
-    subject(:errors_to_hash) { errors.to_hash(option_full_messages, nested: option_nested) }
+    subject(:errors_to_hash) { errors.to_hash(option_full_messages, structured: option_structured) }
 
     let(:option_full_messages) { false }
-    let(:option_nested) { false }
+    let(:option_structured) { false }
 
-    context 'with default behavior (nested: false)' do
+    context 'with default behavior (structured: false)' do
       before do
         errors.add('name', "can't be blank")
         errors.add('address.postal_code', "can't be blank")
@@ -39,8 +39,8 @@ RSpec.describe StructuredParams::Errors do
       end
     end
 
-    context 'with nested option (nested: true)' do
-      let(:option_nested) { true }
+    context 'with structured option (structured: true)' do
+      let(:option_structured) { true }
 
       context 'with some nested errors' do
         before do
@@ -93,10 +93,10 @@ RSpec.describe StructuredParams::Errors do
         end
 
         it 'returns flat structure for non-nested attributes' do
-          expect(errors.to_hash(false, nested: true)).to eq({
-                                                              'name' => ["can't be blank"],
-                                                              'email' => ['is invalid']
-                                                            })
+          expect(errors.to_hash(false, structured: true)).to eq({
+                                                                  'name' => ["can't be blank"],
+                                                                  'email' => ['is invalid']
+                                                                })
         end
       end
 
@@ -108,24 +108,24 @@ RSpec.describe StructuredParams::Errors do
 
         # rubocop:disable RSpec/ExampleLength
         it 'creates deep nested structure' do
-          expect(errors.to_hash(false, nested: true)).to eq({
-                                                              'items' => {
-                                                                '0' => {
-                                                                  'subitems' => {
-                                                                    '1' => {
-                                                                      'name' => ["can't be blank"]
-                                                                    }
-                                                                  }
-                                                                },
-                                                                '1' => {
-                                                                  'subitems' => {
+          expect(errors.to_hash(false, structured: true)).to eq({
+                                                                  'items' => {
                                                                     '0' => {
-                                                                      'description' => ['is too long']
+                                                                      'subitems' => {
+                                                                        '1' => {
+                                                                          'name' => ["can't be blank"]
+                                                                        }
+                                                                      }
+                                                                    },
+                                                                    '1' => {
+                                                                      'subitems' => {
+                                                                        '0' => {
+                                                                          'description' => ['is too long']
+                                                                        }
+                                                                      }
                                                                     }
                                                                   }
-                                                                }
-                                                              }
-                                                            })
+                                                                })
         end
         # rubocop:enable RSpec/ExampleLength
       end
@@ -139,18 +139,18 @@ RSpec.describe StructuredParams::Errors do
         end
 
         it 'handles both flat and nested attributes correctly' do
-          expect(errors.to_hash(false, nested: true)).to eq({
-                                                              'name' => ["can't be blank"],
-                                                              'email' => ['is invalid'],
-                                                              'address' => {
-                                                                'postal_code' => ["can't be blank"]
-                                                              },
-                                                              'hobbies' => {
-                                                                '0' => {
-                                                                  'name' => ['is required']
-                                                                }
-                                                              }
-                                                            })
+          expect(errors.to_hash(false, structured: true)).to eq({
+                                                                  'name' => ["can't be blank"],
+                                                                  'email' => ['is invalid'],
+                                                                  'address' => {
+                                                                    'postal_code' => ["can't be blank"]
+                                                                  },
+                                                                  'hobbies' => {
+                                                                    '0' => {
+                                                                      'name' => ['is required']
+                                                                    }
+                                                                  }
+                                                                })
         end
       end
 
@@ -163,22 +163,23 @@ RSpec.describe StructuredParams::Errors do
         end
 
         it 'groups multiple errors for the same nested attribute' do
-          expect(errors.to_hash(false, nested: true)).to eq({
-                                                              'address' => {
-                                                                'postal_code' => ["can't be blank", 'is invalid format']
-                                                              },
-                                                              'hobbies' => {
-                                                                '0' => {
-                                                                  'name' => ["can't be blank", 'is too short']
-                                                                }
-                                                              }
-                                                            })
+          expect(errors.to_hash(false, structured: true)).to eq({
+                                                                  'address' => {
+                                                                    'postal_code' => ["can't be blank",
+                                                                                      'is invalid format']
+                                                                  },
+                                                                  'hobbies' => {
+                                                                    '0' => {
+                                                                      'name' => ["can't be blank", 'is too short']
+                                                                    }
+                                                                  }
+                                                                })
         end
       end
 
       context 'with empty errors' do
         it 'returns empty hash' do
-          expect(errors.to_hash(false, nested: true)).to eq({})
+          expect(errors.to_hash(false, structured: true)).to eq({})
         end
       end
     end

@@ -6,10 +6,10 @@ module StructuredParams
   # rubocop:disable Style/OptionalBooleanParameter
   class Errors < ActiveModel::Errors
     # Override to_hash to maintain compatibility with ActiveModel::Errors by default
-    # Add nested option to get nested structure for dot-notation attributes
-    #: (?bool, ?nested: bool) -> Hash[String, Array[String]]
-    def to_hash(full_messages = false, nested: false)
-      if nested
+    # Add structured option to get nested structure for dot-notation attributes
+    #: (?bool, ?structured: bool) -> Hash[String, Array[String]]
+    def to_hash(full_messages = false, structured: false)
+      if structured
         message_method = full_messages ? :full_message : :message
 
         # Group errors by attribute and convert to messages
