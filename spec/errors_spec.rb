@@ -247,24 +247,24 @@ RSpec.describe StructuredParams::Errors do
         result = errors.messages_with { |attr| "/#{attr.gsub('.', '/')}" }
 
         expect(result).to eq({
-          '/name' => ["can't be blank"],
-          '/address/postal_code' => ["can't be blank"],
-          '/hobbies/0/name' => ['is required'],
-          '/hobbies/1/level' => ['is invalid']
-        })
+                               '/name' => ["can't be blank"],
+                               '/address/postal_code' => ["can't be blank"],
+                               '/hobbies/0/name' => ['is required'],
+                               '/hobbies/1/level' => ['is invalid']
+                             })
       end
     end
 
     context 'with uppercase transformation' do
       it 'converts attribute keys to uppercase' do
-        result = errors.messages_with { |attr| attr.upcase }
+        result = errors.messages_with(&:upcase)
 
         expect(result).to eq({
-          'NAME' => ["can't be blank"],
-          'ADDRESS.POSTAL_CODE' => ["can't be blank"],
-          'HOBBIES.0.NAME' => ['is required'],
-          'HOBBIES.1.LEVEL' => ['is invalid']
-        })
+                               'NAME' => ["can't be blank"],
+                               'ADDRESS.POSTAL_CODE' => ["can't be blank"],
+                               'HOBBIES.0.NAME' => ['is required'],
+                               'HOBBIES.1.LEVEL' => ['is invalid']
+                             })
       end
     end
 
@@ -273,11 +273,11 @@ RSpec.describe StructuredParams::Errors do
         result = errors.messages_with { |attr| "error_#{attr}" }
 
         expect(result).to eq({
-          'error_name' => ["can't be blank"],
-          'error_address.postal_code' => ["can't be blank"],
-          'error_hobbies.0.name' => ['is required'],
-          'error_hobbies.1.level' => ['is invalid']
-        })
+                               'error_name' => ["can't be blank"],
+                               'error_address.postal_code' => ["can't be blank"],
+                               'error_hobbies.0.name' => ['is required'],
+                               'error_hobbies.1.level' => ['is invalid']
+                             })
       end
     end
 
@@ -291,7 +291,7 @@ RSpec.describe StructuredParams::Errors do
         # Check that full messages are used (they include attribute names)
         expect(result['/name']).to contain_exactly("Name can't be blank")
         expect(result['/address/postal_code']).to contain_exactly("Address postal code can't be blank")
-        expect(result['/hobbies/0/name']).to contain_exactly("Hobbies 0 name is required")
+        expect(result['/hobbies/0/name']).to contain_exactly('Hobbies 0 name is required')
       end
     end
 
@@ -299,7 +299,7 @@ RSpec.describe StructuredParams::Errors do
       before { errors.clear }
 
       it 'returns empty hash' do
-        result = errors.messages_with { |attr| attr.upcase }
+        result = errors.messages_with(&:upcase)
         expect(result).to eq({})
       end
     end
