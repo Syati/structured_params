@@ -53,7 +53,6 @@ end
 - **[Strong Parameters](docs/strong-parameters.md)** - 自動 permit リスト生成
 - **[エラーハンドリング](docs/error-handling.md)** - フラットと構造化エラーフォーマット
 - **[シリアライゼーション](docs/serialization.md)** - パラメータのハッシュ・JSON変換
-- **[高度な使用方法](docs/advanced-usage.md)** - 型内省、パフォーマンスのコツなど
 
 ## 例
 

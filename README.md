@@ -53,7 +53,6 @@ end
 - **[Strong Parameters](docs/strong-parameters.md)** - Automatic permit list generation
 - **[Error Handling](docs/error-handling.md)** - Flat and structured error formats
 - **[Serialization](docs/serialization.md)** - Converting parameters to hashes and JSON
-- **[Advanced Usage](docs/advanced-usage.md)** - Type introspection, performance tips, and more
 
 ## Example
 
