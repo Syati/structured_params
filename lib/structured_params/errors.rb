@@ -23,14 +23,9 @@ module StructuredParams
     # This maintains compatibility with ActiveModel::Errors while adding structured functionality
     #: (?{ full_messages?: bool, structured?: bool }?) -> Hash[Symbol, untyped]
     def as_json(options = nil)
-      if options&.key?(:structured)
-        full_messages = options[:full_messages] || false
-        structured = options[:structured] || false
-        to_hash(full_messages, structured: structured)
-      else
-        # Use default ActiveModel::Errors behavior
-        super
-      end
+      options ||= {}
+      to_hash(options.fetch(:full_messages, false),
+              structured: options.fetch(:structured, false))
     end
 
     # Override messages to support structured option

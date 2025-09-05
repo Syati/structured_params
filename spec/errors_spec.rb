@@ -202,7 +202,7 @@ RSpec.describe StructuredParams::Errors do
 
       it 'delegates to standard behavior with full_messages option' do
         errors.as_json(full_messages: true)
-        expect(errors).to have_received(:to_hash).with(true)
+        expect(errors).to have_received(:to_hash).with(true, structured: false)
       end
     end
 
