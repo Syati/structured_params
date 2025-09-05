@@ -1,0 +1,19 @@
+# Generated from lib/structured_params/errors.rb with RBS::Inline
+
+module StructuredParams
+  # Custom errors collection that handles nested attribute names
+  class Errors < ActiveModel::Errors
+    # Override to_hash to provide nested structure for dot-notation attributes
+    # This maintains compatibility with ActiveModel::Errors while adding nested functionality
+    # rubocop:disable Style/OptionalBooleanParameter
+    # : (?bool) -> Hash[String, String]
+    def to_hash: (?bool) -> Hash[String, String]
+
+    private
+
+    # Build a nested hash structure from flat dot-notation keys
+    # Converts "address.postal_code" to {address: {postal_code: value}}
+    # : (Hash[untyped, untyped], Hash[Symbol, untyped], ?String) -> Hash[String, String]
+    def build_nested_hash: (Hash[untyped, untyped], Hash[Symbol, untyped], ?String) -> Hash[String, String]
+  end
+end

@@ -14,9 +14,12 @@ module StructuredParams
   class Params
     include ActiveModel::Model
     include ActiveModel::Attributes
-    include ErrorFormatter
+
+    # @rbs @errors: ::StructuredParams::Errors?
 
     class << self
+      # @rbs self.@structured_attributes: Hash[Symbol, singleton(::StructuredParams::Params)]?
+
       # Generate permitted parameter structure for Strong Parameters
       #: () -> Array[untyped]
       def permit_attribute_names
@@ -32,7 +35,7 @@ module StructuredParams
       end
 
       # Get structured attributes and their classes
-      #: return [Hash[Symbol, StructuredParams::Type]]
+      #: () -> Hash[Symbol, singleton(::StructuredParams::Params)]
       def structured_attributes
         @structured_attributes ||= attribute_types.each_with_object({}) do |(name, type), hash|
           next unless structured_params_type?(type)
@@ -48,7 +51,7 @@ module StructuredParams
       private
 
       # Determine if the specified type is a StructuredParams type
-      #: (untyped) -> bool
+      #: (ActiveModel::Type::Value) -> bool
       def structured_params_type?(type)
         type.is_a?(Type::Object) ||
           (type.is_a?(Type::Array) && type.item_type_is_structured_params_object?)
@@ -58,14 +61,20 @@ module StructuredParams
     # Integrate validation of structured objects
     validate :validate_structured_parameters
 
-    #: (untyped) -> void
+    #: (Hash[untyped, untyped]|::ActionController::Parameters) -> void
     def initialize(params)
       processed_params = process_input_parameters(params)
       super(**processed_params)
     end
 
+    #: () -> ::StructuredParams::Errors
+    def errors
+      @errors ||= Errors.new(self)
+    end
+
     # Convert structured objects to Hash and get attributes
-    #: (symbolize: bool) -> Hash[untyped, untyped]
+    #: (symbolize: true) -> Hash[Symbol, untyped]
+    #: (symbolize: false) -> Hash[String, untyped]
     def attributes(symbolize: false)
       attrs = super()
 
@@ -110,7 +119,9 @@ module StructuredParams
     end
 
     # Validate structured arrays
-    #: (String, Array[untyped]) -> void
+    # @rbs attr_name: Symbol
+    # @rbs array_value: Array[untyped]
+    # @rbs return: void
     def validate_structured_array(attr_name, array_value)
       array_value.each_with_index do |item, index|
         next if item.valid?(validation_context)
@@ -121,7 +132,9 @@ module StructuredParams
     end
 
     # Validate structured objects
-    #: (String, StructuredParams::Params) -> void
+    # @rbs attr_name: Symbol
+    # @rbs object_value: ::StructuredParams::Params
+    # @rbs return: void
     def validate_structured_object(attr_name, object_value)
       return if object_value.valid?(validation_context)
 
@@ -130,19 +143,11 @@ module StructuredParams
     end
 
     # Format error path using dot notation (always consistent)
-    #: (String, Integer?) -> String
+    #: (Symbol, Integer?) -> String
     def format_error_path(attr_name, index = nil)
       path_parts = [attr_name]
       path_parts << index.to_s if index
       path_parts.join('.')
-    end
-
-    # Integrate structured parameter errors into parent errors
-    #: (untyped, String) -> void
-    def import_structured_errors(structured_errors, prefix)
-      structured_errors.each do |error|
-        errors.import(error, attribute: :"#{prefix}.#{error.attribute}")
-      end
     end
 
     # Serialize structured values
@@ -155,6 +160,16 @@ module StructuredParams
         value.attributes(symbolize: false)
       else
         value
+      end
+    end
+
+    # Integrate structured parameter errors into parent errors
+    #: (untyped, String) -> void
+    def import_structured_errors(structured_errors, prefix)
+      structured_errors.each do |error|
+        # Create dotted attribute path and import normally
+        error_attribute = "#{prefix}.#{error.attribute}"
+        errors.import(error, attribute: error_attribute.to_sym)
       end
     end
   end

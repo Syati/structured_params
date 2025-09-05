@@ -1,0 +1,12 @@
+# Generated from lib/structured_params.rb with RBS::Inline
+
+# Main module
+module StructuredParams
+  # Helper method to register types
+  # : () -> void
+  def self.register_types: () -> void
+
+  # Helper method to register types with custom names
+  # : (object_name: Symbol, array_name: Symbol) -> void
+  def self.register_types_as: (object_name: Symbol, array_name: Symbol) -> void
+end
