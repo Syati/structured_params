@@ -8,141 +8,178 @@ RSpec.describe StructuredParams::Errors do
   before { errors.clear }
 
   describe '#to_hash' do
-    subject(:errors_to_hash) { errors.to_hash(option_full_messages) }
+    subject(:errors_to_hash) { errors.to_hash(option_full_messages, nested: option_nested) }
 
     let(:option_full_messages) { false }
+    let(:option_nested) { false }
 
-    context 'with some nested errors' do
+    context 'with default behavior (nested: false)' do
       before do
-        # Add some nested errors
         errors.add('name', "can't be blank")
         errors.add('address.postal_code', "can't be blank")
-        errors.add('address.prefecture', 'is invalid')
-        errors.add('hobbies.0.name', "can't be blank")
-        errors.add('hobbies.0.level', 'is not included in the list')
-        errors.add('hobbies.1.name', 'is too short')
+        errors.add('hobbies.0.name', 'is required')
       end
 
-      context 'with full_messages = false (default)' do
-        it 'returns nested structure for dot-notation attributes' do
-          expect(errors_to_hash).to eq({ 'name' => ["can't be blank"],
-                                         'address' => {
-                                           'postal_code' => ["can't be blank"],
-                                           'prefecture' => ['is invalid']
-                                         },
-                                         'hobbies' => {
-                                           '0' => {
-                                             'name' => ["can't be blank"],
-                                             'level' => ['is not included in the list']
-                                           },
-                                           '1' => {
-                                             'name' => ['is too short']
-                                           }
-                                         } })
-        end
+      it 'returns flat structure like standard ActiveModel::Errors' do
+        expect(errors_to_hash).to eq({
+                                       name: ["can't be blank"],
+                                       'address.postal_code': ["can't be blank"],
+                                       'hobbies.0.name': ['is required']
+                                     })
       end
 
       context 'with full_messages = true' do
         let(:option_full_messages) { true }
 
-        it 'returns nested structure with full error messages' do
-          # Check that full messages are used (they include attribute names)
-          expect(errors_to_hash['name']).to contain_exactly("Name can't be blank")
-          expect(errors_to_hash['address']).to include('postal_code' => ["Address postal code can't be blank"])
-          expect(errors_to_hash['hobbies']).to include(
-            '0' => hash_including('name' => ["Hobbies 0 name can't be blank"])
-          )
+        it 'returns flat structure with full messages' do
+          expect(errors_to_hash[:name]).to contain_exactly("Name can't be blank")
+          expect(errors_to_hash[:'address.postal_code']).to contain_exactly("Address postal code can't be blank")
+          expect(errors_to_hash[:'hobbies.0.name']).to contain_exactly('Hobbies 0 name is required')
         end
       end
     end
 
-    context 'with only flat attributes' do
-      before do
-        errors.add('name', "can't be blank")
-        errors.add('email', 'is invalid')
-      end
+    context 'with nested option (nested: true)' do
+      let(:option_nested) { true }
 
-      it 'returns flat structure for non-nested attributes' do
-        expect(errors.to_hash).to eq({
-                                       'name' => ["can't be blank"],
-                                       'email' => ['is invalid']
-                                     })
-      end
-    end
+      context 'with some nested errors' do
+        before do
+          # Add some nested errors
+          errors.add('name', "can't be blank")
+          errors.add('address.postal_code', "can't be blank")
+          errors.add('address.prefecture', 'is invalid')
+          errors.add('hobbies.0.name', "can't be blank")
+          errors.add('hobbies.0.level', 'is not included in the list')
+          errors.add('hobbies.1.name', 'is too short')
+        end
 
-    context 'with deeply nested attributes' do
-      before do
-        errors.add('items.0.subitems.1.name', "can't be blank")
-        errors.add('items.1.subitems.0.description', 'is too long')
-      end
-
-      # rubocop:disable RSpec/ExampleLength
-      it 'creates deep nested structure' do
-        expect(errors_to_hash).to eq({
-                                       'items' => {
-                                         '0' => {
-                                           'subitems' => {
-                                             '1' => {
-                                               'name' => ["can't be blank"]
-                                             }
-                                           }
-                                         },
-                                         '1' => {
-                                           'subitems' => {
+        context 'with full_messages = false (default)' do
+          it 'returns nested structure for dot-notation attributes' do
+            expect(errors_to_hash).to eq({ 'name' => ["can't be blank"],
+                                           'address' => {
+                                             'postal_code' => ["can't be blank"],
+                                             'prefecture' => ['is invalid']
+                                           },
+                                           'hobbies' => {
                                              '0' => {
-                                               'description' => ['is too long']
+                                               'name' => ["can't be blank"],
+                                               'level' => ['is not included in the list']
+                                             },
+                                             '1' => {
+                                               'name' => ['is too short']
                                              }
-                                           }
-                                         }
-                                       }
-                                     })
-      end
-      # rubocop:enable RSpec/ExampleLength
-    end
+                                           } })
+          end
+        end
 
-    context 'with mixed flat and nested attributes' do
-      before do
-        errors.add('name', "can't be blank")
-        errors.add('address.postal_code', "can't be blank")
-        errors.add('email', 'is invalid')
-        errors.add('hobbies.0.name', 'is required')
-      end
+        context 'with full_messages = true' do
+          let(:option_full_messages) { true }
 
-      it 'handles both flat and nested attributes correctly' do
-        expect(errors_to_hash).to eq({
-                                       'name' => ["can't be blank"],
-                                       'email' => ['is invalid'],
-                                       'address' => {
-                                         'postal_code' => ["can't be blank"]
-                                       },
-                                       'hobbies' => {
-                                         '0' => {
-                                           'name' => ['is required']
-                                         }
-                                       }
-                                     })
-      end
-    end
-
-    context 'with multiple errors on same attribute' do
-      before do
-        errors.add('address.postal_code', "can't be blank")
-        errors.add('address.postal_code', 'is invalid format')
-        errors.add('hobbies.0.name', "can't be blank")
-        errors.add('hobbies.0.name', 'is too short')
+          it 'returns nested structure with full error messages' do
+            # Check that full messages are used (they include attribute names)
+            expect(errors_to_hash['name']).to contain_exactly("Name can't be blank")
+            expect(errors_to_hash['address']).to include('postal_code' => ["Address postal code can't be blank"])
+            expect(errors_to_hash['hobbies']).to include(
+              '0' => hash_including('name' => ["Hobbies 0 name can't be blank"])
+            )
+          end
+        end
       end
 
-      it 'groups multiple errors for the same nested attribute' do
-        expect(errors_to_hash).to eq({
-                                       'address' => {
-                                         'postal_code' => ["can't be blank", 'is invalid format']
-                                       },
-                                       'hobbies' => {
-                                         '0' => {
-                                           'name' => ["can't be blank", 'is too short']
-                                         }
-                                       }
-                                     })
+      context 'with only flat attributes' do
+        before do
+          errors.add('name', "can't be blank")
+          errors.add('email', 'is invalid')
+        end
+
+        it 'returns flat structure for non-nested attributes' do
+          expect(errors.to_hash(false, nested: true)).to eq({
+                                                              'name' => ["can't be blank"],
+                                                              'email' => ['is invalid']
+                                                            })
+        end
+      end
+
+      context 'with deeply nested attributes' do
+        before do
+          errors.add('items.0.subitems.1.name', "can't be blank")
+          errors.add('items.1.subitems.0.description', 'is too long')
+        end
+
+        # rubocop:disable RSpec/ExampleLength
+        it 'creates deep nested structure' do
+          expect(errors.to_hash(false, nested: true)).to eq({
+                                                              'items' => {
+                                                                '0' => {
+                                                                  'subitems' => {
+                                                                    '1' => {
+                                                                      'name' => ["can't be blank"]
+                                                                    }
+                                                                  }
+                                                                },
+                                                                '1' => {
+                                                                  'subitems' => {
+                                                                    '0' => {
+                                                                      'description' => ['is too long']
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            })
+        end
+        # rubocop:enable RSpec/ExampleLength
+      end
+
+      context 'with mixed flat and nested attributes' do
+        before do
+          errors.add('name', "can't be blank")
+          errors.add('address.postal_code', "can't be blank")
+          errors.add('email', 'is invalid')
+          errors.add('hobbies.0.name', 'is required')
+        end
+
+        it 'handles both flat and nested attributes correctly' do
+          expect(errors.to_hash(false, nested: true)).to eq({
+                                                              'name' => ["can't be blank"],
+                                                              'email' => ['is invalid'],
+                                                              'address' => {
+                                                                'postal_code' => ["can't be blank"]
+                                                              },
+                                                              'hobbies' => {
+                                                                '0' => {
+                                                                  'name' => ['is required']
+                                                                }
+                                                              }
+                                                            })
+        end
+      end
+
+      context 'with multiple errors on same attribute' do
+        before do
+          errors.add('address.postal_code', "can't be blank")
+          errors.add('address.postal_code', 'is invalid format')
+          errors.add('hobbies.0.name', "can't be blank")
+          errors.add('hobbies.0.name', 'is too short')
+        end
+
+        it 'groups multiple errors for the same nested attribute' do
+          expect(errors.to_hash(false, nested: true)).to eq({
+                                                              'address' => {
+                                                                'postal_code' => ["can't be blank", 'is invalid format']
+                                                              },
+                                                              'hobbies' => {
+                                                                '0' => {
+                                                                  'name' => ["can't be blank", 'is too short']
+                                                                }
+                                                              }
+                                                            })
+        end
+      end
+
+      context 'with empty errors' do
+        it 'returns empty hash' do
+          expect(errors.to_hash(false, nested: true)).to eq({})
+        end
       end
     end
   end
