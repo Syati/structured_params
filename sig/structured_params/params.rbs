@@ -1,12 +1,12 @@
 # Generated from lib/structured_params/params.rb with RBS::Inline
 
 module StructuredParams
-  # Parameter model that supports nested structures
+  # Parameter model that supports structured objects and arrays
   #
   # Usage example:
   #   class UserParameter < StructuredParams::Params
   #     attribute :name, :string
-  #     attribute :address, :nested, value_class: AddressParameter
+  #     attribute :address, :object, value_class: AddressParameter
   #     attribute :hobbies, :array, value_class: HobbyParameter
   #     attribute :tags, :array, value_type: :string
   #   end
@@ -15,24 +15,33 @@ module StructuredParams
 
     include ActiveModel::Attributes
 
+    @errors: ::StructuredParams::Errors?
+
+    self.@structured_attributes: Hash[Symbol, singleton(::StructuredParams::Params)]?
+
     # Generate permitted parameter structure for Strong Parameters
     # : () -> Array[untyped]
     def self.permit_attribute_names: () -> Array[untyped]
 
-    # Get names of nested StructuredParams attributes
-    # : () { (String) -> void } -> void
-    def self.each_nested_attribute_name: () { (String) -> void } -> void
+    # Get structured attributes and their classes
+    # : () -> Hash[Symbol, singleton(::StructuredParams::Params)]
+    def self.structured_attributes: () -> Hash[Symbol, singleton(::StructuredParams::Params)]
 
-    # Determine if the specified type is a nested parameter type
-    # : (untyped) -> bool
-    private def self.structured_params_type?: (untyped) -> bool
+    # Determine if the specified type is a StructuredParams type
+    # : (ActiveModel::Type::Value) -> bool
+    private def self.structured_params_type?: (ActiveModel::Type::Value) -> bool
 
-    # : (untyped) -> void
-    def initialize: (untyped) -> void
+    # : (Hash[untyped, untyped]|::ActionController::Parameters) -> void
+    def initialize: (Hash[untyped, untyped] | ::ActionController::Parameters) -> void
 
-    # Convert nested objects to Hash and get attributes
-    # : (symbolize: bool) -> Hash[untyped, untyped]
-    def attributes: (symbolize: bool) -> Hash[untyped, untyped]
+    # : () -> ::StructuredParams::Errors
+    def errors: () -> ::StructuredParams::Errors
+
+    # Convert structured objects to Hash and get attributes
+    # : (symbolize: true) -> Hash[Symbol, untyped]
+    # : (symbolize: false) -> Hash[String, untyped]
+    def attributes: (symbolize: true) -> Hash[Symbol, untyped]
+                  | (symbolize: false) -> Hash[String, untyped]
 
     private
 
@@ -40,28 +49,32 @@ module StructuredParams
     # : (untyped) -> Hash[untyped, untyped]
     def process_input_parameters: (untyped) -> Hash[untyped, untyped]
 
-    # Execute nested parameter validation
+    # Execute structured parameter validation
     # : () -> void
-    def validate_nested_parameters: () -> void
+    def validate_structured_parameters: () -> void
 
-    # Validate nested arrays
-    # : (String, Array[untyped]) -> void
-    def validate_nested_array: (String, Array[untyped]) -> void
+    # Validate structured arrays
+    # @rbs attr_name: Symbol
+    # @rbs array_value: Array[untyped]
+    # @rbs return: void
+    def validate_structured_array: (Symbol attr_name, Array[untyped] array_value) -> void
 
-    # Validate nested objects
-    # : (String, StructuredParams::Params) -> void
-    def validate_nested_object: (String, StructuredParams::Params) -> void
+    # Validate structured objects
+    # @rbs attr_name: Symbol
+    # @rbs object_value: ::StructuredParams::Params
+    # @rbs return: void
+    def validate_structured_object: (Symbol attr_name, ::StructuredParams::Params object_value) -> void
 
     # Format error path using dot notation (always consistent)
-    # : (String, Integer?) -> String
-    def format_error_path: (String, Integer?) -> String
+    # : (Symbol, Integer?) -> String
+    def format_error_path: (Symbol, Integer?) -> String
 
-    # Integrate nested errors into parent errors
-    # : (untyped, String) -> void
-    def import_nested_errors: (untyped, String) -> void
-
-    # Serialize nested values
+    # Serialize structured values
     # : (untyped) -> untyped
-    def serialize_nested_value: (untyped) -> untyped
+    def serialize_structured_value: (untyped) -> untyped
+
+    # Integrate structured parameter errors into parent errors
+    # : (untyped, String) -> void
+    def import_structured_errors: (untyped, String) -> void
   end
 end

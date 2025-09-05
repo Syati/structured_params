@@ -11,237 +11,82 @@ StructuredParams は、Rails アプリケーションでタイプセーフなパ
 - **プリミティブ型とネストオブジェクトの両方に対応した配列処理**
 - **自動 permit リスト生成による Strong Parameters 統合**
 - **バリデーションとシリアライゼーションを含む ActiveModel 互換性**
+- **フラットと構造化フォーマットによる拡張エラーハンドリング**
 - **より良い開発体験のための RBS 型定義**
 
-## インストール
-
-Gemfile に以下の行を追加してください：
+## クイックスタート
 
 ```ruby
+# 1. gem をインストール
 gem 'structured_params'
-```
 
-そして実行：
-
-```bash
-$ bundle install
-```
-
-または手動でインストール：
-
-```bash
-$ gem install structured_params
-```
-
-## セットアップ
-
-Rails アプリケーションでカスタム型を登録します：
-
-```ruby
-# config/initializers/structured_params.rb
+# 2. イニ��ャライザで型を登録
 StructuredParams.register_types
-```
 
-これにより `:object` と `:array` 型が ActiveModel::Type に登録されます。
-
-## 使用方法
-
-### 基本的なパラメータクラス
-
-```ruby
+# 3. パラメータクラスを定義
 class UserParams < StructuredParams::Params
   attribute :name, :string
   attribute :age, :integer
-  attribute :email, :string
+  attribute :address, :object, value_class: AddressParams
+  attribute :hobbies, :array, value_class: HobbyParams
   
   validates :name, presence: true
-  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :age, numericality: { greater_than: 0 }
 end
 
-# コントローラーでの使用
+# 4. コントローラーで使用
 def create
   user_params = UserParams.new(params[:user])
   if user_params.valid?
     User.create!(user_params.attributes)
   else
-    render json: { errors: user_params.errors }
+    render json: { errors: user_params.errors.to_hash(false, structured: true) }
   end
 end
 ```
 
-### ネストしたオブジェクト
+## ドキュメント
+
+- **[インストールとセットアップ](docs/installation.md)** - StructuredParams の始め方
+- **[基本的な使用方法](docs/basic-usage.md)** - パラメータクラス、ネストオブジェクト、配列
+- **[バリデーション](docs/validation.md)** - ネスト構造での ActiveModel バリデーション
+- **[Strong Parameters](docs/strong-parameters.md)** - 自動 permit リスト生成
+- **[エラーハンドリング](docs/error-handling.md)** - フラットと構造化エラーフォーマット
+- **[シリアライゼーション](docs/serialization.md)** - パラメータのハッシュ・JSON変換
+- **[高度な使用方法](docs/advanced-usage.md)** - 型内省、パフォーマンスのコツなど
+
+## 例
 
 ```ruby
 class AddressParams < StructuredParams::Params
   attribute :street, :string
   attribute :city, :string
   attribute :postal_code, :string
+  
+  validates :street, :city, :postal_code, presence: true
 end
 
 class UserParams < StructuredParams::Params
   attribute :name, :string
+  attribute :email, :string
   attribute :address, :object, value_class: AddressParams
+  
+  validates :name, presence: true
+  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
 end
 
 # 使用例
 params = {
   name: "山田太郎",
-  address: {
-    street: "新宿区新宿1-1-1",
-    city: "東京都",
-    postal_code: "160-0022"
-  }
+  email: "yamada@example.com",
+  address: { street: "新宿区新宿1-1-1", city: "東京都", postal_code: "160-0022" }
 }
 
 user_params = UserParams.new(params)
-user_params.address # => AddressParams インスタンス
+user_params.valid? # => true
 user_params.address.city # => "東京都"
+user_params.attributes # => ActiveRecord で使用可能なハッシュ
 ```
-
-### 配列
-
-#### プリミティブ型の配列
-
-```ruby
-class UserParams < StructuredParams::Params
-  attribute :tags, :array, value_type: :string
-  attribute :scores, :array, value_type: :integer
-end
-
-# 使用例
-params = {
-  tags: ["ruby", "rails", "programming"],
-  scores: [85, 92, 78]
-}
-
-user_params = UserParams.new(params)
-user_params.tags # => ["ruby", "rails", "programming"]
-user_params.scores # => [85, 92, 78]
-```
-
-#### ネストオブジェクトの配列
-
-```ruby
-class HobbyParams < StructuredParams::Params
-  attribute :name, :string
-  attribute :level, :string
-end
-
-class UserParams < StructuredParams::Params
-  attribute :name, :string
-  attribute :hobbies, :array, value_class: HobbyParams
-end
-
-# 使用例
-params = {
-  name: "佐藤花子",
-  hobbies: [
-    { name: "写真", level: "初心者" },
-    { name: "料理", level: "中級者" }
-  ]
-}
-
-user_params = UserParams.new(params)
-user_params.hobbies # => [HobbyParams, HobbyParams]
-user_params.hobbies.first.name # => "写真"
-```
-
-### Strong Parameters 統合
-
-StructuredParams は Strong Parameters 用の permit リストを自動生成します：
-
-```ruby
-class UsersController < ApplicationController
-  def create
-    permitted_params = params.require(:user).permit(*UserParams.permit_attribute_names)
-    user_params = UserParams.new(permitted_params)
-    
-    if user_params.valid?
-      User.create!(user_params.attributes)
-    else
-      render json: { errors: user_params.errors }
-    end
-  end
-end
-
-# UserParams.permit_attribute_names は以下を返します：
-# [:name, :age, :email, { address: [:street, :city, :postal_code] }, { hobbies: [:name, :level] }]
-```
-
-### バリデーション
-
-StructuredParams は ActiveModel を継承しているため、すべての ActiveModel バリデーションを使用できます：
-
-```ruby
-class UserParams < StructuredParams::Params
-  attribute :name, :string
-  attribute :age, :integer
-  attribute :email, :string
-  attribute :address, :object, value_class: AddressParams
-  
-  validates :name, presence: true, length: { minimum: 2 }
-  validates :age, presence: true, numericality: { greater_than: 0 }
-  validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
-  validates :address, presence: true
-  
-  validate :custom_validation
-  
-  private
-  
-  def custom_validation
-    errors.add(:age, "成人である必要があります") if age && age < 18
-  end
-end
-```
-
-### シリアライゼーション
-
-```ruby
-user_params = UserParams.new(params)
-user_params.attributes # => すべての属性を含むハッシュ
-user_params.to_json    # => JSON 文字列
-```
-
-## 高度な使用方法
-
-### カスタム型登録
-
-潜在的な命名衝突を避けたい場合、カスタム名で型を登録できます：
-
-```ruby
-# カスタム名で登録
-StructuredParams.register_types_as(
-  object_name: :structured_object,
-  array_name: :structured_array
-)
-
-# パラメータクラスで使用
-class UserParams < StructuredParams::Params
-  attribute :address, :structured_object, value_class: AddressParams
-  attribute :hobbies, :structured_array, value_class: HobbyParams
-end
-```
-
-### 型の内省
-
-```ruby
-user_params = UserParams.new(params)
-
-# 属性の型を確認
-UserParams.attribute_types[:name].type        # => :string
-UserParams.attribute_types[:address].type     # => :object
-UserParams.attribute_types[:hobbies].type     # => :array
-
-# ネストした value_class にアクセス
-UserParams.attribute_types[:address].value_class  # => AddressParams
-UserParams.attribute_types[:hobbies].value_class  # => HobbyParams
-```
-
-## 開発
-
-リポジトリをチェックアウト後、`bin/setup` を実行して依存関係をインストールしてください。その後、`rake spec` でテストを実行できます。また、`bin/console` で対話的なプロンプトを使用して実験することもできます。
-
-ローカルマシンにこの gem をインストールするには、`bundle exec rake install` を実行してください。新しいバージョンをリリースするには、`version.rb` でバージョン番号を更新し、`bundle exec rake release` を実行してください。これにより、バージョンの git タグが作成され、git コミットとタグがプッシュされ、`.gem` ファイルが [rubygems.org](https://rubygems.org) にプッシュされます。
 
 ## コントリビューション
 
