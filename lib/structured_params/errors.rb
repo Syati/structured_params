@@ -1,30 +1,60 @@
 # rbs_inline: enabled
 # frozen_string_literal: true
 
+# rubocop:disable Style/OptionalBooleanParameter
 module StructuredParams
   # Custom errors collection that handles nested attribute names
   class Errors < ActiveModel::Errors
     # Override to_hash to maintain compatibility with ActiveModel::Errors by default
     # Add structured option to get nested structure for dot-notation attributes
-    # rubocop:disable Style/OptionalBooleanParameter
     #: (?bool, ?structured: false) -> Hash[Symbol, String]
-    #: (?bool, structured: true) -> Hash[Symbol, untyped]
+    #: (?bool, structured: bool) -> Hash[Symbol, untyped]
     def to_hash(full_messages = false, structured: false)
       if structured
-        message_method = full_messages ? :full_message : :message
-
-        # Group errors by attribute and convert to messages
-        group_by_attribute.each_with_object({}) do |(attribute, error_list), result|
-          build_nested_hash(result, [[attribute, error_list.map(&message_method)]].to_h)
-        end
+        attribute_messages_hash = build_attribute_messages_hash(full_messages)
+        build_nested_hash({}, attribute_messages_hash)
       else
         # Use default ActiveModel::Errors behavior
         super(full_messages)
       end
     end
-    # rubocop:enable Style/OptionalBooleanParameter
+
+    # Override as_json to support structured option
+    # This maintains compatibility with ActiveModel::Errors while adding structured functionality
+    #: (?{ full_messages?: bool, structured?: bool }?) -> Hash[Symbol, untyped]
+    def as_json(options = nil)
+      if options&.key?(:structured)
+        full_messages = options[:full_messages] || false
+        structured = options[:structured] || false
+        to_hash(full_messages, structured: structured)
+      else
+        # Use default ActiveModel::Errors behavior
+        super
+      end
+    end
+
+    # Override messages to support structured option
+    # This maintains compatibility with ActiveModel::Errors while adding structured functionality
+    #: (?structured: bool) -> Hash[Symbol, untyped]
+    def messages(structured: false)
+      hash = to_hash(false, structured: structured)
+      hash.default = [].freeze
+      hash.freeze
+      hash
+    end
 
     private
+
+    # Build a hash with attribute names as keys and their error messages as values
+    # This is used for to_hash(structured: true)
+    #: (bool) -> Hash[Symbol, Array[String]]
+    def build_attribute_messages_hash(full_messages = false)
+      message_method = full_messages ? :full_message : :message
+
+      group_by_attribute.transform_values do |error_list|
+        error_list.map(&message_method)
+      end
+    end
 
     # Build a nested hash structure from flat dot-notation keys
     # Converts "address.postal_code" to {address: {postal_code: value}}
@@ -40,3 +70,4 @@ module StructuredParams
     end
   end
 end
+# rubocop:enable Style/OptionalBooleanParameter

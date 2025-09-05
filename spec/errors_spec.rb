@@ -166,7 +166,7 @@ RSpec.describe StructuredParams::Errors do
           expect(errors.to_hash(false, structured: true)).to eq({
                                                                   address: {
                                                                     postal_code: ["can't be blank",
-                                                                                      'is invalid format']
+                                                                                  'is invalid format']
                                                                   },
                                                                   hobbies: {
                                                                     '0': {
@@ -181,6 +181,96 @@ RSpec.describe StructuredParams::Errors do
         it 'returns empty hash' do
           expect(errors.to_hash(false, structured: true)).to eq({})
         end
+      end
+    end
+  end
+
+  describe '#as_json' do
+    before do
+      errors.add('name', "can't be blank")
+      errors.add('address.postal_code', "can't be blank")
+      allow(errors).to receive(:to_hash).and_call_original
+    end
+
+    context 'with default behavior (no structured option)' do
+      it 'uses standard ActiveModel::Errors behavior when no options provided' do
+        # ActiveModel::Errors.as_json calls to_hash(options && options[:full_messages])
+        # When options is nil, it calls to_hash(nil), but our override calls super which handles this
+        result = errors.as_json
+        expect(result).to eq(errors.to_hash)
+      end
+
+      it 'delegates to standard behavior with full_messages option' do
+        errors.as_json(full_messages: true)
+        expect(errors).to have_received(:to_hash).with(true)
+      end
+    end
+
+    context 'with structured option' do
+      it 'delegates to to_hash with structured: true' do
+        errors.as_json(structured: true)
+        expect(errors).to have_received(:to_hash).with(false, structured: true)
+      end
+
+      it 'delegates to to_hash with both full_messages and structured options' do
+        errors.as_json(full_messages: true, structured: true)
+        expect(errors).to have_received(:to_hash).with(true, structured: true)
+      end
+    end
+  end
+
+  describe '#messages' do
+    before do
+      errors.add('name', "can't be blank")
+      errors.add('address.postal_code', "can't be blank")
+      errors.add('hobbies.0.name', 'is required')
+    end
+
+    context 'with default behavior (structured: false)' do
+      it 'uses standard ActiveModel::Errors behavior' do
+        result = errors.messages
+
+        expect(result).to eq({
+                               name: ["can't be blank"],
+                               'address.postal_code': ["can't be blank"],
+                               'hobbies.0.name': ['is required']
+                             })
+
+        # Check that it has default value and is frozen
+        expect(result.default).to eq([].freeze)
+        expect(result).to be_frozen
+      end
+    end
+
+    context 'with structured: true' do
+      it 'returns structured format' do
+        result = errors.messages(structured: true)
+
+        expect(result).to eq({
+                               name: ["can't be blank"],
+                               address: { postal_code: ["can't be blank"] },
+                               hobbies: { '0': { name: ['is required'] } }
+                             })
+
+        # Check that it has default value and is frozen
+        expect(result.default).to eq([].freeze)
+        expect(result).to be_frozen
+      end
+    end
+
+    context 'with empty errors' do
+      before { errors.clear }
+
+      it 'returns empty frozen hash for default behavior' do
+        result = errors.messages
+        expect(result).to eq({})
+        expect(result).to be_frozen
+      end
+
+      it 'returns empty frozen hash for structured behavior' do
+        result = errors.messages(structured: true)
+        expect(result).to eq({})
+        expect(result).to be_frozen
       end
     end
   end
