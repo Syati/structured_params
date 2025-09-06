@@ -77,9 +77,16 @@ jobs:
           bundler-cache: true
 
       - name: Build gem
+        id: build_gem
         run: |
-          gem build structured_params.gemspec
+          gem_file=$(gem build structured_params.gemspec | awk '/File:/ {print $2}')
+          echo "gem_file=$gem_file" >> $GITHUB_OUTPUT           
 
       - name: Publish to RubyGems
         run: |
-          gem push structured_params-*.gem
+          gem_file="${{ steps.build_gem.outputs.gem_file }}"
+          if [ -z "$gem_file" ]; then
+            echo "Error: Gem file not found."
+            exit 1
+          fi
+          gem push "$gem_file"
