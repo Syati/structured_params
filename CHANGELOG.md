@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.2.1] - 2025-09-06
+
+## What's Changed
+* Bump version to 0.2.0 by @Syati in https://github.com/Syati/structured_params/pull/2
+* Update project documentation by @Syati in https://github.com/Syati/structured_params/pull/3
+* Add comparison document for StructuredParams and similar gems by @Syati in https://github.com/Syati/structured_params/pull/4
+* Update Gemfile and CI configuration to support multiple Rails versions by @Syati in https://github.com/Syati/structured_params/pull/5
+* Refactor release workflow to update version and CHANGELOG handling by @Syati in https://github.com/Syati/structured_params/pull/6
+
+
+**Full Changelog**: https://github.com/Syati/structured_params/compare/v0.2.0...v0.2.1
+
+## What's Changed
+* Bump version to 0.2.0 by @Syati in https://github.com/Syati/structured_params/pull/2
+* Update project documentation by @Syati in https://github.com/Syati/structured_params/pull/3
+* Add comparison document for StructuredParams and similar gems by @Syati in https://github.com/Syati/structured_params/pull/4
+* Update Gemfile and CI configuration to support multiple Rails versions by @Syati in https://github.com/Syati/structured_params/pull/5
+* Refactor release workflow to update version and CHANGELOG handling by @Syati in https://github.com/Syati/structured_params/pull/6
+
+
+**Full Changelog**: https://github.com/Syati/structured_params/compare/v0.2.0...v0.2.1
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
