@@ -20,7 +20,7 @@ StructuredParams は、Rails アプリケーションでタイプセーフなパ
 # 1. gem をインストール
 gem 'structured_params'
 
-# 2. イニ��ャライザで型を登録
+# 2. イニシャライザで型を登録
 StructuredParams.register_types
 
 # 3. パラメータクラスを定義
@@ -49,10 +49,11 @@ end
 
 - **[インストールとセットアップ](docs/installation.md)** - StructuredParams の始め方
 - **[基本的な使用方法](docs/basic-usage.md)** - パラメータクラス、ネストオブジェクト、配列
-- **[バリデーション](docs/validation.md)** - ネスト構造での ActiveModel バリデーション
-- **[Strong Parameters](docs/strong-parameters.md)** - 自動 permit リスト生成
+- **[バリデーション](docs/validation.md)** - ネスト構造でのActiveModelバリデーション使用
+- **[Strong Parameters](docs/strong-parameters.md)** - 自動permit リスト生成
 - **[エラーハンドリング](docs/error-handling.md)** - フラットと構造化エラーフォーマット
-- **[シリアライゼーション](docs/serialization.md)** - パラメータのハッシュ・JSON変換
+- **[シリアライゼーション](docs/serialization.md)** - パラメータのハッシュとJSON変換
+- **[Gem比較](docs/comparison.md)** - typed_params、dry-validation、reformとの比較
 
 ## 例
 
