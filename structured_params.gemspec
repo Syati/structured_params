@@ -29,6 +29,6 @@ Gem::Specification.new do |spec|
     'rubygems_mfa_required' => 'true'
   }
 
-  spec.add_dependency 'actionpack', '~> 8.0.0'
-  spec.add_dependency 'activemodel', '~> 8.0.0'
+  spec.add_dependency 'actionpack', '>= 7.2', '< 9.0'
+  spec.add_dependency 'activemodel', '>= 7.2', '< 9.0'
 end
