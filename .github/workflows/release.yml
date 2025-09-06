@@ -80,7 +80,7 @@ jobs:
         id: build_gem
         run: |
           gem_file=$(gem build structured_params.gemspec | awk '/File:/ {print $2}')
-          echo "gem_file=$gem_file" >> $GITHUB_OUTPUT           
+          echo "gem_file=$gem_file" >> $GITHUB_OUTPUT
 
       - name: Publish to RubyGems
         run: |
