@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0] - 2025-09-06
+
+## What's Changed
+* Expand Rails compatibility to support Rails 7.2+ through 8.x
+
+
+**Full Changelog**: https://github.com/Syati/structured_params/compare/v0.2.0...v0.3.0
+
 ## [0.2.1] - 2025-09-06
 
 ## What's Changed
