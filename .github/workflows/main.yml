@@ -30,19 +30,19 @@ jobs:
             rails: '~> 8.0.0'
 
     steps:
-      - uses: actions/checkout@v5
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ matrix.ruby }}
-          bundler-cache: false
-      - name: Set Rails version
-        run: |
-          echo "RAILS_VERSION=${{ matrix.rails }}" >> $GITHUB_ENV
-      - name: Install dependencies
-        run: |
-          bundle install --jobs 4 --retry 3
-        env:
-          RAILS_VERSION: ${{ matrix.rails }}
-      - name: Run the default task
-        run: bundle exec rake
+    - uses: actions/checkout@v5
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        bundler-cache: false
+    - name: Set Rails version
+      run: |
+        echo "RAILS_VERSION=${{ matrix.rails }}" >> $GITHUB_ENV
+    - name: Install dependencies
+      run: |
+        bundle install --jobs 4 --retry 3
+      env:
+        RAILS_VERSION: ${{ matrix.rails }}
+    - name: Run the default task
+      run: bundle exec rake
