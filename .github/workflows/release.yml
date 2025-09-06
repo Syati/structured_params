@@ -1,89 +1,88 @@
-name: Release
+name: Release and Publish
 
 on:
   release:
-    types: [published]
+    types: [ published ]
 
 jobs:
-  release:
+  update-changelog-and-publish:
     runs-on: ubuntu-latest
     permissions:
       contents: write
       id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
+
     steps:
-    - uses: actions/checkout@v5
-      with:
-        fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
-        ref: main  # Ensure we checkout main branch explicitly
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
 
-    - name: Set up Ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: '3.4'
-        bundler-cache: true
+      - name: Configure Git
+        uses: ./.github/actions/configure-git
 
-    - name: Extract version from tag
-      id: version
-      run: |
-        VERSION=${GITHUB_REF#refs/tags/v}
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
-        echo "tag_name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      - name: Extract version from release
+        id: extract_version
+        run: |
+          TAG_NAME=${{ github.event.release.tag_name }}
+          VERSION=${TAG_NAME#v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
 
-    - name: Validate version consistency
-      run: |
-        GEMSPEC_VERSION=$(ruby -r "./lib/structured_params/version" -e "puts StructuredParams::VERSION")
-        if [ "$GEMSPEC_VERSION" != "${{ steps.version.outputs.version }}" ]; then
-          echo "Version mismatch: tag ${{ steps.version.outputs.version }} vs gemspec $GEMSPEC_VERSION"
-          exit 1
-        fi
+      - name: Update CHANGELOG
+        run: |
+          VERSION="${{ steps.extract_version.outputs.version }}"
+          CURRENT_DATE=$(date +%Y-%m-%d)
+          RELEASE_NOTES="${{ github.event.release.body }}"
+          
+          # Create temporary changelog entry
+          echo "## [$VERSION] - $CURRENT_DATE" > temp_changelog.md
+          echo "" >> temp_changelog.md
+          
+          # Add release notes from GitHub release
+          if [ -n "$RELEASE_NOTES" ]; then
+            echo "$RELEASE_NOTES" >> temp_changelog.md
+          else
+            echo "- Release ${{ steps.extract_version.outputs.tag_name }}" >> temp_changelog.md
+          fi
+          echo "" >> temp_changelog.md
+          
+          # Prepend to existing CHANGELOG (skip the header)
+          if [ -f CHANGELOG.md ]; then
+            tail -n +3 CHANGELOG.md >> temp_changelog.md
+          fi
+          
+          # Add header back
+          echo "# Changelog" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          cat temp_changelog.md >> CHANGELOG.md
+          
+          # Clean up temporary file
+          rm -f temp_changelog.md
 
-    - name: Build gem
-      run: gem build structured_params.gemspec
+      - name: Commit CHANGELOG update
+        run: |
+          git add CHANGELOG.md
+          if git diff --staged --quiet; then
+            echo "No CHANGELOG changes to commit"
+          else
+            git commit -m "Update CHANGELOG for ${{ steps.extract_version.outputs.tag_name }}"
+            git push origin main
+          fi
 
-    - name: Publish to RubyGems
-      uses: rubygems/release-gem@v1
-      # No API key needed with trusted publishing!
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+          bundler-cache: true
 
-    - name: Update CHANGELOG
-      run: |
-        # Extract release notes from GitHub release
-        RELEASE_NOTES=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ steps.version.outputs.tag_name }}" \
-          | jq -r '.body // ""')
-        
-        # Get current date
-        CURRENT_DATE=$(date +%Y-%m-%d)
-        
-        # Create new changelog entry using template with safer substitution
-        # Use | as delimiter instead of / to avoid conflicts with URLs in release notes
-        sed -e "s|{{VERSION}}|${{ steps.version.outputs.version }}|g" \
-            -e "s|{{DATE}}|$CURRENT_DATE|g" \
-            .github/changelog_template.md > temp_changelog.md
-        
-        # Add release notes separately to avoid sed escaping issues
-        if [ -n "$RELEASE_NOTES" ]; then
-          # Replace the placeholder with actual release notes
-          awk -v notes="$RELEASE_NOTES" '{gsub(/{{RELEASE_NOTES}}/, notes); print}' temp_changelog.md > temp_changelog2.md
-          mv temp_changelog2.md temp_changelog.md
-        else
-          # Remove the placeholder if no release notes
-          sed -i 's/{{RELEASE_NOTES}}//' temp_changelog.md
-        fi
-        
-        # Append existing changelog content (skip the header)
-        echo "" >> temp_changelog.md
-        tail -n +9 CHANGELOG.md >> temp_changelog.md
-        mv temp_changelog.md CHANGELOG.md
+      - name: Build gem
+        id: build_gem
+        run: |
+          gem_file=$(gem build structured_params.gemspec | awk '/File:/ {print $2}')
+          echo "gem_file=$gem_file" >> $GITHUB_OUTPUT
 
-    - name: Commit and push CHANGELOG update
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add CHANGELOG.md
-        if git diff --staged --quiet; then
-          echo "No changes to commit"
-        else
-          git commit -m "Update CHANGELOG for v${{ steps.version.outputs.version }}"
-          git push origin HEAD:main
-        fi
+      - name: Publish to RubyGems (trusted publishing)
+        uses: rubygems/release-gem@v1
+        with:
+          gem_file: ${{ steps.build_gem.outputs.gem_file }}
