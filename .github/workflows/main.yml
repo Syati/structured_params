@@ -39,7 +39,6 @@ jobs:
     - name: Set Rails version
       run: |
         echo "RAILS_VERSION=${{ matrix.rails }}" >> $GITHUB_ENV
-        bundle config set --local gemfile Gemfile
     - name: Install dependencies
       run: |
         bundle install --jobs 4 --retry 3
