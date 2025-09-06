@@ -1,0 +1,45 @@
+name: Update Version
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+        ref: main
+
+    - name: Configure Git
+      uses: ./.github/actions/configure-git
+
+    - name: Extract version from tag
+      id: extract_version
+      run: |
+        TAG_NAME=${GITHUB_REF#refs/tags/}
+        VERSION=${TAG_NAME#v}
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+
+    - name: Update version file
+      run: |
+        VERSION="${{ steps.extract_version.outputs.version }}"
+        sed -i "s/VERSION = '[^']*'/VERSION = '$VERSION'/" lib/structured_params/version.rb
+
+    - name: Commit version update
+      run: |
+        git add lib/structured_params/version.rb
+        if git diff --staged --quiet; then
+          echo "No version changes to commit"
+        else
+          git commit -m "Update version to ${{ steps.extract_version.outputs.version }}"
+          git push origin main
+        fi

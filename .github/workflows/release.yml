@@ -1,61 +1,49 @@
-name: Release
+name: Release and Publish
 
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [published]
 
 jobs:
-  update-version-and-release:
+  update-changelog-and-publish:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      id-token: write
+      id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v5
       with:
         fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
+        ref: main
 
-    - name: Extract version from tag
+    - name: Configure Git
+      uses: ./.github/actions/configure-git
+
+    - name: Extract version from release
       id: extract_version
       run: |
-        TAG_NAME=${GITHUB_REF#refs/tags/}
+        TAG_NAME=${{ github.event.release.tag_name }}
         VERSION=${TAG_NAME#v}
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
-
-    - name: Update version file
-      run: |
-        VERSION="${{ steps.extract_version.outputs.version }}"
-        sed -i "s/VERSION = '[^']*'/VERSION = '$VERSION'/" lib/structured_params/version.rb
-
-    - name: Extract release notes from GitHub release
-      id: release_notes
-      run: |
-        RELEASE_NOTES=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ steps.extract_version.outputs.tag_name }}" \
-          | jq -r '.body // ""')
-        
-        # Escape newlines and quotes for use in sed
-        RELEASE_NOTES=$(echo "$RELEASE_NOTES" | sed 's/$/\\n/' | tr -d '\n' | sed 's/\\n$//' | sed 's/"/\\"/g')
-        echo "release_notes=$RELEASE_NOTES" >> $GITHUB_OUTPUT
 
     - name: Update CHANGELOG
       run: |
         VERSION="${{ steps.extract_version.outputs.version }}"
         CURRENT_DATE=$(date +%Y-%m-%d)
-        RELEASE_NOTES="${{ steps.release_notes.outputs.release_notes }}"
+        RELEASE_NOTES="${{ github.event.release.body }}"
         
         # Create temporary changelog entry
         echo "## [$VERSION] - $CURRENT_DATE" > temp_changelog.md
         echo "" >> temp_changelog.md
+        
+        # Add release notes from GitHub release
         if [ -n "$RELEASE_NOTES" ]; then
-          echo -e "$RELEASE_NOTES" >> temp_changelog.md
+          echo "$RELEASE_NOTES" >> temp_changelog.md
         else
-          echo "- Release $VERSION" >> temp_changelog.md
+          echo "- Release ${{ steps.extract_version.outputs.tag_name }}" >> temp_changelog.md
         fi
         echo "" >> temp_changelog.md
         
@@ -68,17 +56,17 @@ jobs:
         echo "# Changelog" > CHANGELOG.md
         echo "" >> CHANGELOG.md
         cat temp_changelog.md >> CHANGELOG.md
-        rm temp_changelog.md
+        
+        # Clean up temporary file
+        rm -f temp_changelog.md
 
-    - name: Commit version and CHANGELOG updates
+    - name: Commit CHANGELOG update
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add lib/structured_params/version.rb CHANGELOG.md
+        git add CHANGELOG.md
         if git diff --staged --quiet; then
-          echo "No changes to commit"
+          echo "No CHANGELOG changes to commit"
         else
-          git commit -m "Release ${{ steps.extract_version.outputs.tag_name }}: Update version and CHANGELOG"
+          git commit -m "Update CHANGELOG for ${{ steps.extract_version.outputs.tag_name }}"
           git push origin main
         fi
 
@@ -94,9 +82,4 @@ jobs:
 
     - name: Publish to RubyGems
       run: |
-        mkdir -p ~/.gem
-        echo ":rubygems_api_key: ${{ secrets.RUBYGEMS_API_KEY }}" > ~/.gem/credentials
-        chmod 0600 ~/.gem/credentials
         gem push structured_params-*.gem
-      env:
-        RUBYGEMS_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}

@@ -1,0 +1,11 @@
+name: 'Configure Git for GitHub Actions'
+description: 'Configure Git user for automated commits'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Configure Git
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+      shell: bash
