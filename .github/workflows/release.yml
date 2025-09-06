@@ -85,12 +85,8 @@ jobs:
           bundler-cache: true
 
       - name: Build gem
-        id: build_gem
         run: |
-          gem_file=$(gem build structured_params.gemspec | awk '/File:/ {print $2}')
-          echo "gem_file=$gem_file" >> $GITHUB_OUTPUT
+          gem build structured_params.gemspec
 
-      - name: Publish to RubyGems (trusted publishing)
+      - name: Publish to RubyGems
         uses: rubygems/release-gem@v1
-        with:
-          gem_file: ${{ steps.build_gem.outputs.gem_file }}
