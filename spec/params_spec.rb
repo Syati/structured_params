@@ -160,7 +160,9 @@ RSpec.describe StructuredParams::Params do
   end
 
   describe '#attributes' do
-    subject(:attributes) { build(:user_parameter, **user_param_attributes).attributes(symbolize: symbolize, compact: compact) }
+    subject(:attributes) do
+      build(:user_parameter, **user_param_attributes).attributes(symbolize: symbolize, compact: compact)
+    end
 
     let(:user_param_attributes) { attributes_for(:user_parameter) }
     let(:compact) { false }
