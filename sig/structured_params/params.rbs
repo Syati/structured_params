@@ -74,10 +74,10 @@ module StructuredParams
     def format_error_path: (Symbol, Integer?) -> String
 
     # Serialize structured values
-    # : (untyped, compact: false) -> untyped
-    # : (untyped, compact: true) -> untyped
-    def serialize_structured_value: (untyped, compact: false) -> untyped
-                                | (untyped, compact: true) -> untyped
+    # : (bool, compact: false) -> untyped
+    # : (bool, compact: true) -> untyped
+    def serialize_structured_value: (bool, compact: false) -> untyped
+                                  | (bool, compact: true) -> untyped
 
     # Integrate structured parameter errors into parent errors
     # : (untyped, String) -> void

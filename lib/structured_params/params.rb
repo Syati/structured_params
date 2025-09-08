@@ -154,7 +154,8 @@ module StructuredParams
     end
 
     # Serialize structured values
-    #: (untyped, compact: false) -> untyped
+    #: (bool, compact: false) -> untyped
+    #: (bool, compact: true) -> untyped
     def serialize_structured_value(value, compact: false)
       case value
       when Array
