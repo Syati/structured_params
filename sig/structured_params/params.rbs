@@ -75,7 +75,9 @@ module StructuredParams
 
     # Serialize structured values
     # : (untyped, compact: false) -> untyped
+    # : (untyped, compact: true) -> untyped
     def serialize_structured_value: (untyped, compact: false) -> untyped
+                                | (untyped, compact: true) -> untyped
 
     # Integrate structured parameter errors into parent errors
     # : (untyped, String) -> void
