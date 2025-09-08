@@ -73,17 +73,20 @@ module StructuredParams
     end
 
     # Convert structured objects to Hash and get attributes
-    #: (symbolize: true) -> Hash[Symbol, untyped]
-    #: (symbolize: false) -> Hash[String, untyped]
-    def attributes(symbolize: false)
+    #: (symbolize: true, compact: false) -> Hash[Symbol, untyped]
+    #: (symbolize: false, compact: false) -> Hash[String, untyped]
+    #: (symbolize: true, compact: true) -> Hash[Symbol, untyped]
+    #: (symbolize: false, compact: true) -> Hash[String, untyped]
+    def attributes(symbolize: false, compact: false)
       attrs = super()
 
       self.class.structured_attributes.each_key do |name|
         value = attrs[name.to_s]
-        attrs[name.to_s] = serialize_structured_value(value)
+        attrs[name.to_s] = serialize_structured_value(value, compact: compact)
       end
 
-      symbolize ? attrs.deep_symbolize_keys : attrs
+      result = symbolize ? attrs.deep_symbolize_keys : attrs
+      compact ? result.compact : result
     end
 
     private
@@ -151,13 +154,15 @@ module StructuredParams
     end
 
     # Serialize structured values
-    #: (untyped) -> untyped
-    def serialize_structured_value(value)
+    #: (bool, compact: false) -> untyped
+    #: (bool, compact: true) -> untyped
+    def serialize_structured_value(value, compact: false)
       case value
       when Array
-        value.map { |item| item.attributes(symbolize: false) }
+        result = value.map { |item| item.attributes(symbolize: false, compact: compact) }
+        compact ? result.compact : result
       when StructuredParams::Params
-        value.attributes(symbolize: false)
+        value.attributes(symbolize: false, compact: compact)
       else
         value
       end

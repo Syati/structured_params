@@ -160,9 +160,12 @@ RSpec.describe StructuredParams::Params do
   end
 
   describe '#attributes' do
-    subject(:attributes) { build(:user_parameter, **user_param_attributes).attributes(symbolize: symbolize) }
+    subject(:attributes) do
+      build(:user_parameter, **user_param_attributes).attributes(symbolize: symbolize, compact: compact)
+    end
 
     let(:user_param_attributes) { attributes_for(:user_parameter) }
+    let(:compact) { false }
 
     context 'when symbolize: false' do
       let(:symbolize) { false }
@@ -174,6 +177,88 @@ RSpec.describe StructuredParams::Params do
       let(:symbolize) { true }
 
       it { is_expected.to eq user_param_attributes.deep_symbolize_keys }
+    end
+
+    context 'with compact: true' do
+      let(:symbolize) { false }
+      let(:compact) { true }
+
+      context 'with nil values' do
+        let(:user_param_attributes) do
+          {
+            name: 'Tanaka Taro',
+            email: nil,
+            age: 30,
+            address: {
+              postal_code: '123-4567',
+              prefecture: nil,
+              city: 'Shibuya-ku',
+              street: nil
+            },
+            hobbies: [
+              { name: 'programming', level: 3, years_experience: nil },
+              { name: nil, level: 2, years_experience: 5 }
+            ],
+            tags: %w[Ruby Rails Web]
+          }
+        end
+
+        let(:expected_result) do
+          {
+            'name' => 'Tanaka Taro',
+            'age' => 30,
+            'address' => {
+              'postal_code' => '123-4567',
+              'city' => 'Shibuya-ku'
+            },
+            'hobbies' => [
+              { 'name' => 'programming', 'level' => 3 },
+              { 'level' => 2, 'years_experience' => 5 }
+            ],
+            'tags' => %w[Ruby Rails Web]
+          }
+        end
+
+        it 'removes nil values recursively' do
+          expect(attributes).to eq(expected_result)
+        end
+      end
+
+      context 'with symbolize: true and compact: true' do
+        let(:symbolize) { true }
+        let(:compact) { true }
+
+        let(:user_param_attributes) do
+          {
+            name: 'Tanaka Taro',
+            email: nil,
+            age: 30,
+            address: {
+              postal_code: '123-4567',
+              prefecture: nil,
+              city: 'Shibuya-ku',
+              street: nil
+            },
+            hobbies: nil,
+            tags: nil
+          }
+        end
+
+        let(:expected_result) do
+          {
+            name: 'Tanaka Taro',
+            age: 30,
+            address: {
+              postal_code: '123-4567',
+              city: 'Shibuya-ku'
+            }
+          }
+        end
+
+        it 'symbolizes keys and removes nil values recursively' do
+          expect(attributes).to eq(expected_result)
+        end
+      end
     end
   end
 
