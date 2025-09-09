@@ -8,14 +8,6 @@
 
 **Full Changelog**: https://github.com/Syati/structured_params/compare/v0.4.0...v0.4.1
 
-## [0.4.1] - 2025-09-09
-
-## What's Changed
-* Update attributes method signatures to use optional keyword arguments… by @Syati in https://github.com/Syati/structured_params/pull/8
-
-
-**Full Changelog**: https://github.com/Syati/structured_params/compare/v0.4.0...v0.4.1
-
 ## [0.4.0] - 2025-09-08
 
 ## What's Changed
@@ -47,3 +39,4 @@
 - Type system with Object and Array types
 - RBS type definitions
 - Comprehensive test suite
+
