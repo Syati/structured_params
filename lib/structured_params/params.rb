@@ -73,10 +73,8 @@ module StructuredParams
     end
 
     # Convert structured objects to Hash and get attributes
-    #: (symbolize: true, compact: false) -> Hash[Symbol, untyped]
-    #: (symbolize: false, compact: false) -> Hash[String, untyped]
-    #: (symbolize: true, compact: true) -> Hash[Symbol, untyped]
-    #: (symbolize: false, compact: true) -> Hash[String, untyped]
+    #: (?symbolize: false, ?compact: bool) -> Hash[String, untyped]
+    #: (?symbolize: true, ?compact: bool) -> Hash[Symbol, untyped]
     def attributes(symbolize: false, compact: false)
       attrs = super()
 
@@ -154,8 +152,7 @@ module StructuredParams
     end
 
     # Serialize structured values
-    #: (bool, compact: false) -> untyped
-    #: (bool, compact: true) -> untyped
+    #: (bool, ?compact: bool) -> untyped
     def serialize_structured_value(value, compact: false)
       case value
       when Array
