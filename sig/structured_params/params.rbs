@@ -38,14 +38,10 @@ module StructuredParams
     def errors: () -> ::StructuredParams::Errors
 
     # Convert structured objects to Hash and get attributes
-    # : (symbolize: true, compact: false) -> Hash[Symbol, untyped]
-    # : (symbolize: false, compact: false) -> Hash[String, untyped]
-    # : (symbolize: true, compact: true) -> Hash[Symbol, untyped]
-    # : (symbolize: false, compact: true) -> Hash[String, untyped]
-    def attributes: (symbolize: true, compact: false) -> Hash[Symbol, untyped]
-                  | (symbolize: false, compact: false) -> Hash[String, untyped]
-                  | (symbolize: true, compact: true) -> Hash[Symbol, untyped]
-                  | (symbolize: false, compact: true) -> Hash[String, untyped]
+    # : (?symbolize: false, ?compact: bool) -> Hash[String, untyped]
+    # : (?symbolize: true, ?compact: bool) -> Hash[Symbol, untyped]
+    def attributes: (?symbolize: false, ?compact: bool) -> Hash[String, untyped]
+                  | (?symbolize: true, ?compact: bool) -> Hash[Symbol, untyped]
 
     private
 
@@ -74,10 +70,8 @@ module StructuredParams
     def format_error_path: (Symbol, Integer?) -> String
 
     # Serialize structured values
-    # : (bool, compact: false) -> untyped
-    # : (bool, compact: true) -> untyped
-    def serialize_structured_value: (bool, compact: false) -> untyped
-                                  | (bool, compact: true) -> untyped
+    # : (bool, ?compact: bool) -> untyped
+    def serialize_structured_value: (bool, ?compact: bool) -> untyped
 
     # Integrate structured parameter errors into parent errors
     # : (untyped, String) -> void
