@@ -27,5 +27,5 @@ RSpec/ExampleLength:
 Metrics/ClassLength:
   Max: 150
 
- Metrics/MethodLength:
+Metrics/MethodLength:
   Max: 20
