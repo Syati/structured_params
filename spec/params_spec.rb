@@ -161,11 +161,11 @@ RSpec.describe StructuredParams::Params do
 
   describe '#attributes' do
     subject(:attributes) do
-      build(:user_parameter, **user_param_attributes).attributes(symbolize: symbolize, compact: compact)
+      build(:user_parameter, **user_param_attributes).attributes(symbolize: symbolize, compact_mode: compact_mode)
     end
 
     let(:user_param_attributes) { attributes_for(:user_parameter) }
-    let(:compact) { false }
+    let(:compact_mode) { :none }
 
     context 'when symbolize: false' do
       let(:symbolize) { false }
@@ -179,9 +179,9 @@ RSpec.describe StructuredParams::Params do
       it { is_expected.to eq user_param_attributes.deep_symbolize_keys }
     end
 
-    context 'with compact: true' do
+    context 'with compact_mode: :nil_only' do
       let(:symbolize) { false }
-      let(:compact) { true }
+      let(:compact_mode) { :nil_only }
 
       context 'with nil values' do
         let(:user_param_attributes) do
@@ -224,9 +224,9 @@ RSpec.describe StructuredParams::Params do
         end
       end
 
-      context 'with symbolize: true and compact: true' do
+      context 'with symbolize: true and compact_mode: :nil_only' do
         let(:symbolize) { true }
-        let(:compact) { true }
+        let(:compact_mode) { :nil_only }
 
         let(:user_param_attributes) do
           {
@@ -256,6 +256,52 @@ RSpec.describe StructuredParams::Params do
         end
 
         it 'symbolizes keys and removes nil values recursively' do
+          expect(attributes).to eq(expected_result)
+        end
+      end
+    end
+
+    context 'with compact_mode: :all_blank' do
+      let(:symbolize) { false }
+      let(:compact_mode) { :all_blank }
+
+      context 'with blank values' do
+        let(:user_param_attributes) do
+          {
+            name: 'Tanaka Taro',
+            email: '',
+            age: 30,
+            address: {
+              postal_code: '123-4567',
+              prefecture: nil,
+              city: 'Shibuya-ku',
+              street: ''
+            },
+            hobbies: [
+              { name: 'programming', level: 3, years_experience: nil },
+              { name: '', level: 2, years_experience: 5 }
+            ],
+            tags: %w[Ruby Rails Web]
+          }
+        end
+
+        let(:expected_result) do
+          {
+            'name' => 'Tanaka Taro',
+            'age' => 30,
+            'address' => {
+              'postal_code' => '123-4567',
+              'city' => 'Shibuya-ku'
+            },
+            'hobbies' => [
+              { 'name' => 'programming', 'level' => 3 },
+              { 'level' => 2, 'years_experience' => 5 }
+            ],
+            'tags' => %w[Ruby Rails Web]
+          }
+        end
+
+        it 'removes blank values (nil, empty string, etc.) recursively' do
           expect(attributes).to eq(expected_result)
         end
       end

@@ -73,18 +73,26 @@ module StructuredParams
     end
 
     # Convert structured objects to Hash and get attributes
-    #: (?symbolize: false, ?compact: bool) -> Hash[String, untyped]
-    #: (?symbolize: true, ?compact: bool) -> Hash[Symbol, untyped]
-    def attributes(symbolize: false, compact: false)
+    #: (?symbolize: false, ?compact_mode: :none | :nil_only | :all_blank) -> Hash[String, untyped]
+    #: (?symbolize: true, ?compact_mode: :none | :nil_only | :all_blank) -> Hash[Symbol, untyped]
+    def attributes(symbolize: false, compact_mode: :none)
       attrs = super()
 
       self.class.structured_attributes.each_key do |name|
         value = attrs[name.to_s]
-        attrs[name.to_s] = serialize_structured_value(value, compact: compact)
+        attrs[name.to_s] = serialize_structured_value(value, compact_mode: compact_mode)
       end
 
       result = symbolize ? attrs.deep_symbolize_keys : attrs
-      compact ? result.compact : result
+
+      case compact_mode
+      when :all_blank
+        result.compact_blank
+      when :nil_only
+        result.compact
+      else
+        result
+      end
     end
 
     private
@@ -152,14 +160,22 @@ module StructuredParams
     end
 
     # Serialize structured values
-    #: (bool, ?compact: bool) -> untyped
-    def serialize_structured_value(value, compact: false)
+    #: (untyped, ?compact_mode: :none | :nil_only | :all_blank) -> untyped
+    def serialize_structured_value(value, compact_mode: :none)
       case value
       when Array
-        result = value.map { |item| item.attributes(symbolize: false, compact: compact) }
-        compact ? result.compact : result
+        result = value.map { |item| item.attributes(symbolize: false, compact_mode: compact_mode) }
+
+        case compact_mode
+        when :all_blank
+          result.compact_blank
+        when :nil_only
+          result.compact
+        else
+          result
+        end
       when StructuredParams::Params
-        value.attributes(symbolize: false, compact: compact)
+        value.attributes(symbolize: false, compact_mode: compact_mode)
       else
         value
       end
