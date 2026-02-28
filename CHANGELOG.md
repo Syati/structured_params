@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.0] - 2026-02-28
+
+## What's Changed
+* Update Ruby and Rails versions with RBS and RuboCop adjustments by @Syati in https://github.com/Syati/structured_params/pull/11
+
+
+**Full Changelog**: https://github.com/Syati/structured_params/compare/v0.5.0...v0.6.0
+
 ## [0.5.0] - 2025-09-09
 
 ## What's Changed
