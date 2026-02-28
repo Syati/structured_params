@@ -1,10 +1,12 @@
 # frozen_string_literal: true
+# rbs_inline: enabled
 
 require 'spec_helper'
 
 RSpec.describe StructuredParams::Type::Array do
   let(:dummy_model_class) do
     Class.new(StructuredParams::Params) do
+      #: () -> String
       def self.name
         'DummyModel'
       end

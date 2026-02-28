@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+# rbs_inline: enabled
+
+# Wrapper script for rubocop that automatically uses the correct config file
+# based on Ruby version
+
+config_file = if RUBY_VERSION >= '3.3.0' && File.exist?('.rubocop_rbs.yml')
+                '.rubocop_rbs.yml'
+              else
+                '.rubocop.yml'
+              end
+
+exec('bundle', 'exec', 'rubocop', '--config', config_file, *ARGV)

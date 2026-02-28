@@ -10,6 +10,7 @@ module StructuredParams
       # Get permitted parameter names for use with Strong Parameters
       # @rbs!
       #  def permit_attribute_names: () -> ::Array[untyped]
+
       delegate :permit_attribute_names, to: :value_class
 
       #: (value_class: singleton(StructuredParams::Params), **untyped) -> void

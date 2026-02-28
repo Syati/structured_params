@@ -1,14 +1,31 @@
 # frozen_string_literal: true
+# rbs_inline: enabled
 
 require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
-require 'steep/rake_task'
 
 RSpec::Core::RakeTask.new(:spec)
 
 require 'rubocop/rake_task'
 
-RuboCop::RakeTask.new
-Steep::RakeTask.new
+# Use RBS Inline configuration for Ruby 3.3+
+rubocop_config = if RUBY_VERSION >= '3.3.0'
+                   '.rubocop_rbs.yml'
+                 else
+                   '.rubocop.yml'
+                 end
 
-task default: %i[spec rubocop steep]
+RuboCop::RakeTask.new do |task|
+  task.options = ['--config', rubocop_config]
+end
+
+# Steep is only available for Ruby 3.3+
+default_tasks = %i[spec rubocop]
+
+if RUBY_VERSION >= '3.3.0'
+  require 'steep/rake_task'
+  Steep::RakeTask.new
+  default_tasks << :steep
+end
+
+task default: default_tasks
