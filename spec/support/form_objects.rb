@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# rubocop:disable Style/OneClassPerFile
+# rbs_inline: enabled
+
 # Test helper classes for form object specs
 # These classes are used to test StructuredParams::Params as form objects
 
@@ -45,3 +48,5 @@ module Internal
     attribute :item_name, :string
   end
 end
+
+# rubocop:enable Style/OneClassPerFile

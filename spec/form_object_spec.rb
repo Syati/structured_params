@@ -1,7 +1,9 @@
 # frozen_string_literal: true
+# rbs_inline: enabled
 
 require 'spec_helper'
 
+# rubocop:disable RSpec/DescribeClass
 RSpec.describe 'StructuredParams::Params as Form Object' do
   describe '.model_name' do
     it 'removes "Form" suffix from class name' do
@@ -174,3 +176,4 @@ RSpec.describe 'StructuredParams::Params as Form Object' do
     end
   end
 end
+# rubocop:enable RSpec/DescribeClass
