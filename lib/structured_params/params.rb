@@ -18,7 +18,7 @@ module StructuredParams
     # @rbs @errors: ::StructuredParams::Errors?
 
     class << self
-      # @rbs self.@structured_attributes: Hash[Symbol, singleton(::StructuredParams::Params)]?
+      # @rbs @structured_attributes: Hash[Symbol, singleton(::StructuredParams::Params)]?
 
       # Generate permitted parameter structure for Strong Parameters
       #: () -> Array[untyped]
@@ -128,9 +128,7 @@ module StructuredParams
     end
 
     # Validate structured arrays
-    # @rbs attr_name: Symbol
-    # @rbs array_value: Array[untyped]
-    # @rbs return: void
+    #: (Symbol, Array[untyped]) -> void
     def validate_structured_array(attr_name, array_value)
       array_value.each_with_index do |item, index|
         next if item.valid?(validation_context)
@@ -141,9 +139,7 @@ module StructuredParams
     end
 
     # Validate structured objects
-    # @rbs attr_name: Symbol
-    # @rbs object_value: ::StructuredParams::Params
-    # @rbs return: void
+    #: (Symbol, StructuredParams::Params) -> void
     def validate_structured_object(attr_name, object_value)
       return if object_value.valid?(validation_context)
 

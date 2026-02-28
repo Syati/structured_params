@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
+# rbs_inline: enabled
 
 require 'bundler/setup'
 require 'structured_params'
