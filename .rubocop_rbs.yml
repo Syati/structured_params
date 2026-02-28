@@ -1,9 +1,7 @@
 # RuboCop configuration for Ruby 3.3+ with RBS Inline support
-# This file should be loaded only when Ruby version is 3.3 or higher
-
 inherit_from: .rubocop.yml
 
-require:
+plugins:
   - rubocop-rbs_inline
 
 # ========= RBS ===========

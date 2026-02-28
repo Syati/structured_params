@@ -8,7 +8,7 @@ RSpec::Core::RakeTask.new(:spec)
 
 require 'rubocop/rake_task'
 
-# Use RBS Inline configuration only for Ruby 3.3+
+# Use RBS Inline configuration for Ruby 3.3+
 rubocop_config = if RUBY_VERSION >= '3.3.0'
                    '.rubocop_rbs.yml'
                  else
@@ -20,7 +20,7 @@ RuboCop::RakeTask.new do |task|
 end
 
 # Steep is only available for Ruby 3.3+
-default_tasks = [:spec, :rubocop]
+default_tasks = %i[spec rubocop]
 
 if RUBY_VERSION >= '3.3.0'
   require 'steep/rake_task'
