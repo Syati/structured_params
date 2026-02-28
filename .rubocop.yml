@@ -29,3 +29,7 @@ Metrics/ClassLength:
 
 Metrics/MethodLength:
   Max: 20
+
+# ========= RBS ===========
+Style/RbsInline/MissingTypeAnnotation:
+  EnforcedStyle: method_type_signature
