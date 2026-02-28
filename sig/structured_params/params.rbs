@@ -49,6 +49,21 @@ module StructuredParams
     # : () -> Array[untyped]
     def self.permit_attribute_names: () -> Array[untyped]
 
+    # Permit parameters with optional require
+    #
+    # For Form Objects (with require):
+    #   UserRegistrationForm.permit(params)
+    #   # equivalent to:
+    #   params.require(:user_registration).permit(UserRegistrationForm.permit_attribute_names)
+    #
+    # For API requests (without require):
+    #   UserParams.permit(params, require: false)
+    #   # equivalent to:
+    #   params.permit(UserParams.permit_attribute_names)
+    #
+    # : (ActionController::Parameters params, ?require: bool) -> ActionController::Parameters
+    def self.permit: (ActionController::Parameters params, ?require: bool) -> ActionController::Parameters
+
     # Get structured attributes and their classes
     # : () -> Hash[Symbol, singleton(::StructuredParams::Params)]
     def self.structured_attributes: () -> Hash[Symbol, singleton(::StructuredParams::Params)]

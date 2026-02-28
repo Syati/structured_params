@@ -80,6 +80,30 @@ module StructuredParams
         end
       end
 
+      # Permit parameters with optional require
+      #
+      # For Form Objects (with require):
+      #   UserRegistrationForm.permit(params)
+      #   # equivalent to:
+      #   params.require(:user_registration).permit(UserRegistrationForm.permit_attribute_names)
+      #
+      # For API requests (without require):
+      #   UserParams.permit(params, require: false)
+      #   # equivalent to:
+      #   params.permit(UserParams.permit_attribute_names)
+      #
+      # @rbs params: ActionController::Parameters
+      # @rbs require: bool
+      # @rbs return: ActionController::Parameters
+      def permit(params, require: true)
+        if require
+          key = model_name.param_key.to_sym
+          params.require(key).permit(permit_attribute_names)
+        else
+          params.permit(permit_attribute_names)
+        end
+      end
+
       # Get structured attributes and their classes
       #: () -> Hash[Symbol, singleton(::StructuredParams::Params)]
       def structured_attributes
@@ -174,7 +198,7 @@ module StructuredParams
     def process_input_parameters(params)
       case params
       when ActionController::Parameters
-        params.permit(self.class.permit_attribute_names).to_h
+        self.class.permit(params, require: false).to_h
       when Hash
         # ActiveModel::Attributes can handle both symbol and string keys
         params
