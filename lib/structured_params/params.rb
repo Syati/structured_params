@@ -4,13 +4,37 @@
 module StructuredParams
   # Parameter model that supports structured objects and arrays
   #
-  # Usage example:
-  #   class UserParameter < StructuredParams::Params
+  # This class can be used in two ways:
+  # 1. Strong Parameters validation (params validation in controllers)
+  # 2. Form objects (using with form_with/form_for in views)
+  #
+  # Strong Parameters example:
+  #   class UserParameters < StructuredParams::Params
   #     attribute :name, :string
-  #     attribute :address, :object, value_class: AddressParameter
-  #     attribute :hobbies, :array, value_class: HobbyParameter
+  #     attribute :address, :object, value_class: AddressParameters
+  #     attribute :hobbies, :array, value_class: HobbyParameters
   #     attribute :tags, :array, value_type: :string
   #   end
+  #
+  # Form object example:
+  #   class UserRegistrationForm < StructuredParams::Params
+  #     attribute :name, :string
+  #     attribute :email, :string
+  #     validates :name, presence: true
+  #     validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
+  #   end
+  #
+  #   # In controller:
+  #   @form = UserRegistrationForm.new(params[:user])
+  #   if @form.valid?
+  #     # Save to database
+  #   end
+  #
+  #   # In view:
+  #   <%= form_with model: @form, url: users_path do |f| %>
+  #     <%= f.text_field :name %>
+  #     <%= f.text_field :email %>
+  #   <% end %>
   class Params
     include ActiveModel::Model
     include ActiveModel::Attributes
@@ -19,6 +43,28 @@ module StructuredParams
 
     class << self
       # @rbs @structured_attributes: Hash[Symbol, singleton(::StructuredParams::Params)]?
+      # @rbs @_model_name: ::ActiveModel::Name?
+
+      # Override model_name for form helpers
+      # By default, removes "Parameters", "Parameter", or "Form" suffix from class name
+      # This allows the class to work seamlessly with Rails form helpers
+      #
+      # Example:
+      #   UserRegistrationForm.model_name.name       # => "UserRegistration"
+      #   UserRegistrationForm.model_name.param_key  # => "user_registration"
+      #   UserParameters.model_name.name             # => "User"
+      #   Admin::UserForm.model_name.name            # => "Admin::User"
+      # @rbs return: ::ActiveModel::Name
+      def model_name
+        # @rbs @_model_name: ::ActiveModel::Name?
+
+        @_model_name ||= begin
+          namespace = module_parents.detect { |n| n.respond_to?(:use_relative_model_naming?) }
+          # Remove suffix from the full class name (preserving namespace)
+          name_without_suffix = name.sub(/(Parameters?|Form)$/, '')
+          ActiveModel::Name.new(self, namespace, name_without_suffix)
+        end
+      end
 
       # Generate permitted parameter structure for Strong Parameters
       #: () -> Array[untyped]
@@ -70,6 +116,32 @@ module StructuredParams
     #: () -> ::StructuredParams::Errors
     def errors
       @errors ||= Errors.new(self)
+    end
+
+    # ========================================
+    # Form object support methods
+    # These methods enable integration with Rails form helpers (form_with, form_for)
+    # ========================================
+
+    # Indicates whether the form object has been persisted to database
+    # Always returns false for parameter/form objects
+    # @rbs return: bool
+    def persisted?
+      false
+    end
+
+    # Returns the primary key value for the model
+    # Always returns nil for parameter/form objects
+    # @rbs return: nil
+    def to_key
+      nil
+    end
+
+    # Returns self for form helpers
+    # Required by Rails form helpers to get the model object
+    # @rbs return: self
+    def to_model
+      self
     end
 
     # Convert structured objects to Hash and get attributes
