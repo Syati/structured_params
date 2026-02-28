@@ -38,11 +38,15 @@ RSpec.describe 'StructuredParams::Params.permit' do
     context 'with nested objects' do
       let(:params) do
         ActionController::Parameters.new(
-          user_with_address: {
+          user: {
             name: 'John',
+            email: 'john@example.com',
+            age: 30,
             address: {
               street: '123 Main St',
               city: 'New York',
+              postal_code: '100-0001',
+              prefecture: 'Tokyo',
               extra: 'filtered'
             }
           }
@@ -50,7 +54,7 @@ RSpec.describe 'StructuredParams::Params.permit' do
       end
 
       it 'permits nested object parameters' do
-        permitted = UserWithAddressForm.permit(params)
+        permitted = UserParameter.permit(params)
 
         expect(permitted).to be_permitted
         expect(permitted[:name]).to eq('John')
@@ -63,11 +67,13 @@ RSpec.describe 'StructuredParams::Params.permit' do
     context 'with arrays' do
       let(:params) do
         ActionController::Parameters.new(
-          order: {
-            name: 'My Order',
-            items: [
-              { title: 'Item 1', description: 'Desc 1', extra: 'filtered' },
-              { title: 'Item 2', description: 'Desc 2' }
+          user: {
+            name: 'John',
+            email: 'john@example.com',
+            age: 30,
+            hobbies: [
+              { name: 'Reading', level: 'beginner', extra: 'filtered' },
+              { name: 'Gaming', level: 'advanced' }
             ],
             tags: %w[tag1 tag2 tag3]
           }
@@ -76,13 +82,13 @@ RSpec.describe 'StructuredParams::Params.permit' do
 
       # rubocop:disable RSpec/MultipleExpectations
       it 'permits array parameters' do
-        permitted = OrderForm.permit(params)
+        permitted = UserParameter.permit(params)
 
         expect(permitted).to be_permitted
-        expect(permitted[:name]).to eq('My Order')
-        expect(permitted[:items].length).to eq(2)
-        expect(permitted[:items][0][:title]).to eq('Item 1')
-        expect(permitted[:items][0][:extra]).to be_nil
+        expect(permitted[:name]).to eq('John')
+        expect(permitted[:hobbies].length).to eq(2)
+        expect(permitted[:hobbies][0][:name]).to eq('Reading')
+        expect(permitted[:hobbies][0][:extra]).to be_nil
         expect(permitted[:tags]).to eq(%w[tag1 tag2 tag3])
       end
       # rubocop:enable RSpec/MultipleExpectations
@@ -119,7 +125,7 @@ RSpec.describe 'StructuredParams::Params.permit' do
     end
 
     it 'permits parameters without requiring a key' do
-      permitted = UserParams.permit(params, require: false)
+      permitted = UserParameter.permit(params, require: false)
 
       expect(permitted).to be_permitted
       expect(permitted[:name]).to eq('Jane Doe')
@@ -132,9 +138,13 @@ RSpec.describe 'StructuredParams::Params.permit' do
       let(:params) do
         ActionController::Parameters.new(
           name: 'Alice',
+          email: 'alice@example.com',
+          age: 28,
           address: {
             street: '456 Oak Ave',
             city: 'Tokyo',
+            postal_code: '123-4567',
+            prefecture: 'Tokyo',
             extra: 'filtered'
           },
           extra_field: 'should be filtered'
@@ -143,7 +153,7 @@ RSpec.describe 'StructuredParams::Params.permit' do
 
       # rubocop:disable RSpec/MultipleExpectations
       it 'permits nested object parameters without require' do
-        permitted = ApiUserParams.permit(params, require: false)
+        permitted = UserParameter.permit(params, require: false)
 
         expect(permitted).to be_permitted
         expect(permitted[:name]).to eq('Alice')
@@ -158,10 +168,12 @@ RSpec.describe 'StructuredParams::Params.permit' do
     context 'with arrays' do
       let(:params) do
         ActionController::Parameters.new(
-          name: 'My Order',
-          items: [
-            { title: 'Item 1', description: 'Desc 1', extra: 'filtered' },
-            { title: 'Item 2', description: 'Desc 2' }
+          name: 'Bob',
+          email: 'bob@example.com',
+          age: 35,
+          hobbies: [
+            { name: 'Cooking', level: 'intermediate', extra: 'filtered' },
+            { name: 'Sports', level: 'beginner' }
           ],
           tags: %w[tag1 tag2 tag3],
           extra_field: 'filtered'
@@ -170,13 +182,13 @@ RSpec.describe 'StructuredParams::Params.permit' do
 
       # rubocop:disable RSpec/MultipleExpectations
       it 'permits array parameters without require' do
-        permitted = ApiOrderParams.permit(params, require: false)
+        permitted = UserParameter.permit(params, require: false)
 
         expect(permitted).to be_permitted
-        expect(permitted[:name]).to eq('My Order')
-        expect(permitted[:items].length).to eq(2)
-        expect(permitted[:items][0][:title]).to eq('Item 1')
-        expect(permitted[:items][0][:extra]).to be_nil
+        expect(permitted[:name]).to eq('Bob')
+        expect(permitted[:hobbies].length).to eq(2)
+        expect(permitted[:hobbies][0][:name]).to eq('Cooking')
+        expect(permitted[:hobbies][0][:extra]).to be_nil
         expect(permitted[:tags]).to eq(%w[tag1 tag2 tag3])
         expect(permitted[:extra_field]).to be_nil
       end
@@ -196,7 +208,7 @@ RSpec.describe 'StructuredParams::Params.permit' do
 
       it 'works with manually extracted params' do
         # User manually extracts the nested params
-        permitted = UserParams.permit(nested_params[:user], require: false)
+        permitted = UserParameter.permit(nested_params[:user], require: false)
 
         expect(permitted).to be_permitted
         expect(permitted[:name]).to eq('Bob')
