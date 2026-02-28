@@ -43,7 +43,7 @@ module StructuredParams
 
     class << self
       # @rbs @structured_attributes: Hash[Symbol, singleton(::StructuredParams::Params)]?
-      # @rbs @_model_name: ::ActiveModel::Name?
+      # @rbs @model_name: ::ActiveModel::Name?
 
       # Override model_name for form helpers
       # By default, removes "Parameters", "Parameter", or "Form" suffix from class name
@@ -54,11 +54,9 @@ module StructuredParams
       #   UserRegistrationForm.model_name.param_key  # => "user_registration"
       #   UserParameters.model_name.name             # => "User"
       #   Admin::UserForm.model_name.name            # => "Admin::User"
-      # @rbs return: ::ActiveModel::Name
+      #: () -> ::ActiveModel::Name
       def model_name
-        # @rbs @_model_name: ::ActiveModel::Name?
-
-        @_model_name ||= begin
+        @model_name ||= begin
           namespace = module_parents.detect { |n| n.respond_to?(:use_relative_model_naming?) }
           # Remove suffix from the full class name (preserving namespace)
           name_without_suffix = name.sub(/(Parameters?|Form)$/, '')
@@ -92,9 +90,7 @@ module StructuredParams
       #   # equivalent to:
       #   params.permit(UserParams.permit_attribute_names)
       #
-      # @rbs params: ActionController::Parameters
-      # @rbs require: bool
-      # @rbs return: ActionController::Parameters
+      #: (ActionController::Parameters params, ?require: bool) -> ActionController::Parameters
       def permit(params, require: true)
         if require
           key = model_name.param_key.to_sym
@@ -149,21 +145,21 @@ module StructuredParams
 
     # Indicates whether the form object has been persisted to database
     # Always returns false for parameter/form objects
-    # @rbs return: bool
+    #: () -> bool
     def persisted?
       false
     end
 
     # Returns the primary key value for the model
     # Always returns nil for parameter/form objects
-    # @rbs return: nil
+    #: () -> nil
     def to_key
       nil
     end
 
     # Returns self for form helpers
     # Required by Rails form helpers to get the model object
-    # @rbs return: self
+    #: () -> self
     def to_model
       self
     end
