@@ -23,13 +23,17 @@ group :development, :test do
   gem 'factory_bot'
   gem 'lefthook', require: false
   gem 'rake', '~> 13.0'
-  gem 'rbs-inline', require: false
   gem 'rspec', '~> 3.0'
   gem 'rspec-parameterized'
   gem 'rubocop'
   gem 'rubocop-factory_bot', require: false
   gem 'rubocop-rake', require: false
-  gem 'rubocop-rbs_inline', require: false
   gem 'rubocop-rspec', require: false
-  gem 'steep', require: false
+
+  # rbs-inline requires Ruby 3.3+
+  if RUBY_VERSION >= '3.3.0'
+    gem 'rbs-inline', require: false
+    gem 'rubocop-rbs_inline', require: false
+    gem 'steep', require: false
+  end
 end
