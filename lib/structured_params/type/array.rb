@@ -45,12 +45,24 @@ module StructuredParams
       end
 
       # Get permitted parameter names for use with Strong Parameters
+      #
+      # Returns:
+      #   - For object arrays (value_class): nested keys from the object
+      #     Example: HobbyParams with [:name, :level]
+      #     → returns [:name, :level]
+      #     → becomes { hobbies: [:name, :level] } in Params#permit_attribute_names
+      #
+      #   - For primitive arrays (value_type): empty array
+      #     Example: attribute :tags, :array, value_type: :string
+      #     → returns []
+      #     → becomes { tags: [] } in Params#permit_attribute_names
+      #     → finally used as params.permit(:name, { tags: [] })
+      #
       #: () -> ::Array[untyped]
       def permit_attribute_names
         return @item_type.permit_attribute_names if item_type_is_structured_params_object?
 
-        # Primitive arrays return [] for Strong Parameters format.
-        # Example: tags: [] allows params.permit(tags: [])
+        # Primitive arrays return [] for Strong Parameters format
         []
       end
 
