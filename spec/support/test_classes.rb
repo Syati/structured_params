@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 # rbs_inline: enabled
 
+require 'uri'
+
 # rubocop:disable Style/OneClassPerFile
 
 # Additional test helper classes for form object and permit specs
