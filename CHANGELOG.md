@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.0] - 2026-03-18
+
+## What's Changed
+* Add form objects and specs by @Syati in https://github.com/Syati/structured_params/pull/12
+
+
+**Full Changelog**: https://github.com/Syati/structured_params/compare/v0.6.0...v0.9.0
+
 ## [0.6.0] - 2026-02-28
 
 ## What's Changed
