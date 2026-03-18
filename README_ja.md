@@ -33,9 +33,16 @@ StructuredParams.register_types
 ### 1. API パラメータバリデーション
 
 ```ruby
+class AddressParams < StructuredParams::Params
+  attribute :street, :string
+  attribute :city, :string
+end
+
 class UserParams < StructuredParams::Params
   attribute :name, :string
   attribute :age, :integer
+  attribute :tags, :array, value_type: :string           # プリミティブ配列
+  attribute :address, :object, value_class: AddressParams # ネストオブジェクト
   
   validates :name, presence: true
   validates :age, numericality: { greater_than: 0 }

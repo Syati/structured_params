@@ -33,9 +33,16 @@ StructuredParams.register_types
 ### 1. API Parameter Validation
 
 ```ruby
+class AddressParams < StructuredParams::Params
+  attribute :street, :string
+  attribute :city, :string
+end
+
 class UserParams < StructuredParams::Params
   attribute :name, :string
   attribute :age, :integer
+  attribute :tags, :array, value_type: :string           # Primitive array
+  attribute :address, :object, value_class: AddressParams # Nested object
   
   validates :name, presence: true
   validates :age, numericality: { greater_than: 0 }
@@ -53,6 +60,20 @@ def create
   end
 end
 ```
+
+#### Primitive arrays
+
+StructuredParams supports primitive arrays via `value_type`. They are permitted using the Strong Parameters array format (`tags: []`).
+
+```ruby
+class UserParams < StructuredParams::Params
+  attribute :tags, :array, value_type: :string
+end
+
+# Equivalent Strong Parameters:
+# params.permit(tags: [])
+```
+
 
 ### 2. Form Object
 
