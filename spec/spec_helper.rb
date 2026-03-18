@@ -8,7 +8,7 @@ require 'factory_bot'
 StructuredParams.register_types
 
 # Load support files (test helper classes)
-Dir[File.expand_path('support/**/*.rb', __dir__)].each { |f| require f }
+Dir[File.expand_path('support/**/*.rb', __dir__)].sort.each { |f| require f }
 
 RSpec.configure do |config|
   config.include FactoryBot::Syntax::Methods
