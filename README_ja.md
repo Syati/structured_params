@@ -1,81 +1,82 @@
 # StructuredParams
 
-StructuredParams は、Rails アプリケーションでタイプセーフなパラメータバリデーションとキャストを提供する Ruby gem です。ActiveModel の型システムを拡張して、ネストしたオブジェクトや配列を自動的な Strong Parameters 統合と共に処理します。
-
 [English](README.md) | 日本語
 
-## 特徴
+**Rails で型安全な API パラメータバリデーションとフォームオブジェクトを実現する gem**
 
-- **ActiveModel::Type を使用したタイプセーフなパラメータバリデーション**
-- **自動キャストによるネストオブジェクトサポート**
-- **プリミティブ型とネストオブジェクトの両方に対応した配列処理**
-- **自動 permit リスト生成による Strong Parameters 統合**
-- **バリデーションとシリアライゼーションを含む ActiveModel 互換性**
-- **Rails フォームヘルパーと統合された Form Object パターンのサポート**
-- **フラットと構造化フォーマットによる拡張エラーハンドリング**
-- **より良い開発体験のための RBS 型定義**
+StructuredParams は、以下の課題を解決します：
+
+- **API エンドポイント**: リクエストパラメータの型チェック・バリデーション・自動キャスト
+- **フォームオブジェクト**: 複雑なフォーム入力の検証とモデルへの変換
+
+ActiveModel をベースに、ネストしたオブジェクトや配列も簡単に扱えます。
+
+## 主な特徴
+
+- ✅ **API パラメータバリデーション** - 型安全なリクエスト検証
+- ✅ **フォームオブジェクト** - 複雑なフォームロジックのカプセル化
+- ✅ **ネスト構造対応** - オブジェクトや配列を自動キャスト
+- ✅ **Strong Parameters 統合** - permit リストを自動生成
+- ✅ **ActiveModel 互換** - バリデーション、シリアライゼーションなど標準機能をサポート
+- ✅ **RBS 型定義** - 型安全な開発体験
 
 ## クイックスタート
 
 ```ruby
-# 1. gem をインストール
+# インストール
 gem 'structured_params'
 
-# 2. イニシャライザで型を登録
+# 初期化
 StructuredParams.register_types
+```
 
-# 3. パラメータクラスを定義
+### 1. API パラメータバリデーション
+
+```ruby
 class UserParams < StructuredParams::Params
   attribute :name, :string
   attribute :age, :integer
-  attribute :address, :object, value_class: AddressParams
-  attribute :hobbies, :array, value_class: HobbyParams
   
   validates :name, presence: true
   validates :age, numericality: { greater_than: 0 }
 end
 
-# 4. コントローラーで使用（API向け）
+# API コントローラーで使用
 def create
-  user_params = UserParams.new(params)
+  permitted = UserParams.permit(params, require: false)
+  user_params = UserParams.new(permitted)
   
   if user_params.valid?
     User.create!(user_params.attributes)
   else
-    render json: { errors: user_params.errors.to_hash(false, structured: true) }
+    render json: { errors: user_params.errors }, status: :unprocessable_entity
   end
 end
+```
 
-# 5. Form Object として使用（View統合）
+### 2. フォームオブジェクト
 
-# Form Object クラスを定義
+```ruby
 class UserRegistrationForm < StructuredParams::Params
   attribute :name, :string
   attribute :email, :string
-  attribute :password, :string
+  attribute :terms_accepted, :boolean
   
-  validates :name, presence: true
-  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :name, :email, presence: true
+  validates :terms_accepted, acceptance: true
 end
 
 # コントローラーで使用
 def create
-  @form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
+  form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
   
-  if @form.valid?
-    User.create!(@form.attributes)
-    redirect_to user_path
+  if form.valid?
+    User.create!(form.attributes)
+    redirect_to root_path
   else
     render :new
   end
 end
-
-# View で使用
-<%= form_with model: @form, url: users_path do |f| %>
-  <%= f.text_field :name %>
-  <%= f.email_field :email %>
-  <%= f.password_field :password %>
-<% end %>
 ```
 
 ## ドキュメント
@@ -84,15 +85,10 @@ end
 - **[基本的な使用方法](docs/basic-usage.md)** - パラメータクラス、ネストオブジェクト、配列
 - **[バリデーション](docs/validation.md)** - ネスト構造でのActiveModelバリデーション使用
 - **[Strong Parameters](docs/strong-parameters.md)** - 自動permit リスト生成
-- **[Form Object](docs/form-objects.md)** - Rails フォームヘルパーとの Form Object としての使用
 - **[エラーハンドリング](docs/error-handling.md)** - フラットと構造化エラーフォーマット
 - **[シリアライゼーション](docs/serialization.md)** - パラメータのハッシュとJSON変換
 - **[Gem比較](docs/comparison.md)** - typed_params、dry-validation、reformとの比較
-- **[コントリビューションガイド](CONTRIBUTING.md)** - 開発者向けセットアップとガイドライン
 
-## 開発者向け
-
-プロジェクトへの貢献に興味がある方は、[CONTRIBUTING.md](CONTRIBUTING.md) をご覧ください。開発環境のセットアップ、RBS型定義の生成方法、テストの実行方法などが記載されています。
 
 ## コントリビューション
 
