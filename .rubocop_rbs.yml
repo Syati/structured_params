@@ -7,3 +7,7 @@ plugins:
 # ========= RBS ===========
 Style/RbsInline/MissingTypeAnnotation:
   EnforcedStyle: method_type_signature
+
+Style/RbsInline/UntypedInstanceVariable:
+  Exclude:
+    - 'lib/structured_params/params.rb'

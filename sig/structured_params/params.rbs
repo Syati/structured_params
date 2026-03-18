@@ -52,9 +52,9 @@ module StructuredParams
 
     @errors: ::StructuredParams::Errors?
 
-    @structured_attributes: Hash[Symbol, singleton(::StructuredParams::Params)]?
+    self.@structured_attributes: Hash[Symbol, singleton(::StructuredParams::Params)]?
 
-    @model_name: ::ActiveModel::Name?
+    self.@model_name: ::ActiveModel::Name?
 
     # Override model_name for form helpers
     # By default, removes "Parameters", "Parameter", or "Form" suffix from class name

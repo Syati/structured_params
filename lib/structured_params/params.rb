@@ -53,8 +53,8 @@ module StructuredParams
     # @rbs @errors: ::StructuredParams::Errors?
 
     class << self
-      # @rbs @structured_attributes: Hash[Symbol, singleton(::StructuredParams::Params)]?
-      # @rbs @model_name: ::ActiveModel::Name?
+      # @rbs self.@structured_attributes: Hash[Symbol, singleton(::StructuredParams::Params)]?
+      # @rbs self.@model_name: ::ActiveModel::Name?
 
       # Override model_name for form helpers
       # By default, removes "Parameters", "Parameter", or "Form" suffix from class name

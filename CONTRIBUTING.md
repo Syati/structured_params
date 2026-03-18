@@ -120,16 +120,24 @@ end
 **Exception: Instance variables** must use doc style (`# @rbs`):
 
 ```ruby
+# Instance variable
 class Example
   # @rbs @name: String?
-  
-  class << self
-    # @rbs @cache: Hash[Symbol, String]?
-  end
   
   #: (String) -> void
   def initialize(name)
     @name = name
+  end
+end
+
+# Class instance variable (use self.@)
+class Example
+  class << self
+    # @rbs self.@cache: Hash[Symbol, String]?
+    
+    def cache
+      @cache ||= {}
+    end
   end
 end
 ```

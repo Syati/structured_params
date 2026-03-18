@@ -34,7 +34,7 @@ class Example
   # @rbs @name: String?
   
   class << self
-    # @rbs @cache: Hash[Symbol, String]?
+    # @rbs self.@cache: Hash[Symbol, String]?
   end
   
   #: (String) -> void
