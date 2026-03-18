@@ -4,24 +4,47 @@ module StructuredParams
   # Parameter model that supports structured objects and arrays
   #
   # This class can be used in two ways:
-  # 1. Strong Parameters validation (params validation in controllers)
-  # 2. Form objects (using with form_with/form_for in views)
+  # 1. Strong Parameters validation (API requests)
+  # 2. Form objects (View integration with form_with/form_for)
   #
-  # Strong Parameters example:
-  #   class UserParameters < StructuredParams::Params
+  # Strong Parameters example (API):
+  #   class UserParams < StructuredParams::Params
   #     attribute :name, :string
-  #     attribute :address, :object, value_class: AddressParameters
-  #     attribute :hobbies, :array, value_class: HobbyParameters
+  #     attribute :address, :object, value_class: AddressParams
+  #     attribute :hobbies, :array, value_class: HobbyParams
   #     attribute :tags, :array, value_type: :string
   #   end
   #
-  # Form object example:
+  #   # In controller:
+  #   user_params = UserParams.new(params)
+  #   if user_params.valid?
+  #     User.create!(user_params.attributes)
+  #   else
+  #     render json: { errors: user_params.errors }
+  #   end
+  #
+  # Form object example (View integration):
   #   class UserRegistrationForm < StructuredParams::Params
   #     attribute :name, :string
   #     attribute :email, :string
   #     validates :name, presence: true
   #     validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   #   end
+  #
+  #   # In controller:
+  #   @form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
+  #   if @form.valid?
+  #     User.create!(@form.attributes)
+  #     redirect_to user_path
+  #   else
+  #     render :new
+  #   end
+  #
+  #   # In view:
+  #   <%= form_with model: @form, url: users_path do |f| %>
+  #     <%= f.text_field :name %>
+  #     <%= f.text_field :email %>
+  #   <% end %>
   class Params
     include ActiveModel::Model
 
@@ -29,9 +52,9 @@ module StructuredParams
 
     @errors: ::StructuredParams::Errors?
 
-    self.@structured_attributes: Hash[Symbol, singleton(::StructuredParams::Params)]?
+    @structured_attributes: Hash[Symbol, singleton(::StructuredParams::Params)]?
 
-    self.@_model_name: ::ActiveModel::Name?
+    @model_name: ::ActiveModel::Name?
 
     # Override model_name for form helpers
     # By default, removes "Parameters", "Parameter", or "Form" suffix from class name
@@ -78,11 +101,6 @@ module StructuredParams
     # : () -> ::StructuredParams::Errors
     def errors: () -> ::StructuredParams::Errors
 
-    # ========================================
-    # Form object support methods
-    # These methods enable integration with Rails form helpers (form_with, form_for)
-    # ========================================
-
     # Indicates whether the form object has been persisted to database
     # Always returns false for parameter/form objects
     # : () -> bool
@@ -115,16 +133,12 @@ module StructuredParams
     def validate_structured_parameters: () -> void
 
     # Validate structured arrays
-    # @rbs attr_name: Symbol
-    # @rbs array_value: Array[untyped]
-    # @rbs return: void
-    def validate_structured_array: (Symbol attr_name, Array[untyped] array_value) -> void
+    # : (Symbol, Array[untyped]) -> void
+    def validate_structured_array: (Symbol, Array[untyped]) -> void
 
     # Validate structured objects
-    # @rbs attr_name: Symbol
-    # @rbs object_value: ::StructuredParams::Params
-    # @rbs return: void
-    def validate_structured_object: (Symbol attr_name, ::StructuredParams::Params object_value) -> void
+    # : (Symbol, StructuredParams::Params) -> void
+    def validate_structured_object: (Symbol, StructuredParams::Params) -> void
 
     # Format error path using dot notation (always consistent)
     # : (Symbol, Integer?) -> String
