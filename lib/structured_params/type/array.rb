@@ -47,9 +47,11 @@ module StructuredParams
       # Get permitted parameter names for use with Strong Parameters
       #: () -> ::Array[untyped]
       def permit_attribute_names
-        return [] unless item_type_is_structured_params_object?
+        return @item_type.permit_attribute_names if item_type_is_structured_params_object?
 
-        @item_type.permit_attribute_names
+        # Primitive arrays return [] for Strong Parameters format.
+        # Example: tags: [] allows params.permit(tags: [])
+        []
       end
 
       # Determine if item type is StructuredParams::Object
