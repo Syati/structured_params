@@ -5,18 +5,26 @@ module StructuredParams
   # Parameter model that supports structured objects and arrays
   #
   # This class can be used in two ways:
-  # 1. Strong Parameters validation (params validation in controllers)
-  # 2. Form objects (using with form_with/form_for in views)
+  # 1. Strong Parameters validation (API requests)
+  # 2. Form objects (View integration with form_with/form_for)
   #
-  # Strong Parameters example:
-  #   class UserParameters < StructuredParams::Params
+  # Strong Parameters example (API):
+  #   class UserParams < StructuredParams::Params
   #     attribute :name, :string
-  #     attribute :address, :object, value_class: AddressParameters
-  #     attribute :hobbies, :array, value_class: HobbyParameters
+  #     attribute :address, :object, value_class: AddressParams
+  #     attribute :hobbies, :array, value_class: HobbyParams
   #     attribute :tags, :array, value_type: :string
   #   end
   #
-  # Form object example:
+  #   # In controller:
+  #   user_params = UserParams.new(params)
+  #   if user_params.valid?
+  #     User.create!(user_params.attributes)
+  #   else
+  #     render json: { errors: user_params.errors }
+  #   end
+  #
+  # Form object example (View integration):
   #   class UserRegistrationForm < StructuredParams::Params
   #     attribute :name, :string
   #     attribute :email, :string
@@ -25,9 +33,12 @@ module StructuredParams
   #   end
   #
   #   # In controller:
-  #   @form = UserRegistrationForm.new(params[:user])
+  #   @form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
   #   if @form.valid?
-  #     # Save to database
+  #     User.create!(@form.attributes)
+  #     redirect_to user_path
+  #   else
+  #     render :new
   #   end
   #
   #   # In view:
