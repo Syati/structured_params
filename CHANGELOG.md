@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.9.1] - 2026-03-18
+
+**Full Changelog**: https://github.com/Syati/structured_params/compare/v0.9.0...v0.9.1
+
 ## [0.9.0] - 2026-03-18
 
 ## What's Changed
