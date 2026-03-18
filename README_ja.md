@@ -87,7 +87,12 @@ end
 - **[Form Object](docs/form-objects.md)** - Rails フォームヘルパーとの Form Object としての使用
 - **[エラーハンドリング](docs/error-handling.md)** - フラットと構造化エラーフォーマット
 - **[シリアライゼーション](docs/serialization.md)** - パラメータのハッシュとJSON変換
+- **[Gem比較](docs/comparison.md)** - typed_params、dry-validation、reformとの比較
+- **[コントリビューションガイド](CONTRIBUTING.md)** - 開発者向けセットアップとガイドライン
 
+## 開発者向け
+
+プロジェクトへの貢献に興味がある方は、[CONTRIBUTING.md](CONTRIBUTING.md) をご覧ください。開発環境のセットアップ、RBS型定義の生成方法、テストの実行方法などが記載されています。
 
 ## コントリビューション
 

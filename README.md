@@ -88,7 +88,11 @@ end
 - **[Error Handling](docs/error-handling.md)** - Flat and structured error formats
 - **[Serialization](docs/serialization.md)** - Converting parameters to hashes and JSON
 - **[Gem Comparison](docs/comparison.md)** - Comparison with typed_params, dry-validation, and reform
+- **[Contributing Guide](CONTRIBUTING.md)** - Developer setup and guidelines
 
+## For Developers
+
+If you're interested in contributing to this project, please see [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, RBS generation, testing guidelines, and more.
 
 ## Contributing
 
