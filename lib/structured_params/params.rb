@@ -94,20 +94,20 @@ module StructuredParams
       # For Form Objects (with require):
       #   UserRegistrationForm.permit(params)
       #   # equivalent to:
-      #   params.require(:user_registration).permit(UserRegistrationForm.permit_attribute_names)
+      #   params.require(:user_registration).permit(*UserRegistrationForm.permit_attribute_names)
       #
       # For API requests (without require):
       #   UserParams.permit(params, require: false)
       #   # equivalent to:
-      #   params.permit(UserParams.permit_attribute_names)
+      #   params.permit(*UserParams.permit_attribute_names)
       #
       #: (ActionController::Parameters params, ?require: bool) -> ActionController::Parameters
       def permit(params, require: true)
         if require
           key = model_name.param_key.to_sym
-          params.require(key).permit(permit_attribute_names)
+          params.require(key).permit(*permit_attribute_names)
         else
-          params.permit(permit_attribute_names)
+          params.permit(*permit_attribute_names)
         end
       end
 
