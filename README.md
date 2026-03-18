@@ -11,6 +11,7 @@ English | [日本語](README_ja.md)
 - **Array handling** for both primitive types and nested objects  
 - **Strong Parameters integration** with automatic permit lists
 - **ActiveModel compatibility** with validations and serialization
+- **Form object pattern support** with Rails form helpers integration
 - **Enhanced error handling** with flat and structured formats
 - **RBS type definitions** for better development experience
 
@@ -34,15 +35,47 @@ class UserParams < StructuredParams::Params
   validates :age, numericality: { greater_than: 0 }
 end
 
-# 4. Use in controllers
+# 4. Use in controllers (API)
 def create
-  user_params = UserParams.new(params[:user])
+  user_params = UserParams.new(params)
+  
   if user_params.valid?
     User.create!(user_params.attributes)
   else
     render json: { errors: user_params.errors.to_hash(false, structured: true) }
   end
 end
+
+# 5. Use as Form Objects (View Integration)
+
+# Define a Form Object class
+class UserRegistrationForm < StructuredParams::Params
+  attribute :name, :string
+  attribute :email, :string
+  attribute :password, :string
+  
+  validates :name, presence: true
+  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
+end
+
+# Use in controllers
+def create
+  @form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
+  
+  if @form.valid?
+    User.create!(@form.attributes)
+    redirect_to user_path
+  else
+    render :new
+  end
+end
+
+# Use in views
+<%= form_with model: @form, url: users_path do |f| %>
+  <%= f.text_field :name %>
+  <%= f.email_field :email %>
+  <%= f.password_field :password %>
+<% end %>
 ```
 
 ## Documentation
@@ -51,42 +84,15 @@ end
 - **[Basic Usage](docs/basic-usage.md)** - Parameter classes, nested objects, and arrays
 - **[Validation](docs/validation.md)** - Using ActiveModel validations with nested structures
 - **[Strong Parameters](docs/strong-parameters.md)** - Automatic permit list generation
+- **[Form Objects](docs/form-objects.md)** - Using as form objects with Rails form helpers
 - **[Error Handling](docs/error-handling.md)** - Flat and structured error formats
 - **[Serialization](docs/serialization.md)** - Converting parameters to hashes and JSON
 - **[Gem Comparison](docs/comparison.md)** - Comparison with typed_params, dry-validation, and reform
+- **[Contributing Guide](CONTRIBUTING.md)** - Developer setup and guidelines
 
-## Example
+## For Developers
 
-```ruby
-class AddressParams < StructuredParams::Params
-  attribute :street, :string
-  attribute :city, :string
-  attribute :postal_code, :string
-  
-  validates :street, :city, :postal_code, presence: true
-end
-
-class UserParams < StructuredParams::Params
-  attribute :name, :string
-  attribute :email, :string
-  attribute :address, :object, value_class: AddressParams
-  
-  validates :name, presence: true
-  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
-end
-
-# Usage
-params = {
-  name: "John Doe",
-  email: "john@example.com",
-  address: { street: "123 Main St", city: "New York", postal_code: "10001" }
-}
-
-user_params = UserParams.new(params)
-user_params.valid? # => true
-user_params.address.city # => "New York"
-user_params.attributes # => Hash ready for ActiveRecord
-```
+If you're interested in contributing to this project, please see [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, RBS generation, testing guidelines, and more.
 
 ## Contributing
 

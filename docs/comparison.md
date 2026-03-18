@@ -11,6 +11,7 @@ This document compares StructuredParams with other parameter handling gems in th
 | Array Handling | ✅ Typed arrays | ❌ Basic arrays | ✅ Array validation | ✅ Collection forms |
 | Strong Parameters | ✅ Auto-generation | ❌ Manual | ❌ Manual | ❌ Manual |
 | ActiveModel Integration | ✅ Full compatibility | ❌ Limited | ❌ None | ✅ Full compatibility |
+| Form Helpers | ✅ form_with/form_for | ❌ None | ❌ None | ✅ Simple Form |
 | Error Handling | ✅ Flat & structured | ✅ Basic | ✅ Detailed | ✅ ActiveModel errors |
 | RBS Support | ✅ Built-in | ❌ None | ❌ None | ❌ None |
 
@@ -111,6 +112,23 @@ class UserParams < StructuredParams::Params
   
   validates :name, presence: true
 end
+
+# StructuredParams can also be used as form objects
+class UserRegistrationForm < StructuredParams::Params
+  attribute :name, :string
+  attribute :email, :string
+  attribute :password, :string
+  
+  validates :name, presence: true
+  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
+end
+
+# In views
+<%= form_with model: @form, url: users_path do |f| %>
+  <%= f.text_field :name %>
+  <%= f.email_field :email %>
+  <%= f.password_field :password %>
+<% end %>
 ```
 
 **Advantages of StructuredParams:**
@@ -119,6 +137,8 @@ end
 - Built-in Strong Parameters integration
 - Cleaner syntax for API-first applications
 - Better TypeScript/RBS integration
+- **Can be used as form objects** with Rails form helpers (form_with/form_for)
+- **Dual purpose**: Strong Parameters validation AND form object pattern
 
 ## When to Choose StructuredParams
 
@@ -128,8 +148,10 @@ Choose **StructuredParams** when you need:
 2. **Complex nested structures** with automatic casting
 3. **Strong Parameters integration** without manual permit lists
 4. **ActiveModel compatibility** for validations and serialization
-5. **Enhanced error handling** with structured formats
-6. **RBS type definitions** for better development experience
+5. **Form object pattern** with Rails form helpers integration
+6. **Enhanced error handling** with structured formats
+7. **RBS type definitions** for better development experience
+8. **Dual-purpose classes** that work as both parameter validators and form objects
 
 ## Migration Examples
 
