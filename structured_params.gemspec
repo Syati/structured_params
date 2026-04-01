@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors = ['Mizuki Yamamoto']
   spec.email = ['mizuki-y@syati.info']
 
-  spec.summary = 'StructuredParams allows you to validate pass parameter.'
+  spec.summary = 'Type-safe parameter validation and form objects for Rails.'
   spec.description = ''
   spec.homepage = 'https://github.com/Syati/structured_params'
   spec.license = 'MIT'
