@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.9.2] - 2026-04-02
+
+## What's Changed
+* Clarify gemspec summary to describe type-safe parameter validation by @Syati in https://github.com/Syati/structured_params/pull/13
+* Addressing PR comments by @Syati in https://github.com/Syati/structured_params/pull/14
+
+
+**Full Changelog**: https://github.com/Syati/structured_params/compare/v0.9.1...v0.9.2
+
 ## [0.9.1] - 2026-03-18
 
 **Full Changelog**: https://github.com/Syati/structured_params/compare/v0.9.0...v0.9.1
