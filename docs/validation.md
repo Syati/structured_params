@@ -24,6 +24,45 @@ class UserParams < StructuredParams::Params
 end
 ```
 
+## Validate Raw Input (`validates_raw`)
+
+Use `validates_raw` to validate the original input value before type casting.
+
+```ruby
+class UserParams < StructuredParams::Params
+  attribute :age, :integer
+
+  validates_raw :age, format: { with: /\A\d+\z/, message: 'must be numeric string' }
+end
+
+params = UserParams.new(age: '12x')
+params.valid? # => false
+params.errors.to_hash # => { age: ["must be numeric string"] }
+```
+
+`validates_raw` uses `*_before_type_cast` internally, then remaps errors back to the original attribute.
+So `errors[:age_before_type_cast]` remains empty in normal usage.
+
+### Combining `validates_raw` and `validates` on the same attribute
+
+You can use both on the same attribute.
+
+```ruby
+class UserParams < StructuredParams::Params
+  attribute :score, :integer
+
+  validates_raw :score, format: { with: /\A\d+\z/, message: 'must be numeric string' }
+  validates :score, numericality: { greater_than_or_equal_to: 0 }
+end
+
+params = UserParams.new(score: 'abc')
+params.valid? # => false
+params.errors[:score]
+# => includes both "must be numeric string" and "is not a number"
+```
+
+When both validations fail, both messages are added to the same attribute (`:score`).
+
 ## Nested Validation
 
 Validation automatically cascades to nested objects and arrays:

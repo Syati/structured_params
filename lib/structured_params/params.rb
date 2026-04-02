@@ -11,9 +11,13 @@ module StructuredParams
   # Strong Parameters example (API):
   #   class UserParams < StructuredParams::Params
   #     attribute :name, :string
+  #     attribute :age, :integer
   #     attribute :address, :object, value_class: AddressParams
   #     attribute :hobbies, :array, value_class: HobbyParams
   #     attribute :tags, :array, value_type: :string
+  #
+  #     # Validate raw input before type casting (e.g., "12x" for integer fields)
+  #     validates_raw :age, format: { with: /\A\d+\z/, message: 'must be numeric string' }
   #   end
   #
   #   # In controller:
