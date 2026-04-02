@@ -1,5 +1,4 @@
-# rbs_inline: enabled
-# frozen_string_literal: true
+# Generated from lib/structured_params/attribute_methods.rb with RBS::Inline
 
 module StructuredParams
   # Extends ActiveModel::Attributes to define +attr_before_type_cast+ accessors
@@ -16,14 +15,9 @@ module StructuredParams
   module AttributeMethods
     extend ActiveSupport::Concern
 
-    included do
-      # Override attribute to also define `attr_before_type_cast`
-      # via ActiveModel::Attribute#value_before_type_cast
-      #: (Symbol name, *untyped) -> void
-      def self.attribute(name, ...)
-        super
-        define_method(:"#{name}_before_type_cast") { @attributes[name.to_s].value_before_type_cast }
-      end
-    end
+    # Override attribute to also define `attr_before_type_cast`
+    # via ActiveModel::Attribute#value_before_type_cast
+    # : (Symbol name, *untyped) -> void
+    def self.attribute: (Symbol name, *untyped) -> void
   end
 end
