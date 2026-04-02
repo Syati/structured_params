@@ -59,10 +59,11 @@ end
 params = UserParams.new(score: 'abc')
 params.valid? # => false
 params.errors[:score]
-# => includes both "must be numeric string" and "is not a number"
+# => includes errors from both validates_raw and validates
 ```
 
 When both validations fail, both messages are added to the same attribute (`:score`).
+The exact typed-validation message depends on your validator options and I18n locale.
 
 ## Nested Validation
 
