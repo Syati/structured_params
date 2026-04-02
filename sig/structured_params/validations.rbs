@@ -20,21 +20,24 @@ module StructuredParams
   module Validations
     extend ActiveSupport::Concern
 
-    # Validates raw attribute value before type casting.
-    #
-    # Accepts the same options as +validates+ (format, numericality, presence, etc.),
-    # but validates the raw input value before it is converted by ActiveModel::Attributes.
-    #
-    # Examples:
-    #   validates_raw :age,   format: { with: /\A\d+\z/ }
-    #   validates_raw :score, numericality: { only_integer: true }
-    #   validates_raw :code,  format: { with: /\A[A-Z]+\z/, message: 'must be uppercase' }
-    #
-    # : (*Symbol, **untyped) -> void
-    def validates_raw: (*Symbol, **untyped) -> void
+    # @rbs module ClassMethods
+    module ClassMethods
+      # Validates raw attribute value before type casting.
+      #
+      # Accepts the same options as +validates+ (format, numericality, presence, etc.),
+      # but validates the raw input value before it is converted by ActiveModel::Attributes.
+      #
+      # Examples:
+      #   validates_raw :age,   format: { with: /\A\d+\z/ }
+      #   validates_raw :score, numericality: { only_integer: true }
+      #   validates_raw :code,  format: { with: /\A[A-Z]+\z/, message: 'must be uppercase' }
+      #
+      # : (*Symbol, **untyped) -> void
+      def validates_raw: (*Symbol, **untyped) -> void
 
-    # : () -> void
-    def validates_raw_install_remap_validator_once: () -> void
+      # : () -> void
+      def validates_raw_install_remap_validator_once: () -> void
+    end
 
     private
 

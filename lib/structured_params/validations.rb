@@ -26,6 +26,7 @@ module StructuredParams
       class_attribute :validates_raw_remap_validator_installed, instance_accessor: false, default: false
     end
 
+    # @rbs module ClassMethods
     class_methods do
       # Validates raw attribute value before type casting.
       #
