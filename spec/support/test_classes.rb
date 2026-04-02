@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-# rbs_inline: enabled
 
 require 'uri'
 
@@ -55,6 +54,12 @@ module Internal
   class OrderParameters < StructuredParams::Params
     attribute :item_name, :string
   end
+end
+
+class StrictAgeParameter < StructuredParams::Params
+  attribute :age, :integer
+
+  validates_raw :age, format: { with: /\A\d+\z/, message: 'must be numeric string' }
 end
 
 # rubocop:enable Style/OneClassPerFile

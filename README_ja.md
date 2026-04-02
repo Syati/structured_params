@@ -41,11 +41,15 @@ end
 class UserParams < StructuredParams::Params
   attribute :name, :string
   attribute :age, :integer
+  attribute :score, :integer
   attribute :tags, :array, value_type: :string           # プリミティブ配列
   attribute :address, :object, value_class: AddressParams # ネストオブジェクト
   
+  # 型変換前の生文字列をバリデーション
+  validates_raw :score, format: { with: /\A\d+\z/, message: 'must be numeric string' }
   validates :name, presence: true
   validates :age, numericality: { greater_than: 0 }
+  validates :score, numericality: { greater_than_or_equal_to: 0 }
 end
 
 # API コントローラーで使用
@@ -58,6 +62,18 @@ def create
   else
     render json: { errors: user_params.errors }, status: :unprocessable_entity
   end
+end
+```
+
+#### 型変換前の生入力をバリデーションする
+
+ActiveModel の型変換前の入力値を検証したい場合は `validates_raw` を使います。
+
+```ruby
+class UserParams < StructuredParams::Params
+  attribute :age, :integer
+
+  validates_raw :age, format: { with: /\A\d+\z/, message: 'must be numeric string' }
 end
 ```
 

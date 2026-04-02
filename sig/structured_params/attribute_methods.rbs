@@ -1,0 +1,23 @@
+# Generated from lib/structured_params/attribute_methods.rb with RBS::Inline
+
+module StructuredParams
+  # Extends ActiveModel::Attributes to define +attr_before_type_cast+ accessors
+  # for each attribute, mirroring ActiveRecord::AttributeMethods::BeforeTypeCast.
+  #
+  # Example:
+  #   class UserParams < StructuredParams::Params
+  #     attribute :age, :integer
+  #   end
+  #
+  #   params = UserParams.new(age: "42abc")
+  #   params.age                    # => 42  (type-cast)
+  #   params.age_before_type_cast   # => "42abc"  (raw input)
+  module AttributeMethods
+    extend ActiveSupport::Concern
+
+    # Override attribute to also define `attr_before_type_cast`
+    # via ActiveModel::Attribute#value_before_type_cast
+    # : (Symbol name, *untyped) -> void
+    def self.attribute: (Symbol name, *untyped) -> void
+  end
+end

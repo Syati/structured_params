@@ -11,3 +11,7 @@ Style/RbsInline/MissingTypeAnnotation:
 Style/RbsInline/UntypedInstanceVariable:
   Exclude:
     - 'lib/structured_params/params.rb'
+
+Style/RbsInline/RequireRbsInlineComment:
+  Exclude:
+    - 'spec/**/*'

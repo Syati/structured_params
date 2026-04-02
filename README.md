@@ -41,11 +41,15 @@ end
 class UserParams < StructuredParams::Params
   attribute :name, :string
   attribute :age, :integer
+  attribute :score, :integer
   attribute :tags, :array, value_type: :string           # Primitive array
   attribute :address, :object, value_class: AddressParams # Nested object
   
+  # validate raw string before type casting
+  validates_raw :score, format: { with: /\A\d+\z/, message: 'must be numeric string' }
   validates :name, presence: true
   validates :age, numericality: { greater_than: 0 }
+  validates :score, numericality: { greater_than_or_equal_to: 0 }
 end
 
 # Use in API controller

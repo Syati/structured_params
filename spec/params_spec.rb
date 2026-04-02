@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-# rbs_inline: enabled
 
 require 'spec_helper'
 
@@ -304,6 +303,27 @@ RSpec.describe StructuredParams::Params do
 
         it 'removes blank values (nil, empty string, etc.) recursively' do
           expect(attributes).to eq(expected_result)
+        end
+      end
+    end
+  end
+
+  describe 'raw validations' do
+    describe '#valid?' do
+      context 'when value matches raw format' do
+        subject(:params) { StrictAgeParameter.new(age: '12') }
+
+        it 'is valid' do
+          expect(params).to be_valid
+        end
+      end
+
+      context 'when value fails raw format but would be castable' do
+        subject(:params) { StrictAgeParameter.new(age: '12x') }
+
+        it 'adds validation error on raw input' do
+          expect(params).not_to be_valid
+          expect(params.errors[:age]).to include('must be numeric string')
         end
       end
     end
