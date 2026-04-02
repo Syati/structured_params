@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-# rbs_inline: enabled
 
 class HobbyParameter < StructuredParams::Params
   attribute :name, :string
