@@ -50,6 +50,10 @@ module StructuredParams
 
     include ActiveModel::Attributes
 
+    include AttributeMethods
+
+    include Validations
+
     @errors: ::StructuredParams::Errors?
 
     self.@structured_attributes: Hash[Symbol, singleton(::StructuredParams::Params)]?

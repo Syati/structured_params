@@ -10,6 +10,8 @@ require_relative 'structured_params/version'
 
 # errors
 require_relative 'structured_params/errors'
+require_relative 'structured_params/attribute_methods'
+require_relative 'structured_params/validations'
 
 # types (load first for module definition)
 require_relative 'structured_params/type/object'

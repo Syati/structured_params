@@ -49,6 +49,8 @@ module StructuredParams
   class Params
     include ActiveModel::Model
     include ActiveModel::Attributes
+    include AttributeMethods
+    include Validations
 
     # @rbs @errors: ::StructuredParams::Errors?
 

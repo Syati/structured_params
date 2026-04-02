@@ -57,4 +57,10 @@ module Internal
   end
 end
 
+class StrictAgeParameter < StructuredParams::Params
+  attribute :age, :integer
+
+  validates_raw :age, format: { with: /\A\d+\z/, message: 'must be numeric string' }
+end
+
 # rubocop:enable Style/OneClassPerFile
