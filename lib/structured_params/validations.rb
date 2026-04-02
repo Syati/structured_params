@@ -63,7 +63,7 @@ module StructuredParams
       self.class.validates_raw_btc_map.each do |attr, btc|
         next if errors.where(btc).none?
 
-        errors.where(btc).dup.each { |e| errors.add(attr, e.message) }
+        errors.where(btc).dup.each { |e| errors.import(e, attribute: attr) }
         errors.delete(btc)
       end
     end

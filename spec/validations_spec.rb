@@ -71,6 +71,39 @@ RSpec.describe StructuredParams::Validations do
       end
     end
 
+    context 'when error metadata is preserved via errors.import' do
+      subject(:params) { params_class.new(age: 'abc') }
+
+      let(:params_class) do
+        stub_const('ErrorMetadataParameter', Class.new(StructuredParams::Params) do
+          attribute :age, :integer
+
+          validates_raw :age, format: { with: /\A\d+\z/, message: 'must be numeric string' }
+        end)
+      end
+
+      before { params.validate }
+
+      it 'preserves structured error type (not a raw message string) in errors.details' do
+        # errors.import keeps the original type symbol (e.g. :invalid from format validator)
+        # rather than a raw message string like "must be numeric string"
+        detail_types = params.errors.details[:age].map { |d| d[:error] }
+        expect(detail_types).to all(be_a(Symbol))
+      end
+
+      it 'does not leak metadata onto before_type_cast attribute' do
+        expect(params.errors.details[:age_before_type_cast]).to be_empty
+      end
+
+      it 'keeps the error findable via errors.where with its preserved type' do
+        # The format validator internally adds :invalid type
+        detail_type = params.errors.details[:age].first[:error]
+        error = params.errors.where(:age, detail_type).first
+        expect(error).not_to be_nil
+        expect(error.type).to eq(detail_type)
+      end
+    end
+
     context 'when combined with validates on the same attribute' do
       let(:age) { 'abc' }
 
