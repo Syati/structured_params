@@ -32,6 +32,7 @@ Use `validates_raw` to validate the original input value before type casting.
 class UserParams < StructuredParams::Params
   attribute :age, :integer
 
+  # Validate raw input before type casting to avoid accepting partially numeric strings (e.g. "12x").
   validates_raw :age, format: { with: /\A\d+\z/, message: 'must be numeric string' }
 end
 
