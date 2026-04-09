@@ -55,6 +55,7 @@ module StructuredParams
     include ActiveModel::Attributes
     include AttributeMethods
     include Validations
+    include I18n
 
     # @rbs @errors: ::StructuredParams::Errors?
 
@@ -290,9 +291,11 @@ module StructuredParams
     #: (untyped, String) -> void
     def import_structured_errors(structured_errors, prefix)
       structured_errors.each do |error|
-        # Create dotted attribute path and import normally
+        # Create dotted attribute path and import with the message already resolved
+        # in the child model's i18n context, so the parent model's locale does not
+        # override the child's translations.
         error_attribute = "#{prefix}.#{error.attribute}"
-        errors.import(error, attribute: error_attribute.to_sym)
+        errors.import(error, attribute: error_attribute.to_sym, message: error.message)
       end
     end
   end

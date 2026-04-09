@@ -12,6 +12,7 @@ require_relative 'structured_params/version'
 require_relative 'structured_params/errors'
 require_relative 'structured_params/attribute_methods'
 require_relative 'structured_params/validations'
+require_relative 'structured_params/i18n'
 
 # types (load first for module definition)
 require_relative 'structured_params/type/object'
