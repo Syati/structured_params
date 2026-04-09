@@ -2,5 +2,5 @@
 # frozen_string_literal: true
 
 module StructuredParams
-  VERSION = '0.9.2' #: string
+  VERSION = '0.9.3' #: string
 end
