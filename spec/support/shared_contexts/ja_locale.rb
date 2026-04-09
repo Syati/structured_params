@@ -9,11 +9,15 @@ RSpec.shared_context 'with ja locale' do
     I18n.enforce_available_locales = false
     I18n.backend.reload!
     load_ja_locale_files(ja_locale_files)
-    I18n.with_locale(:ja) do
-      example.run
+
+    begin
+      I18n.with_locale(:ja) do
+        example.run
+      end
+    ensure
+      I18n.enforce_available_locales = original_enforce
+      I18n.backend.reload!
     end
-    I18n.enforce_available_locales = original_enforce
-    I18n.backend.reload!
   end
 
   def load_ja_locale_files(locale_files)
