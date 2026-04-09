@@ -2,8 +2,6 @@
 
 require 'uri'
 
-# rubocop:disable Style/OneClassPerFile
-
 # Classes primarily used by:
 # - spec/params_spec.rb
 # - spec/i18n_spec.rb
@@ -63,5 +61,3 @@ end
 class OrganizationParameter < StructuredParams::Params
   attribute :team, :array, value_class: TeamMemberParameter
 end
-
-# rubocop:enable Style/OneClassPerFile

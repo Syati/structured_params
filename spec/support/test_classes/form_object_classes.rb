@@ -2,8 +2,6 @@
 
 require 'uri'
 
-# rubocop:disable Style/OneClassPerFile
-
 # Classes primarily used by:
 # - spec/form_object_spec.rb
 # - spec/permit_spec.rb (UserRegistrationForm, Admin::NamespacedForm)
@@ -51,5 +49,3 @@ module Api
     end
   end
 end
-
-# rubocop:enable Style/OneClassPerFile
