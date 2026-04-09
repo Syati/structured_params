@@ -1,0 +1,20 @@
+ja:
+  activemodel:
+    attributes:
+      user:
+        hobbies: "趣味"
+        address: "住所"
+      hobby:
+        name: "名前"
+        level: "レベル"
+        years_experience: "経験年数"
+      address:
+        postal_code: "郵便番号"
+        prefecture: "都道府県"
+      organization:
+        team: "チーム"
+      team_member:
+        name: "名前"
+        organization: "組織"
+      member_organization:
+        name: "名称"

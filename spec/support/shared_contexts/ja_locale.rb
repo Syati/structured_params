@@ -2,6 +2,7 @@
 
 RSpec.shared_context 'with ja locale' do
   let(:ja_locale_files) { [] }
+  let(:ja_overrides) { {} }
 
   around do |example|
     original_enforce = I18n.enforce_available_locales
@@ -16,9 +17,11 @@ RSpec.shared_context 'with ja locale' do
   end
 
   def load_ja_locale_files(locale_files)
+    base_file = File.expand_path('../locales/ja.yml', __dir__)
     files = locale_files.map do |name|
       File.expand_path("../locales/#{name}.ja.yml", __dir__)
     end
-    I18n.backend.load_translations(*files) unless files.empty?
+    I18n.backend.load_translations(base_file, *files)
+    I18n.backend.store_translations(:ja, ja_overrides) unless ja_overrides.empty?
   end
 end

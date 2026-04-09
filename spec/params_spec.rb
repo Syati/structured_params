@@ -355,24 +355,35 @@ RSpec.describe StructuredParams::Params do
       end
     end
 
-    context 'with mixed nested path (team.members.1.name)' do
-      it 'resolves object and array nesting in one path' do
-        expect(OrganizationParameter.human_attribute_name(:'team.members.1.name')).to eq('Team Members 1 Name')
+    context 'with nested array path (team.1.name)' do
+      it 'resolves array nesting in one path' do
+        expect(OrganizationParameter.human_attribute_name(:'team.1.name')).to eq('Team 1 Name')
       end
     end
 
-    context 'with deep object nested path (member.organization.name)' do
-      it 'resolves multiple object nesting levels' do
+    context 'with deep nested path (team.1.organization.name)' do
+      it 'resolves array and object nesting levels' do
         expect(
-          OrganizationParameter.human_attribute_name(:'member.organization.name')
-        ).to eq('Member Organization Name')
+          OrganizationParameter.human_attribute_name(:'team.1.organization.name')
+        ).to eq('Team 1 Organization Name')
       end
     end
 
     context 'with i18n overrides' do
       include_context 'with ja locale'
 
-      let(:ja_locale_files) { %w[params_human_attribute_name] }
+      let(:ja_overrides) do
+        {
+          structured_params: {
+            errors: {
+              nested_attribute: {
+                array: '%<parent>s %<index>s 番目の%<child>s',
+                object: '%<parent>sの%<child>s'
+              }
+            }
+          }
+        }
+      end
 
       it 'formats array nested attribute in Japanese' do
         expect(UserParameter.human_attribute_name(:'hobbies.0.name')).to eq('趣味 0 番目の名前')
@@ -386,12 +397,12 @@ RSpec.describe StructuredParams::Params do
         expect(UserParameter.human_attribute_name(:'address.postal_code')).to eq('住所の郵便番号')
       end
 
-      it 'formats mixed object/array nested attribute in Japanese' do
-        expect(OrganizationParameter.human_attribute_name(:'team.members.1.name')).to eq('チームのメンバー 1 番目の名前')
+      it 'formats nested array attribute in Japanese' do
+        expect(OrganizationParameter.human_attribute_name(:'team.1.name')).to eq('チーム 1 番目の名前')
       end
 
-      it 'formats deep object nested attribute in Japanese' do
-        expect(OrganizationParameter.human_attribute_name(:'member.organization.name')).to eq('担当者の組織の名称')
+      it 'formats deep nested attribute in Japanese' do
+        expect(OrganizationParameter.human_attribute_name(:'team.1.organization.name')).to eq('チーム 1 番目の組織の名称')
       end
     end
   end
@@ -413,7 +424,30 @@ RSpec.describe StructuredParams::Params do
     context 'with i18n overrides (ja)' do
       include_context 'with ja locale'
 
-      let(:ja_locale_files) { %w[params_full_message] }
+      let(:ja_overrides) do
+        {
+          activemodel: {
+            errors: {
+              models: {
+                hobby: {
+                  attributes: {
+                    name: { blank: 'は必須です' },
+                    years_experience: { greater_than_or_equal_to: 'は0以上にしてください' }
+                  }
+                }
+              }
+            }
+          },
+          structured_params: {
+            errors: {
+              nested_attribute: {
+                array: '%<parent>s %<index>s 番目の%<child>s'
+              }
+            }
+          },
+          errors: { format: '%<attribute>s%<message>s' }
+        }
+      end
 
       it 'uses child model i18n for message body' do
         full_messages = user_param.errors.map(&:full_message)
