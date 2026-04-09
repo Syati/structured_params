@@ -1,15 +1,29 @@
 # Strong Parameters Integration
 
-StructuredParams provides flexible ways to handle Strong Parameters for different use cases:
+StructuredParams provides three ways to integrate with Strong Parameters depending on your use case.
 
-## 1. API Requests (simple)
+## Table of Contents
 
-For API endpoints, simply pass `params` directly:
+- [API Requests](#api-requests)
+- [Form Objects](#form-objects)
+- [Manual Control](#manual-control)
+- [Automatic Permit List Generation](#automatic-permit-list-generation)
+- [Controller Patterns](#controller-patterns)
+  - [API Controller](#api-controller)
+  - [Form Object Controller](#form-object-controller)
+- [How `permit` Determines the Parameter Key](#how-permit-determines-the-parameter-key)
+- [Choosing the Right Approach](#choosing-the-right-approach)
+  - [`UserParams.new(params)` — Recommended for APIs](#userparamsnewparams--recommended-for-apis)
+  - [`permit` method — Required for Form Objects](#permit-method--required-for-form-objects)
+  - [`permit_attribute_names` — Manual Control](#permit_attribute_names--manual-control)
+
+## API Requests
+
+For API endpoints, pass `params` directly. Only defined attributes are extracted automatically.
 
 ```ruby
 class Api::V1::UsersController < ApplicationController
   def create
-    # Simply pass params - unpermitted params are automatically filtered
     user_params = UserParams.new(params)
     
     if user_params.valid?
@@ -25,23 +39,21 @@ end
 # { "name": "John", "email": "john@example.com", "age": 30 }
 ```
 
-**Note:** `StructuredParams::Params` automatically extracts only defined attributes from unpermitted `ActionController::Parameters`, providing the same protection as Strong Parameters without explicit `permit` calls.
+> **Note:** `StructuredParams::Params` automatically extracts only defined attributes from unpermitted `ActionController::Parameters`, providing the same protection as Strong Parameters without explicit `permit` calls.
 
-**Alternative (explicit):** If you prefer to be explicit, you can use `permit` with `require: false`:
+If you prefer to be explicit, use `permit` with `require: false`:
 
 ```ruby
-# Explicit permit (optional)
 user_params = UserParams.new(UserParams.permit(params, require: false))
 ```
 
-## 2. Form Objects (with require)
+## Form Objects
 
-For web forms, use `permit` with default `require: true`:
+For web forms, use `permit` (default `require: true`). It automatically resolves nested parameter keys such as `params[:user_registration]`.
 
 ```ruby
 class UsersController < ApplicationController
   def create
-    # permit with require - expects params[:user_registration]
     @form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
     
     if @form.valid?
@@ -57,9 +69,9 @@ end
 # params = { user_registration: { name: "John", email: "john@example.com" } }
 ```
 
-## 3. Manual Control (Traditional - Backward Compatible)
+## Manual Control
 
-If you need more control, you can use `permit_attribute_names` directly:
+For fine-grained control, use `permit_attribute_names` directly.
 
 ```ruby
 class UsersController < ApplicationController
@@ -79,30 +91,28 @@ end
 # [:name, :age, :email, { address: [:street, :city, :postal_code] }, { hobbies: [:name, :level] }]
 ```
 
-**Note:** Both approaches are fully supported and maintain backward compatibility. Existing code using `permit_attribute_names` will continue to work without any changes.
+> **Note:** Existing code using `permit_attribute_names` continues to work without any changes — full backward compatibility is maintained.
 
 ## Automatic Permit List Generation
 
-The `permit_attribute_names` method automatically generates the correct structure for nested objects and arrays:
+`permit_attribute_names` automatically generates the correct structure for nested objects and arrays.
 
 ```ruby
 class UserParams < StructuredParams::Params
-  attribute :name, :string
-  attribute :age, :integer
+  attribute :name,    :string
+  attribute :age,     :integer
   attribute :address, :object, value_class: AddressParams
-  attribute :hobbies, :array, value_class: HobbyParams
-  attribute :tags, :array, value_type: :string
+  attribute :hobbies, :array,  value_class: HobbyParams
+  attribute :tags,    :array,  value_type: :string
 end
 
 UserParams.permit_attribute_names
 # => [:name, :age, { address: [:street, :city, :postal_code] }, { hobbies: [:name, :level] }, { tags: [] }]
 ```
 
-## Controller Pattern
+## Controller Patterns
 
-Here's a typical controller pattern using StructuredParams:
-
-### API Controller (Simple)
+### API Controller
 
 ```ruby
 class Api::V1::UsersController < ApplicationController
@@ -130,7 +140,7 @@ class Api::V1::UsersController < ApplicationController
 end
 ```
 
-### Form Object Controller (With require)
+### Form Object Controller
 
 ```ruby
 class UsersController < ApplicationController
@@ -147,9 +157,9 @@ class UsersController < ApplicationController
 end
 ```
 
-## How `permit` determines the parameter key
+## How `permit` Determines the Parameter Key
 
-The `permit` method uses `model_name.param_key` to determine which key to require:
+`permit` uses `model_name.param_key` to determine which key to `require`:
 
 ```ruby
 UserParams.permit(params)
@@ -162,24 +172,25 @@ Admin::UserForm.permit(params)
 # Internally calls: params.require(:admin_user).permit(...)
 ```
 
-See [Form Objects](form-objects.md) for more details about `model_name` customization.
+See [Form Objects](form-objects.md) for details on `model_name` customization.
 
-## When to use `permit` method?
+## Choosing the Right Approach
 
-### Use `UserParams.new(params)` (Recommended for API)
-- ✅ **Simple and clean** - No boilerplate code
-- ✅ **Automatic filtering** - Unpermitted attributes are automatically filtered
-- ✅ **Same protection** - Provides the same security as Strong Parameters
+### `UserParams.new(params)` — Recommended for APIs
+
+- ✅ **Simple** — no boilerplate
+- ✅ **Automatic filtering** — undefined attributes are excluded
+- ✅ **Same protection** — equivalent security to Strong Parameters
 
 ```ruby
-# API endpoint - Recommended
 user_params = UserParams.new(params)
 ```
 
-### Use `permit` method (Required for Form Objects)
-- ✅ **Required for form helpers** - When using `form_with`/`form_for` in views
-- ✅ **Nested param extraction** - Automatically extracts from nested structure like `params[:user_registration]`
-- ✅ **Explicit about intent** - Makes it clear you're using Strong Parameters
+### `permit` method — Required for Form Objects
+
+- ✅ **Required for form helpers** — when using `form_with`/`form_for` in views
+- ✅ **Nested key resolution** — automatically extracts from `params[:user_registration]` etc.
+- ✅ **Explicit intent** — makes Strong Parameters usage clear
 
 ```ruby
 # Form object - Required
@@ -189,13 +200,13 @@ user_params = UserParams.new(params)
 user_params = UserParams.new(UserParams.permit(params, require: false))
 ```
 
-### Use `permit_attribute_names` (Manual control)
-- ✅ **Custom permit logic** - When you need to add extra fields
-- ✅ **Backward compatibility** - For existing codebases
-- ✅ **Fine-grained control** - When integrating with complex Strong Parameters code
+### `permit_attribute_names` — Manual Control
+
+- ✅ **Custom permit logic** — add extra fields beyond the defined attributes
+- ✅ **Backward compatibility** — drop-in for existing codebases
+- ✅ **Fine-grained control** — integrate with complex Strong Parameters code
 
 ```ruby
-# Custom permit logic
 permitted = params.require(:user).permit(*UserParams.permit_attribute_names, :custom_field)
 user_params = UserParams.new(permitted)
 ```

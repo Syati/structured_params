@@ -1,6 +1,15 @@
 # Validation
 
-Since StructuredParams inherits from ActiveModel, you can use all ActiveModel validations:
+Since StructuredParams inherits from ActiveModel, you can use all standard ActiveModel validations. Validation cascades automatically to nested objects and arrays.
+
+## Table of Contents
+
+- [Basic Validations](#basic-validations)
+- [Validate Raw Input (`validates_raw`)](#validate-raw-input-validates_raw)
+  - [Combining `validates_raw` and `validates`](#combining-validates_raw-and-validates)
+- [Nested Validation](#nested-validation)
+
+## Basic Validations
 
 ```ruby
 class UserParams < StructuredParams::Params
@@ -26,13 +35,12 @@ end
 
 ## Validate Raw Input (`validates_raw`)
 
-Use `validates_raw` to validate the original input value before type casting.
+Use `validates_raw` to validate the original input value before type casting. This is useful for rejecting partially numeric strings like `"12x"` that would otherwise be silently cast.
 
 ```ruby
 class UserParams < StructuredParams::Params
   attribute :age, :integer
 
-  # Validate raw input before type casting to avoid accepting partially numeric strings (e.g. "12x").
   validates_raw :age, format: { with: /\A\d+\z/, message: 'must be numeric string' }
 end
 
@@ -41,12 +49,11 @@ params.valid? # => false
 params.errors.to_hash # => { age: ["must be numeric string"] }
 ```
 
-`validates_raw` uses `*_before_type_cast` internally, then remaps errors back to the original attribute.
-So `errors[:age_before_type_cast]` remains empty in normal usage.
+`validates_raw` uses `*_before_type_cast` internally, then remaps errors back to the original attribute. As a result, `errors[:age_before_type_cast]` remains empty in normal usage.
 
-### Combining `validates_raw` and `validates` on the same attribute
+### Combining `validates_raw` and `validates`
 
-You can use both on the same attribute.
+You can use both on the same attribute. When both fail, each message is added to the same attribute key.
 
 ```ruby
 class UserParams < StructuredParams::Params
@@ -62,12 +69,9 @@ params.errors[:score]
 # => includes errors from both validates_raw and validates
 ```
 
-When both validations fail, both messages are added to the same attribute (`:score`).
-The exact typed-validation message depends on your validator options and I18n locale.
-
 ## Nested Validation
 
-Validation automatically cascades to nested objects and arrays:
+Calling `valid?` on a parent object automatically cascades validation to all nested objects and arrays. Errors are aggregated using dot notation (e.g. `address.postal_code`, `hobbies.0.name`).
 
 ```ruby
 class AddressParams < StructuredParams::Params
@@ -98,4 +102,4 @@ class UserParams < StructuredParams::Params
 end
 ```
 
-When you call `valid?` on the parent object, it automatically validates all nested objects and arrays. Errors from nested objects are aggregated with dot notation (e.g., `address.postal_code`, `hobbies.0.name`).
+Each element of the `hobbies` array is validated automatically when `valid?` is called — no `validates` declaration is needed on the parent class for array attributes.
