@@ -58,6 +58,8 @@ module StructuredParams
 
     include Validations
 
+    include I18n
+
     @errors: ::StructuredParams::Errors?
 
     self.@structured_attributes: Hash[Symbol, singleton(::StructuredParams::Params)]?

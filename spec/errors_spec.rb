@@ -33,8 +33,8 @@ RSpec.describe StructuredParams::Errors do
 
         it 'returns flat structure with full messages' do
           expect(errors_to_hash[:name]).to contain_exactly("Name can't be blank")
-          expect(errors_to_hash[:'address.postal_code']).to contain_exactly("Address postal code can't be blank")
-          expect(errors_to_hash[:'hobbies.0.name']).to contain_exactly('Hobbies 0 name is required')
+          expect(errors_to_hash[:'address.postal_code']).to contain_exactly("Address Postal code can't be blank")
+          expect(errors_to_hash[:'hobbies.0.name']).to contain_exactly('Hobbies 0 Name is required')
         end
       end
     end
@@ -78,9 +78,9 @@ RSpec.describe StructuredParams::Errors do
           it 'returns nested structure with full error messages' do
             # Check that full messages are used (they include attribute names)
             expect(errors_to_hash[:name]).to contain_exactly("Name can't be blank")
-            expect(errors_to_hash[:address]).to include(postal_code: ["Address postal code can't be blank"])
+            expect(errors_to_hash[:address]).to include(postal_code: ["Address Postal code can't be blank"])
             expect(errors_to_hash[:hobbies]).to include(
-              '0': hash_including(name: ["Hobbies 0 name can't be blank"])
+              '0': hash_including(name: ["Hobbies 0 Name can't be blank"])
             )
           end
         end

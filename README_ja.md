@@ -65,16 +65,17 @@ def create
 end
 ```
 
-#### 型変換前の生入力をバリデーションする
+#### プリミティブ配列
 
-ActiveModel の型変換前の入力値を検証したい場合は `validates_raw` を使います。
+`value_type` を使うとプリミティブ型の配列を扱えます。Strong Parameters では配列フォーマット（`tags: []`）で許可されます。
 
 ```ruby
 class UserParams < StructuredParams::Params
-  attribute :age, :integer
-
-  validates_raw :age, format: { with: /\A\d+\z/, message: 'must be numeric string' }
+  attribute :tags, :array, value_type: :string
 end
+
+# 相当する Strong Parameters:
+# params.permit(tags: [])
 ```
 
 ### 2. フォームオブジェクト
@@ -106,11 +107,11 @@ end
 
 - **[インストールとセットアップ](docs/installation.md)** - StructuredParams の始め方
 - **[基本的な使用方法](docs/basic-usage.md)** - パラメータクラス、ネストオブジェクト、配列
-- **[バリデーション](docs/validation.md)** - ネスト構造でのActiveModelバリデーション使用
-- **[Strong Parameters](docs/strong-parameters.md)** - 自動permit リスト生成
+- **[バリデーション](docs/validation.md)** - ネスト構造での ActiveModel バリデーション使用
+- **[Strong Parameters](docs/strong-parameters.md)** - 自動 permit リスト生成
 - **[エラーハンドリング](docs/error-handling.md)** - フラットと構造化エラーフォーマット
-- **[シリアライゼーション](docs/serialization.md)** - パラメータのハッシュとJSON変換
-- **[Gem比較](docs/comparison.md)** - typed_params、dry-validation、reformとの比較
+- **[シリアライゼーション](docs/serialization.md)** - パラメータのハッシュと JSON 変換
+- **[フォームオブジェクト](docs/form-objects.md)** - Rails ビューとのフォームオブジェクトパターン
 
 
 ## コントリビューション

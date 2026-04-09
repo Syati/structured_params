@@ -1,5 +1,15 @@
 # Basic Usage
 
+Define a parameter class by inheriting from `StructuredParams::Params`. Declare typed attributes with `attribute` and use standard ActiveModel validations.
+
+## Table of Contents
+
+- [Basic Parameter Class](#basic-parameter-class)
+- [Nested Objects](#nested-objects)
+- [Arrays](#arrays)
+  - [Array of Primitive Types](#array-of-primitive-types)
+  - [Array of Nested Objects](#array-of-nested-objects)
+
 ## Basic Parameter Class
 
 ```ruby
@@ -25,6 +35,8 @@ end
 
 ## Nested Objects
 
+Use `attribute :name, :object, value_class: SomeParams` to define a nested object.
+
 ```ruby
 class AddressParams < StructuredParams::Params
   attribute :street, :string
@@ -48,41 +60,47 @@ params = {
 }
 
 user_params = UserParams.new(params)
-user_params.address # => AddressParams instance
-user_params.address.city # => "New York"
+user_params.address        # => AddressParams instance
+user_params.address.city   # => "New York"
 ```
 
 ## Arrays
 
+Use `attribute :name, :array, ...` to define an array attribute. Specify `value_type` for scalar elements or `value_class` for object elements.
+
 ### Array of Primitive Types
+
+Use `value_type` for arrays of scalar values.
 
 ```ruby
 class UserParams < StructuredParams::Params
-  attribute :tags, :array, value_type: :string
+  attribute :tags,   :array, value_type: :string
   attribute :scores, :array, value_type: :integer
 end
 
 # Usage
 params = {
-  tags: ["ruby", "rails", "programming"],
+  tags:   ["ruby", "rails", "programming"],
   scores: [85, 92, 78]
 }
 
 user_params = UserParams.new(params)
-user_params.tags # => ["ruby", "rails", "programming"]
+user_params.tags   # => ["ruby", "rails", "programming"]
 user_params.scores # => [85, 92, 78]
 ```
 
 ### Array of Nested Objects
 
+Use `value_class` for arrays of objects.
+
 ```ruby
 class HobbyParams < StructuredParams::Params
-  attribute :name, :string
+  attribute :name,  :string
   attribute :level, :string
 end
 
 class UserParams < StructuredParams::Params
-  attribute :name, :string
+  attribute :name,    :string
   attribute :hobbies, :array, value_class: HobbyParams
 end
 
@@ -91,11 +109,11 @@ params = {
   name: "Alice",
   hobbies: [
     { name: "Photography", level: "beginner" },
-    { name: "Cooking", level: "intermediate" }
+    { name: "Cooking",     level: "intermediate" }
   ]
 }
 
 user_params = UserParams.new(params)
-user_params.hobbies # => [HobbyParams, HobbyParams]
-user_params.hobbies.first.name # => "Photography"
+user_params.hobbies              # => [HobbyParams, HobbyParams]
+user_params.hobbies.first.name   # => "Photography"
 ```

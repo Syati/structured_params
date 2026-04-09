@@ -329,6 +329,134 @@ RSpec.describe StructuredParams::Params do
     end
   end
 
+  describe '.human_attribute_name' do
+    context 'with flat attribute (no dot notation)' do
+      it 'delegates to default ActiveModel behavior' do
+        expect(UserParameter.human_attribute_name(:name)).to eq('Name')
+        expect(UserParameter.human_attribute_name(:email)).to eq('Email')
+      end
+    end
+
+    context 'with nested object attribute (address.postal_code)' do
+      it 'delegates leaf attribute to nested class' do
+        # AddressParameter.human_attribute_name('postal_code') => "Postal code"
+        expect(UserParameter.human_attribute_name(:'address.postal_code')).to eq('Address Postal code')
+      end
+    end
+
+    context 'with array attribute (hobbies.0.name)' do
+      it 'includes index and delegates leaf to nested class' do
+        # default en: "Hobbies 0 Name"
+        expect(UserParameter.human_attribute_name(:'hobbies.0.name')).to eq('Hobbies 0 Name')
+      end
+
+      it 'reflects different indices correctly' do
+        expect(UserParameter.human_attribute_name(:'hobbies.2.level')).to eq('Hobbies 2 Level')
+      end
+    end
+
+    context 'with nested array path (team.1.name)' do
+      it 'resolves array nesting in one path' do
+        expect(OrganizationParameter.human_attribute_name(:'team.1.name')).to eq('Team 1 Name')
+      end
+    end
+
+    context 'with deep nested path (team.1.organization.name)' do
+      it 'resolves array and object nesting levels' do
+        expect(
+          OrganizationParameter.human_attribute_name(:'team.1.organization.name')
+        ).to eq('Team 1 Organization Name')
+      end
+    end
+
+    context 'with i18n overrides' do
+      include_context 'with ja locale'
+
+      let(:ja_overrides) do
+        {
+          activemodel: {
+            errors: {
+              nested_attribute: {
+                array: '%<parent>s %<index>s 番目の%<child>s',
+                object: '%<parent>sの%<child>s'
+              }
+            }
+          }
+        }
+      end
+
+      it 'formats array nested attribute in Japanese' do
+        expect(UserParameter.human_attribute_name(:'hobbies.0.name')).to eq('趣味 0 番目の名前')
+      end
+
+      it 'formats higher index correctly' do
+        expect(UserParameter.human_attribute_name(:'hobbies.2.level')).to eq('趣味 2 番目のレベル')
+      end
+
+      it 'formats object nested attribute in Japanese' do
+        expect(UserParameter.human_attribute_name(:'address.postal_code')).to eq('住所の郵便番号')
+      end
+
+      it 'formats nested array attribute in Japanese' do
+        expect(OrganizationParameter.human_attribute_name(:'team.1.name')).to eq('チーム 1 番目の名前')
+      end
+
+      it 'formats deep nested attribute in Japanese' do
+        expect(OrganizationParameter.human_attribute_name(:'team.1.organization.name')).to eq('チーム 1 番目の組織の名称')
+      end
+    end
+  end
+
+  describe 'i18n full_message for array errors' do
+    subject(:user_param) do
+      build(:user_parameter, hobbies: [{ name: '', level: 5, years_experience: -1 }])
+    end
+
+    before { user_param.valid? }
+
+    context 'with default (en) locale' do
+      it 'includes index in full_message' do
+        full_messages = user_param.errors.map(&:full_message)
+        expect(full_messages).to include(match(/Hobbies 0 Name/))
+      end
+    end
+
+    context 'with i18n overrides (ja)' do
+      include_context 'with ja locale'
+
+      let(:ja_overrides) do
+        {
+          activemodel: {
+            errors: {
+              nested_attribute: {
+                array: '%<parent>s %<index>s 番目の%<child>s'
+              },
+              models: {
+                hobby: {
+                  attributes: {
+                    name: { blank: 'は必須です' },
+                    years_experience: { greater_than_or_equal_to: 'は0以上にしてください' }
+                  }
+                }
+              }
+            }
+          },
+          errors: { format: '%<attribute>s%<message>s' }
+        }
+      end
+
+      it 'uses child model i18n for message body' do
+        full_messages = user_param.errors.map(&:full_message)
+        expect(full_messages).to include('趣味 0 番目の名前は必須です')
+      end
+
+      it 'uses child model i18n for years_experience message' do
+        full_messages = user_param.errors.map(&:full_message)
+        expect(full_messages).to include('趣味 0 番目の経験年数は0以上にしてください')
+      end
+    end
+  end
+
   describe 'edge cases' do
     subject(:user_param) { build(:user_parameter, **params) }
 

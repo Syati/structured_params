@@ -112,8 +112,7 @@ end
 - **[Strong Parameters](docs/strong-parameters.md)** - Automatic permit list generation
 - **[Error Handling](docs/error-handling.md)** - Flat and structured error formats
 - **[Serialization](docs/serialization.md)** - Converting parameters to hashes and JSON
-- **[Gem Comparison](docs/comparison.md)** - Comparison with typed_params, dry-validation, and reform
-
+- **[Form Objects](docs/form-objects.md)** - Form object pattern with Rails views
 
 ## Contributing
 

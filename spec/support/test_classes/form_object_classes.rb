@@ -2,9 +2,9 @@
 
 require 'uri'
 
-# rubocop:disable Style/OneClassPerFile
-
-# Additional test helper classes for form object and permit specs
+# Classes primarily used by:
+# - spec/form_object_spec.rb
+# - spec/permit_spec.rb (UserRegistrationForm, Admin::NamespacedForm)
 
 # Form object with validations
 class UserRegistrationForm < StructuredParams::Params
@@ -31,7 +31,7 @@ class Profile < StructuredParams::Params
   attribute :bio, :string
 end
 
-# Namespaced classes for testing model_name
+# Namespaced classes for testing model_name / permit
 module Admin
   class UserForm < StructuredParams::Params
     attribute :name, :string
@@ -49,17 +49,3 @@ module Api
     end
   end
 end
-
-module Internal
-  class OrderParameters < StructuredParams::Params
-    attribute :item_name, :string
-  end
-end
-
-class StrictAgeParameter < StructuredParams::Params
-  attribute :age, :integer
-
-  validates_raw :age, format: { with: /\A\d+\z/, message: 'must be numeric string' }
-end
-
-# rubocop:enable Style/OneClassPerFile

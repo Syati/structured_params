@@ -1,10 +1,32 @@
 # Using as Form Objects
 
-`StructuredParams::Params` can be used as a Rails form object pattern. Integration with form helpers (`form_with`, `form_for`) makes it easy to use in views.
+`StructuredParams::Params` can be used as a Rails form object. It integrates with `form_with` / `form_for` and works seamlessly in views.
 
-## Basic Usage
+## Table of Contents
 
-### Defining a Form Object
+- [Defining a Form Object](#defining-a-form-object)
+- [Using in Controllers](#using-in-controllers)
+- [Using in Views](#using-in-views)
+- [Benefits of Form Objects](#benefits-of-form-objects)
+  - [Separation from Models](#separation-from-models)
+  - [Combining Multiple Models](#combining-multiple-models)
+  - [Nested Forms](#nested-forms)
+- [Class Name Conventions](#class-name-conventions)
+  - [Nested Modules](#nested-modules)
+- [i18n Support](#i18n-support)
+  - [Setting Up Translation Files](#setting-up-translation-files)
+  - [Customizing Nested Attribute Labels](#customizing-nested-attribute-labels)
+- [API Integration](#api-integration)
+- [Strong Parameters Integration](#strong-parameters-integration)
+- [Testing](#testing)
+- [Best Practices](#best-practices)
+  - [Base Form Class with Auto-permit](#base-form-class-with-auto-permit)
+  - [Implementing a save Method](#implementing-a-save-method)
+  - [Using Transactions](#using-transactions)
+  - [Conditional Validations](#conditional-validations)
+- [Related Documentation](#related-documentation)
+
+## Defining a Form Object
 
 ```ruby
 class UserRegistrationForm < StructuredParams::Params
@@ -32,7 +54,7 @@ class UserRegistrationForm < StructuredParams::Params
 end
 ```
 
-### Using in Controllers
+## Using in Controllers
 
 ```ruby
 class UsersController < ApplicationController
@@ -56,7 +78,7 @@ end
 # params.require(:user_registration).permit(UserRegistrationForm.permit_attribute_names)
 ```
 
-### Using in Views
+## Using in Views
 
 ```erb
 <%= form_with model: @form, url: users_path do |f| %>
@@ -104,9 +126,9 @@ end
 
 ## Benefits of Form Objects
 
-### 1. Separation from Models
+### Separation from Models
 
-Using form objects allows you to separate validation logic from models.
+Form objects let you separate validation logic from persistence models.
 
 ```ruby
 # Model focuses on persistence
@@ -126,9 +148,9 @@ class UserRegistrationForm < StructuredParams::Params
 end
 ```
 
-### 2. Combining Multiple Models
+### Combining Multiple Models
 
-You can easily create forms that handle multiple models together.
+Easily create forms that handle multiple models together.
 
 ```ruby
 class UserProfileForm < StructuredParams::Params
@@ -160,9 +182,9 @@ class ProfileAttributes < StructuredParams::Params
 end
 ```
 
-### 3. Nested Forms
+### Nested Forms
 
-Forms with nested attributes are also easy to handle.
+Define forms with nested attributes concisely.
 
 ```ruby
 class OrderForm < StructuredParams::Params
@@ -201,7 +223,7 @@ UserParameters.model_name.name             # => "User"
 
 ### Nested Modules
 
-When defined within a module, the namespace is preserved:
+When defined inside a module, the namespace is preserved.
 
 ```ruby
 module Admin
@@ -217,7 +239,7 @@ Admin::UserForm.model_name.route_key  # => "admin_users"
 
 ## i18n Support
 
-Form objects are integrated with Rails' i18n system.
+Form objects integrate with Rails' i18n system.
 
 ### Setting Up Translation Files
 
@@ -242,7 +264,7 @@ ja:
               confirmation: "パスワードが一致しません"
 ```
 
-### Using in Views
+Use `model_name.human` in views to display the translated model name:
 
 ```erb
 <%= form_with model: @form, url: users_path do |f| %>
@@ -255,6 +277,36 @@ ja:
   <%= f.email_field :email %>
 <% end %>
 ```
+
+### Customizing Nested Attribute Labels
+
+Labels for dot-notation nested attributes (e.g. `hobbies.0.name`, `address.postal_code`) can be customized via:
+
+- `activemodel.errors.nested_attribute.array` — label for array elements (uses `%{parent}`, `%{index}`, `%{child}`)
+- `activemodel.errors.nested_attribute.object` — label for nested objects (uses `%{parent}`, `%{child}`)
+
+```yaml
+# config/locales/ja.yml
+ja:
+  activemodel:
+    attributes:
+      user:
+        hobbies: "趣味"
+        address: "住所"
+      hobby:
+        name: "名前"
+      address:
+        postal_code: "郵便番号"
+    errors:
+      nested_attribute:
+        array:  "%{parent} %{index} 番目の%{child}"
+        object: "%{parent}の%{child}"
+```
+
+Examples:
+
+- `UserParameter.human_attribute_name(:'hobbies.0.name')      # => "趣味 0 番目の名前"`
+- `UserParameter.human_attribute_name(:'address.postal_code')  # => "住所の郵便番号"`
 
 ## API Integration
 
@@ -277,16 +329,15 @@ end
 
 ## Strong Parameters Integration
 
-Form objects are automatically integrated with Strong Parameters.
+Form objects integrate automatically with Strong Parameters.
 
 ```ruby
 class UsersController < ApplicationController
   def create
-    # permit method automatically executes require and permit
+    # permit automatically calls require and permit internally
     @form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
     
     if @form.valid?
-      # Save to database
       user = User.create!(@form.attributes)
       redirect_to user
     else
@@ -295,7 +346,7 @@ class UsersController < ApplicationController
   end
 end
 
-# If you want manual control
+# For manual control
 class UsersController < ApplicationController
   def create
     permitted_params = params.require(:user_registration).permit(
@@ -316,7 +367,7 @@ end
 
 ## Testing
 
-Form object tests can be easily written with standard RSpec.
+Form objects are straightforward to test with standard RSpec.
 
 ```ruby
 RSpec.describe UserRegistrationForm do
@@ -360,9 +411,55 @@ end
 
 ## Best Practices
 
-### 1. Implementing the save Method
+### Base Form Class with Auto-permit
 
-Implementing a `save` method in the form object helps keep controllers simple.
+When using form objects with Rails views, wrapping `permit` inside `initialize` via a shared base class eliminates the repetitive `FormClass.permit(params)` pattern in every controller action.
+
+```ruby
+# app/forms/application_form.rb
+class ApplicationForm < StructuredParams::Params
+  def initialize(params)
+    permitted = params.is_a?(ActionController::Parameters) ? self.class.permit(params) : params
+    super(permitted)
+  end
+end
+```
+
+All form objects inherit from `ApplicationForm`:
+
+```ruby
+class UserRegistrationForm < ApplicationForm
+  attribute :name, :string
+  attribute :email, :string
+  attribute :password, :string
+end
+```
+
+Controllers become simpler — `permit` is called transparently:
+
+```ruby
+# Before
+@form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
+
+# After
+@form = UserRegistrationForm.new(params)
+```
+
+The `ActionController::Parameters` guard ensures that plain hashes (e.g. in tests or `def new`) are passed through unchanged:
+
+```ruby
+# Works fine in the new action
+@form = UserRegistrationForm.new({})
+
+# Works fine in tests
+form = UserRegistrationForm.new(name: "Alice", email: "alice@example.com")
+```
+
+> **Note:** This pattern is most useful when you consistently use form objects with Rails views. For API-only parameter classes, the plain `UserParams.new(params)` approach is sufficient and requires no base class.
+
+### Implementing a save Method
+
+Adding a `save` method to the form object keeps controllers simple.
 
 ```ruby
 class UserRegistrationForm < StructuredParams::Params
@@ -391,7 +488,7 @@ def create
 end
 ```
 
-### 2. Using Transactions
+### Using Transactions
 
 Use transactions when creating multiple models.
 
@@ -410,9 +507,9 @@ rescue ActiveRecord::RecordInvalid
 end
 ```
 
-### 3. Conditional Validations
+### Conditional Validations
 
-You can implement validations based on state.
+Apply validations conditionally based on state.
 
 ```ruby
 class UserUpdateForm < StructuredParams::Params

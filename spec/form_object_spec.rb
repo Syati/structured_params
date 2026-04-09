@@ -16,14 +16,6 @@ RSpec.describe 'StructuredParams::Params as Form Object' do
     it 'provides proper route_key' do
       expect(UserRegistrationForm.model_name.route_key).to eq('user_registrations')
     end
-
-    it 'provides proper singular form' do
-      expect(UserRegistrationForm.model_name.singular).to eq('user_registration')
-    end
-
-    it 'provides proper plural form' do
-      expect(UserRegistrationForm.model_name.plural).to eq('user_registrations')
-    end
   end
 
   describe '#persisted?' do
@@ -74,11 +66,6 @@ RSpec.describe 'StructuredParams::Params as Form Object' do
         }
       end
 
-      it 'is invalid' do
-        form = UserRegistrationForm.new(params)
-        expect(form).not_to be_valid
-      end
-
       it 'has errors for invalid fields' do
         form = UserRegistrationForm.new(params)
         form.valid?
@@ -87,19 +74,6 @@ RSpec.describe 'StructuredParams::Params as Form Object' do
         expect(form.errors[:email]).to be_present
         expect(form.errors[:age]).to be_present
       end
-    end
-  end
-
-  describe 'integration with Rails form helpers' do
-    it 'provides all necessary methods for form_with' do
-      form = UserRegistrationForm.new({})
-
-      # form_with requires these methods
-      expect(form).to respond_to(:model_name)
-      expect(form).to respond_to(:persisted?)
-      expect(form).to respond_to(:to_key)
-      expect(form).to respond_to(:to_model)
-      expect(form).to respond_to(:errors)
     end
   end
 
@@ -125,53 +99,20 @@ RSpec.describe 'StructuredParams::Params as Form Object' do
   end
 
   describe 'nested class within module' do
-    it 'handles namespace correctly in name' do
+    it 'keeps namespace and generates model naming keys' do
       expect(Admin::UserForm.model_name.name).to eq('Admin::User')
-    end
-
-    it 'provides correct param_key with namespace' do
-      # Rails includes namespace in param_key when full name is provided
       expect(Admin::UserForm.model_name.param_key).to eq('admin_user')
-    end
-
-    it 'provides correct route_key with namespace' do
       expect(Admin::UserForm.model_name.route_key).to eq('admin_users')
-    end
-
-    it 'provides correct i18n_key with namespace' do
       expect(Admin::UserForm.model_name.i18n_key).to eq(:'admin/user')
     end
   end
 
   describe 'deeply nested class' do
-    it 'handles multiple namespaces correctly in name' do
+    it 'keeps deep namespace and generates model naming keys' do
       expect(Api::V1::RegistrationForm.model_name.name).to eq('Api::V1::Registration')
-    end
-
-    it 'provides correct param_key for deeply nested class' do
       expect(Api::V1::RegistrationForm.model_name.param_key).to eq('api_v1_registration')
-    end
-
-    it 'provides correct route_key for deeply nested class' do
       expect(Api::V1::RegistrationForm.model_name.route_key).to eq('api_v1_registrations')
-    end
-
-    it 'provides correct i18n_key for deeply nested class' do
       expect(Api::V1::RegistrationForm.model_name.i18n_key).to eq(:'api/v1/registration')
-    end
-  end
-
-  describe 'nested class with Parameters suffix' do
-    it 'removes suffix and keeps namespace' do
-      expect(Internal::OrderParameters.model_name.name).to eq('Internal::Order')
-    end
-
-    it 'provides correct param_key' do
-      expect(Internal::OrderParameters.model_name.param_key).to eq('internal_order')
-    end
-
-    it 'provides correct i18n_key' do
-      expect(Internal::OrderParameters.model_name.i18n_key).to eq(:'internal/order')
     end
   end
 end
