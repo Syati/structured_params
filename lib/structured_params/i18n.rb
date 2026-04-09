@@ -46,7 +46,7 @@ module StructuredParams
         return super if parts.length == 1
         return super unless structured_attributes.key?(parts.first)
 
-        resolve_nested_human_attribute_name(parts)
+        resolve_nested_human_attribute_name(parts, options)
       end
 
       private
@@ -54,14 +54,20 @@ module StructuredParams
       # Walk +parts+ (e.g. ["hobbies", "0", "name"]) and build a human-readable
       # label by delegating each segment to the appropriate nested class.
       #
-      #: (Array[String]) -> String
-      def resolve_nested_human_attribute_name(parts)
+      # Only +:locale+ is forwarded to inner +human_attribute_name+ calls.
+      # Options such as +:default+ are specific to the outer call (e.g. from
+      # +full_messages+) and must not bleed into individual segment lookups,
+      # where they would replace the segment's own translation fallback.
+      #
+      #: (Array[String], Hash[untyped, untyped]) -> String
+      def resolve_nested_human_attribute_name(parts, options)
         label = nil
         klass = self
+        inner_opts = options.slice(:locale)
 
         attr_segments(parts).each do |index, attr|
-          human = klass&.human_attribute_name(attr) || attr.humanize
-          label = build_nested_label(label, index, human)
+          human = klass&.human_attribute_name(attr, inner_opts) || attr.humanize
+          label = build_nested_label(label, index, human, options)
           klass &&= klass.structured_attributes[attr]
         end
 
@@ -93,24 +99,31 @@ module StructuredParams
       #   activemodel.errors.nested_attribute.array  (parent, index, child)
       #   activemodel.errors.nested_attribute.object (parent, child)
       #
-      #: (String?, String?, String) -> String
-      def build_nested_label(result, index, attr_human)
-        if result.nil?
-          attr_human
-        elsif index
+      # The +locale:+ key from +options+ is forwarded to ::I18n.t so that an
+      # explicit locale passed to human_attribute_name is honoured.
+      #
+      #: (String?, String?, String, Hash[untyped, untyped]) -> String
+      def build_nested_label(result, index, attr_human, options)
+        return attr_human if result.nil?
+
+        i18n_opts = options.slice(:locale)
+
+        if index
           ::I18n.t(
             'activemodel.errors.nested_attribute.array',
             parent: result,
             index: index,
             child: attr_human,
-            default: "#{result} #{index} #{attr_human}"
+            default: "#{result} #{index} #{attr_human}",
+            **i18n_opts
           )
         else
           ::I18n.t(
             'activemodel.errors.nested_attribute.object',
             parent: result,
             child: attr_human,
-            default: "#{result} #{attr_human}"
+            default: "#{result} #{attr_human}",
+            **i18n_opts
           )
         end
       end

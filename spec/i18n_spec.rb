@@ -190,4 +190,45 @@ RSpec.describe StructuredParams::I18n do
       end
     end
   end
+
+  describe 'explicit locale: option threading' do
+    include_context 'with ja locale'
+
+    let(:ja_overrides) do
+      {
+        activemodel: {
+          errors: {
+            nested_attribute: {
+              array: '%<parent>s %<index>s 番目の%<child>s',
+              object: '%<parent>sの%<child>s'
+            }
+          }
+        }
+      }
+    end
+
+    context 'when locale: :ja is passed while the current locale is :en' do
+      it 'resolves array attribute labels in ja' do
+        I18n.with_locale(:en) do
+          expect(UserParameter.human_attribute_name(:'hobbies.0.name', locale: :ja)).to eq('趣味 0 番目の名前')
+        end
+      end
+
+      it 'resolves object attribute labels in ja' do
+        I18n.with_locale(:en) do
+          expect(UserParameter.human_attribute_name(:'address.postal_code', locale: :ja)).to eq('住所の郵便番号')
+        end
+      end
+    end
+
+    context 'when locale: :en is passed while the current locale is :ja' do
+      it 'resolves array attribute labels in en' do
+        expect(UserParameter.human_attribute_name(:'hobbies.0.name', locale: :en)).to eq('Hobbies 0 Name')
+      end
+
+      it 'resolves object attribute labels in en' do
+        expect(UserParameter.human_attribute_name(:'address.postal_code', locale: :en)).to eq('Address Postal code')
+      end
+    end
+  end
 end
