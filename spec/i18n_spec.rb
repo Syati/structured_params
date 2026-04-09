@@ -64,13 +64,13 @@ RSpec.describe StructuredParams::I18n do
   end
 
   describe 'custom i18n format keys' do
-    describe 'array format key (structured_params.errors.nested_attribute.array)' do
+    describe 'array format key (activemodel.errors.nested_attribute.array)' do
       context 'when the array format key is configured' do
         include_context 'with ja locale'
 
         let(:ja_overrides) do
           {
-            structured_params: {
+            activemodel: {
               errors: {
                 nested_attribute: {
                   array: '%<parent>s %<index>s 番目の%<child>s'
@@ -87,7 +87,7 @@ RSpec.describe StructuredParams::I18n do
         end
 
         it 'uses default space-separated format when object format key is missing' do
-          # structured_params.errors.nested_attribute.object は未設定
+          # activemodel.errors.nested_attribute.object is not configured
           expect(UserParameter.human_attribute_name(:'address.postal_code')).to eq('住所 郵便番号')
         end
       end
@@ -99,13 +99,13 @@ RSpec.describe StructuredParams::I18n do
       end
     end
 
-    describe 'object format key (structured_params.errors.nested_attribute.object)' do
+    describe 'object format key (activemodel.errors.nested_attribute.object)' do
       context 'when the object format key is configured' do
         include_context 'with ja locale'
 
         let(:ja_overrides) do
           {
-            structured_params: {
+            activemodel: {
               errors: {
                 nested_attribute: {
                   object: '%<parent>sの%<child>s'
@@ -121,7 +121,7 @@ RSpec.describe StructuredParams::I18n do
         end
 
         it 'uses default space-separated format when array format key is missing' do
-          # structured_params.errors.nested_attribute.array は未設定
+          # activemodel.errors.nested_attribute.array is not configured
           expect(UserParameter.human_attribute_name(:'hobbies.0.name')).to eq('趣味 0 名前')
         end
       end
@@ -143,9 +143,7 @@ RSpec.describe StructuredParams::I18n do
               attributes: {
                 user: { name: 'ユーザー名' },
                 hobby: { name: 'ホビー名' }
-              }
-            },
-            structured_params: {
+              },
               errors: {
                 nested_attribute: {
                   array: '%<parent>s %<index>s 番目の%<child>s'
@@ -172,7 +170,7 @@ RSpec.describe StructuredParams::I18n do
 
       let(:ja_overrides) do
         {
-          structured_params: {
+          activemodel: {
             errors: {
               nested_attribute: {
                 array: '%<parent>s %<index>s 番目の%<child>s',

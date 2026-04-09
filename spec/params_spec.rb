@@ -374,7 +374,7 @@ RSpec.describe StructuredParams::Params do
 
       let(:ja_overrides) do
         {
-          structured_params: {
+          activemodel: {
             errors: {
               nested_attribute: {
                 array: '%<parent>s %<index>s 番目の%<child>s',
@@ -428,6 +428,9 @@ RSpec.describe StructuredParams::Params do
         {
           activemodel: {
             errors: {
+              nested_attribute: {
+                array: '%<parent>s %<index>s 番目の%<child>s'
+              },
               models: {
                 hobby: {
                   attributes: {
@@ -435,13 +438,6 @@ RSpec.describe StructuredParams::Params do
                     years_experience: { greater_than_or_equal_to: 'は0以上にしてください' }
                   }
                 }
-              }
-            }
-          },
-          structured_params: {
-            errors: {
-              nested_attribute: {
-                array: '%<parent>s %<index>s 番目の%<child>s'
               }
             }
           },
