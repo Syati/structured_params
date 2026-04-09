@@ -46,8 +46,13 @@ module StructuredParams
     # Walk +parts+ (e.g. ["hobbies", "0", "name"]) and build a human-readable
     # label by delegating each segment to the appropriate nested class.
     #
-    # : (Array[String]) -> String
-    def resolve_nested_human_attribute_name: (Array[String]) -> String
+    # Only +:locale+ is forwarded to inner +human_attribute_name+ calls.
+    # Options such as +:default+ are specific to the outer call (e.g. from
+    # +full_messages+) and must not bleed into individual segment lookups,
+    # where they would replace the segment's own translation fallback.
+    #
+    # : (Array[String], Hash[untyped, untyped]) -> String
+    def resolve_nested_human_attribute_name: (Array[String], Hash[untyped, untyped]) -> String
 
     # Convert a parts array into (index_or_nil, attr) pairs.
     #
@@ -64,7 +69,10 @@ module StructuredParams
     #   activemodel.errors.nested_attribute.array  (parent, index, child)
     #   activemodel.errors.nested_attribute.object (parent, child)
     #
-    # : (String?, String?, String) -> String
-    def build_nested_label: (String?, String?, String) -> String
+    # The +locale:+ key from +options+ is forwarded to ::I18n.t so that an
+    # explicit locale passed to human_attribute_name is honoured.
+    #
+    # : (String?, String?, String, Hash[untyped, untyped]) -> String
+    def build_nested_label: (String?, String?, String, Hash[untyped, untyped]) -> String
   end
 end
