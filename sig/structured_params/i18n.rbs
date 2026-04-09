@@ -11,7 +11,7 @@ module StructuredParams
   #
   # == i18n keys
   #
-  # You can customise how array indices and object nesting are rendered by
+  # You can customize how array indices and object nesting are rendered by
   # defining the following keys in your locale file:
   #
   #   ja:
