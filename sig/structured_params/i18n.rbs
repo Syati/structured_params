@@ -15,7 +15,7 @@ module StructuredParams
   # defining the following keys in your locale file:
   #
   #   ja:
-  #     structured_params:
+  #     activemodel:
   #       errors:
   #         nested_attribute:
   #           array:  "%{parent} %{index} 番目の%{child}"
@@ -61,8 +61,8 @@ module StructuredParams
     # and the new +attr_human+ into a single label string.
     #
     # Uses the i18n keys:
-    #   structured_params.errors.nested_attribute.array  (parent, index, child)
-    #   structured_params.errors.nested_attribute.object (parent, child)
+    #   activemodel.errors.nested_attribute.array  (parent, index, child)
+    #   activemodel.errors.nested_attribute.object (parent, child)
     #
     # : (String?, String?, String) -> String
     def build_nested_label: (String?, String?, String) -> String
