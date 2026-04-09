@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.3] - 2026-04-09
+
+## What's Changed
+* Enhance i18n support for nested attributes and update documentation by @Syati in https://github.com/Syati/structured_params/pull/15
+
+
+**Full Changelog**: https://github.com/Syati/structured_params/compare/v0.9.2...v0.9.3
+
 ## [0.9.2] - 2026-04-02
 
 ## What's Changed
