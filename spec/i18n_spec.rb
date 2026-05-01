@@ -308,6 +308,26 @@ RSpec.describe StructuredParams::I18n do
         expect { StructuredParams.configure { |c| c.array_index_base = -1 } }
           .to raise_error(ArgumentError, /array_index_base must be 0 or 1/)
       end
+
+      it 'raises ArgumentError for non-integer values (string)' do
+        expect { StructuredParams.configure { |c| c.array_index_base = '1' } }
+          .to raise_error(ArgumentError, /array_index_base must be 0 or 1/)
+      end
+
+      it 'raises ArgumentError for non-integer values (boolean)' do
+        expect { StructuredParams.configure { |c| c.array_index_base = true } }
+          .to raise_error(ArgumentError, /array_index_base must be 0 or 1/)
+      end
+
+      it 'accepts 0' do
+        expect { StructuredParams.configure { |c| c.array_index_base = 0 } }.not_to raise_error
+        expect(StructuredParams.configuration.array_index_base).to eq(0)
+      end
+
+      it 'accepts 1' do
+        expect { StructuredParams.configure { |c| c.array_index_base = 1 } }.not_to raise_error
+        expect(StructuredParams.configuration.array_index_base).to eq(1)
+      end
     end
   end
 end
