@@ -54,7 +54,7 @@ module StructuredParams
 
     #: (Integer) -> void
     def array_index_base=(value)
-      raise ArgumentError, "array_index_base must be 0 or 1, got: #{value.inspect}" unless [0, 1].include?(value)
+      raise ArgumentError, "array_index_base must be 0 or 1, got: #{value.inspect}" unless value.is_a?(Integer) && [0, 1].include?(value)
 
       @array_index_base = value
     end
