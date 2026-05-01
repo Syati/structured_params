@@ -37,4 +37,3 @@ gems:
      ignore: true
    - name: diff-lcs
      ignore: true
-

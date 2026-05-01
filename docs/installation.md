@@ -6,6 +6,7 @@ Steps to add StructuredParams to a Rails application.
 
 - [Installation](#installation)
 - [Setup](#setup)
+- [Configuration](#configuration)
 - [Custom Type Registration](#custom-type-registration)
 
 ## Installation
@@ -36,6 +37,29 @@ StructuredParams.register_types
 ```
 
 This registers the `:object` and `:array` types with ActiveModel::Type.
+
+## Configuration
+
+You can configure StructuredParams in the same initializer:
+
+```ruby
+# config/initializers/structured_params.rb
+StructuredParams.register_types
+
+StructuredParams.configure do |config|
+  # Controls how array indices appear in human attribute names and full_messages.
+  #   0 (default) — 0-based: "Hobbies 0 Name can't be blank"
+  #   1           — 1-based: "Hobbies 1 Name can't be blank"
+  config.array_index_base = 1
+end
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `array_index_base` | `0` | Index base for array elements in error messages (`0` or `1`) |
+
+> **Note:** `array_index_base` affects `human_attribute_name` and therefore `full_messages`.
+> For APIs returning raw error keys (the typical pattern), this setting has no visible effect.
 
 ## Custom Type Registration
 

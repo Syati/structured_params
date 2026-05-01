@@ -3,6 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe StructuredParams::I18n do
+  # Reset global configuration after each example to avoid test pollution
+  after { StructuredParams.reset_configuration! }
+
   describe '.human_attribute_name' do
     describe 'flat attributes (without dot notation)' do
       it 'delegates to the default ActiveModel implementation' do
@@ -228,6 +231,102 @@ RSpec.describe StructuredParams::I18n do
 
       it 'resolves object attribute labels in en' do
         expect(UserParameter.human_attribute_name(:'address.postal_code', locale: :en)).to eq('Address Postal code')
+      end
+    end
+  end
+
+  describe 'StructuredParams.configuration.array_index_base' do
+    describe 'default (array_index_base: 0, 0-based)' do
+      it 'displays raw 0-based indices in the default en format' do
+        expect(UserParameter.human_attribute_name(:'hobbies.0.name')).to eq('Hobbies 0 Name')
+        expect(UserParameter.human_attribute_name(:'hobbies.2.name')).to eq('Hobbies 2 Name')
+      end
+
+      context 'with ja locale and array format key' do
+        include_context 'with ja locale'
+
+        let(:ja_overrides) do
+          { activemodel: { errors: { nested_attribute: { array: '%<parent>s %<index>s 番目の%<child>s' } } } }
+        end
+
+        it 'displays 0-based indices in the ja format' do
+          expect(UserParameter.human_attribute_name(:'hobbies.0.name')).to eq('趣味 0 番目の名前')
+          expect(UserParameter.human_attribute_name(:'hobbies.2.name')).to eq('趣味 2 番目の名前')
+        end
+      end
+    end
+
+    describe 'array_index_base: 1 (1-based, human-friendly)' do
+      before { StructuredParams.configure { |c| c.array_index_base = 1 } }
+
+      it 'adds 1 to the raw index in the default en format' do
+        # path .0. → display 1, path .2. → display 3
+        expect(UserParameter.human_attribute_name(:'hobbies.0.name')).to eq('Hobbies 1 Name')
+        expect(UserParameter.human_attribute_name(:'hobbies.2.name')).to eq('Hobbies 3 Name')
+      end
+
+      it 'applies to API param error messages as well as Form Object full_messages (same code path)' do
+        expect(UserParameter.human_attribute_name(:'hobbies.0.level')).to eq('Hobbies 1 Level')
+      end
+
+      context 'with ja locale and array format key' do
+        include_context 'with ja locale'
+
+        let(:ja_overrides) do
+          { activemodel: { errors: { nested_attribute: { array: '%<parent>s %<index>s 番目の%<child>s' } } } }
+        end
+
+        it 'displays 1-based indices in the ja format' do
+          expect(UserParameter.human_attribute_name(:'hobbies.0.name')).to eq('趣味 1 番目の名前')
+          expect(UserParameter.human_attribute_name(:'hobbies.2.name')).to eq('趣味 3 番目の名前')
+        end
+      end
+
+      context 'when locale: :ja is passed explicitly' do
+        include_context 'with ja locale'
+
+        let(:ja_overrides) do
+          { activemodel: { errors: { nested_attribute: { array: '%<parent>s %<index>s 番目の%<child>s' } } } }
+        end
+
+        it 'threads both locale option and 1-based index correctly' do
+          I18n.with_locale(:en) do
+            result = UserParameter.human_attribute_name(:'hobbies.0.name', locale: :ja)
+            expect(result).to eq('趣味 1 番目の名前')
+          end
+        end
+      end
+    end
+
+    describe 'validation of array_index_base=' do
+      it 'raises ArgumentError for values other than 0 or 1' do
+        expect { StructuredParams.configure { |c| c.array_index_base = 2 } }
+          .to raise_error(ArgumentError, /array_index_base must be 0 or 1/)
+      end
+
+      it 'raises ArgumentError for negative values' do
+        expect { StructuredParams.configure { |c| c.array_index_base = -1 } }
+          .to raise_error(ArgumentError, /array_index_base must be 0 or 1/)
+      end
+
+      it 'raises ArgumentError for non-integer values (string)' do
+        expect { StructuredParams.configure { |c| c.array_index_base = '1' } }
+          .to raise_error(ArgumentError, /array_index_base must be 0 or 1/)
+      end
+
+      it 'raises ArgumentError for non-integer values (boolean)' do
+        expect { StructuredParams.configure { |c| c.array_index_base = true } }
+          .to raise_error(ArgumentError, /array_index_base must be 0 or 1/)
+      end
+
+      it 'accepts 0' do
+        expect { StructuredParams.configure { |c| c.array_index_base = 0 } }.not_to raise_error
+        expect(StructuredParams.configuration.array_index_base).to eq(0)
+      end
+
+      it 'accepts 1' do
+        expect { StructuredParams.configure { |c| c.array_index_base = 1 } }.not_to raise_error
+        expect(StructuredParams.configuration.array_index_base).to eq(1)
       end
     end
   end

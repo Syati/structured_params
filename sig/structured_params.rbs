@@ -2,6 +2,47 @@
 
 # Main module
 module StructuredParams
+  # Global configuration for StructuredParams.
+  #
+  # == Options
+  #
+  # +array_index_base+ (Integer, default: +0+)::
+  #   Controls how array indices are displayed in human attribute names and
+  #   error messages.
+  #
+  #   * +0+ – 0-based (raw Ruby index): "Hobbies 0 Name"
+  #   * +1+ – 1-based (human-friendly): "Hobbies 1 Name"
+  #
+  # This setting applies to both API param error messages and Form Object
+  # +full_messages+.
+  #
+  # == Example
+  #
+  #   # config/initializers/structured_params.rb
+  #   StructuredParams.configure do |config|
+  #     config.array_index_base = 1   # show "1st" instead of "0th" to users
+  #   end
+  class Configuration
+    attr_reader array_index_base: Integer
+
+    # : () -> void
+    def initialize: () -> void
+
+    # : (Integer) -> void
+    def array_index_base=: (Integer) -> void
+  end
+
+  self.@configuration: Configuration?
+
+  # : () -> Configuration
+  def self.configuration: () -> Configuration
+
+  # : () { (Configuration) -> void } -> void
+  def self.configure: () { (Configuration) -> void } -> void
+
+  # : () -> void
+  def self.reset_configuration!: () -> void
+
   # Helper method to register types
   # : () -> void
   def self.register_types: () -> void
