@@ -32,7 +32,7 @@ module StructuredParams
     def array_index_base=: (Integer) -> void
   end
 
-  @configuration: Configuration?
+  self.@configuration: Configuration?
 
   # : () -> Configuration
   def self.configuration: () -> Configuration

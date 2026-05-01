@@ -61,7 +61,7 @@ module StructuredParams
   end
 
   class << self
-    # @rbs @configuration: Configuration?
+    # @rbs self.@configuration: Configuration?
 
     #: () -> Configuration
     def configuration

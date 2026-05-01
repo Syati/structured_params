@@ -6,7 +6,7 @@ gems:
   source:
     type: git
     name: ruby/gem_rbs_collection
-    revision: 14112a82013860a7d2e5246b4c4f36fbb8c349dc
+    revision: d7090c40bcea7011ad2ebaaa46bdd7d7ac3136a7
     remote: https://github.com/ruby/gem_rbs_collection.git
     repo_dir: gems
 - name: actionview
@@ -14,7 +14,7 @@ gems:
   source:
     type: git
     name: ruby/gem_rbs_collection
-    revision: 14112a82013860a7d2e5246b4c4f36fbb8c349dc
+    revision: d7090c40bcea7011ad2ebaaa46bdd7d7ac3136a7
     remote: https://github.com/ruby/gem_rbs_collection.git
     repo_dir: gems
 - name: activemodel
@@ -22,7 +22,7 @@ gems:
   source:
     type: git
     name: ruby/gem_rbs_collection
-    revision: 14112a82013860a7d2e5246b4c4f36fbb8c349dc
+    revision: d7090c40bcea7011ad2ebaaa46bdd7d7ac3136a7
     remote: https://github.com/ruby/gem_rbs_collection.git
     repo_dir: gems
 - name: activesupport
@@ -30,7 +30,7 @@ gems:
   source:
     type: git
     name: ruby/gem_rbs_collection
-    revision: 14112a82013860a7d2e5246b4c4f36fbb8c349dc
+    revision: d7090c40bcea7011ad2ebaaa46bdd7d7ac3136a7
     remote: https://github.com/ruby/gem_rbs_collection.git
     repo_dir: gems
 - name: ast
@@ -38,7 +38,7 @@ gems:
   source:
     type: git
     name: ruby/gem_rbs_collection
-    revision: 9bf2eebb1c54b5d6f23f2acb65d4c36f195b4783
+    revision: d7090c40bcea7011ad2ebaaa46bdd7d7ac3136a7
     remote: https://github.com/ruby/gem_rbs_collection.git
     repo_dir: gems
 - name: base64
@@ -50,19 +50,15 @@ gems:
   source:
     type: stdlib
 - name: bigdecimal
-  version: '3.1'
+  version: 4.1.2
   source:
-    type: git
-    name: ruby/gem_rbs_collection
-    revision: 14112a82013860a7d2e5246b4c4f36fbb8c349dc
-    remote: https://github.com/ruby/gem_rbs_collection.git
-    repo_dir: gems
+    type: rubygems
 - name: binding_of_caller
   version: '1.0'
   source:
     type: git
     name: ruby/gem_rbs_collection
-    revision: 9bf2eebb1c54b5d6f23f2acb65d4c36f195b4783
+    revision: d7090c40bcea7011ad2ebaaa46bdd7d7ac3136a7
     remote: https://github.com/ruby/gem_rbs_collection.git
     repo_dir: gems
 - name: date
@@ -82,13 +78,17 @@ gems:
   source:
     type: git
     name: ruby/gem_rbs_collection
-    revision: 14112a82013860a7d2e5246b4c4f36fbb8c349dc
+    revision: d7090c40bcea7011ad2ebaaa46bdd7d7ac3136a7
     remote: https://github.com/ruby/gem_rbs_collection.git
     repo_dir: gems
 - name: logger
-  version: '0'
+  version: '1.7'
   source:
-    type: stdlib
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: d7090c40bcea7011ad2ebaaa46bdd7d7ac3136a7
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
 - name: monitor
   version: '0'
   source:
@@ -102,15 +102,19 @@ gems:
   source:
     type: git
     name: ruby/gem_rbs_collection
-    revision: 9bf2eebb1c54b5d6f23f2acb65d4c36f195b4783
+    revision: d7090c40bcea7011ad2ebaaa46bdd7d7ac3136a7
     remote: https://github.com/ruby/gem_rbs_collection.git
     repo_dir: gems
 - name: prism
   version: 1.9.0
   source:
     type: rubygems
+- name: random-formatter
+  version: '0'
+  source:
+    type: stdlib
 - name: rspec-parameterized-core
-  version: 2.0.1
+  version: 2.0.2
   source:
     type: rubygems
 - name: rspec-parameterized-table_syntax
@@ -142,7 +146,7 @@ gems:
   source:
     type: git
     name: ruby/gem_rbs_collection
-    revision: 14112a82013860a7d2e5246b4c4f36fbb8c349dc
+    revision: d7090c40bcea7011ad2ebaaa46bdd7d7ac3136a7
     remote: https://github.com/ruby/gem_rbs_collection.git
     repo_dir: gems
 - name: uri
