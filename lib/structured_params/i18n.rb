@@ -22,9 +22,12 @@ module StructuredParams
   #           array:  "%{parent} %{index} 番目の%{child}"
   #           object: "%{parent}の%{child}"
   #
-  # Without these keys the defaults are:
+  # Without these keys the defaults are (with array_index_base: 0):
   #   array  → "<parent> <index> <child>"   (e.g. "Hobbies 0 Name")
   #   object → "<parent> <child>"           (e.g. "Address Postal code")
+  #
+  # With array_index_base: 1 (human-friendly):
+  #   array  → "Hobbies 1 Name"
   module I18n
     extend ActiveSupport::Concern
 
@@ -34,11 +37,11 @@ module StructuredParams
       # Flat attributes (no dot) are delegated to the default ActiveModel
       # behaviour unchanged.
       #
-      # Example (en default):
+      # Example (en default, array_index_base: 0):
       #   human_attribute_name(:'hobbies.0.name') # => "Hobbies 0 Name"
       #
-      # Example with i18n (ja):
-      #   human_attribute_name(:'hobbies.0.name') # => "趣味 0 番目の名前"
+      # Example with i18n (ja) and array_index_base: 1:
+      #   human_attribute_name(:'hobbies.0.name') # => "趣味 1 番目の名前"
       #
       #: (Symbol | String, ?Hash[untyped, untyped]) -> String
       def human_attribute_name(attribute, options = {})
@@ -99,6 +102,11 @@ module StructuredParams
       #   activemodel.errors.nested_attribute.array  (parent, index, child)
       #   activemodel.errors.nested_attribute.object (parent, child)
       #
+      # The index value passed to the i18n template is adjusted by
+      # +StructuredParams.configuration.array_index_base+:
+      #   * +0+ (default) – raw 0-based Ruby index (e.g. 0, 1, 2, …)
+      #   * +1+           – human-friendly 1-based index (e.g. 1, 2, 3, …)
+      #
       # The +locale:+ key from +options+ is forwarded to ::I18n.t so that an
       # explicit locale passed to human_attribute_name is honoured.
       #
@@ -109,12 +117,13 @@ module StructuredParams
         i18n_opts = options.slice(:locale)
 
         if index
+          display_index = index.to_i + StructuredParams.configuration.array_index_base
           ::I18n.t(
             'activemodel.errors.nested_attribute.array',
             parent: result,
-            index: index,
+            index: display_index,
             child: attr_human,
-            default: "#{result} #{index} #{attr_human}",
+            default: "#{result} #{display_index} #{attr_human}",
             **i18n_opts
           )
         else
