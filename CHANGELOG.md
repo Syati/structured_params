@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.4] - 2026-05-02
+
+## What's Changed
+* Enhance array index handling and update RBS configuration by @Syati in https://github.com/Syati/structured_params/pull/16
+
+
+**Full Changelog**: https://github.com/Syati/structured_params/compare/v0.9.3...v0.9.4
+
 ## [0.9.3] - 2026-04-09
 
 ## What's Changed
