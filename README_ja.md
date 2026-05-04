@@ -54,8 +54,7 @@ end
 
 # API コントローラーで使用
 def create
-  permitted = UserParams.permit(params, require: false)
-  user_params = UserParams.new(permitted)
+  user_params = UserParams.new(params)
   
   if user_params.valid?
     User.create!(user_params.attributes)
@@ -91,6 +90,8 @@ class UserRegistrationForm < StructuredParams::Params
 end
 
 # コントローラーで使用
+# permit は params.require(:user_registration).permit(...) を内部で呼び出す
+# API と異なり、フォームオブジェクトでは require によるキー絞り込みが必要なため permit を使う
 def create
   form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
   

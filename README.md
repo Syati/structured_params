@@ -54,8 +54,7 @@ end
 
 # Use in API controller
 def create
-  permitted = UserParams.permit(params, require: false)
-  user_params = UserParams.new(permitted)
+  user_params = UserParams.new(params)
   
   if user_params.valid?
     User.create!(user_params.attributes)
@@ -92,6 +91,8 @@ class UserRegistrationForm < StructuredParams::Params
 end
 
 # Use in controller
+# permit calls params.require(:user_registration).permit(...) internally.
+# Unlike API usage, form objects need require to scope to the correct key.
 def create
   form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
   
