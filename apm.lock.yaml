@@ -1,0 +1,9 @@
+lockfile_version: '1'
+generated_at: '2026-05-06T06:08:39.678040+00:00'
+dependencies: []
+local_deployed_files:
+- .codex/agents/SKILL.toml
+- .github/agents/SKILL.agent.md
+local_deployed_file_hashes:
+  .codex/agents/SKILL.toml: sha256:0d60d547206b1500c8ac1527fc2125e7cf5574e090813fff1d2c182261e9bbce
+  .github/agents/SKILL.agent.md: sha256:0a2fea847ca037b9d45533d83e5614759f10d63767ba6893396a1cbf3bffc48a
