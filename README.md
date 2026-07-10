@@ -2,7 +2,9 @@
 
 English | [日本語](README_ja.md)
 
-**Type-safe API parameter validation and form objects for Rails**
+**Typed parameter objects and form objects for Rails.**
+
+Supports Ruby `3.2+` and Rails / ActiveModel `7.2` to `< 9.0`.
 
 StructuredParams solves these challenges:
 
@@ -26,7 +28,7 @@ Built on ActiveModel, making nested objects and arrays easy to handle.
 # Installation
 gem 'structured_params'
 
-# Initialize
+# Register built-in structured types
 StructuredParams.register_types
 ```
 
@@ -44,7 +46,7 @@ class UserParams < StructuredParams::Params
   attribute :score, :integer
   attribute :tags, :array, value_type: :string           # Primitive array
   attribute :address, :object, value_class: AddressParams # Nested object
-  
+
   # validate raw string before type casting
   validates_raw :score, format: { with: /\A\d+\z/, message: 'must be numeric string' }
   validates :name, presence: true
@@ -55,7 +57,7 @@ end
 # Use in API controller
 def create
   user_params = UserParams.new(params)
-  
+
   if user_params.valid?
     User.create!(user_params.attributes)
   else
@@ -77,7 +79,6 @@ end
 # params.permit(tags: [])
 ```
 
-
 ### 2. Form Object
 
 ```ruby
@@ -85,7 +86,7 @@ class UserRegistrationForm < StructuredParams::Params
   attribute :name, :string
   attribute :email, :string
   attribute :terms_accepted, :boolean
-  
+
   validates :name, :email, presence: true
   validates :terms_accepted, acceptance: true
 end
@@ -95,7 +96,7 @@ end
 # Unlike API usage, form objects need require to scope to the correct key.
 def create
   form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
-  
+
   if form.valid?
     User.create!(form.attributes)
     redirect_to root_path
