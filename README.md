@@ -25,10 +25,10 @@ Built on ActiveModel, making nested objects and arrays easy to handle.
 ## Quick Start
 
 ```ruby
-# Installation
+# Gemfile
 gem 'structured_params'
 
-# Register built-in structured types
+# config/initializers/structured_params.rb
 StructuredParams.register_types
 ```
 
