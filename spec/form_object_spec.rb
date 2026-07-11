@@ -40,6 +40,38 @@ RSpec.describe 'StructuredParams::Params as Form Object' do
   end
 
   describe 'validation' do
+    context 'with ActionController::Parameters' do
+      let(:params) do
+        ActionController::Parameters.new(
+          user_registration: {
+            name: 'John Doe',
+            email: 'john@example.com',
+            age: 25,
+            terms_accepted: true,
+            extra_field: 'filtered'
+          }
+        )
+      end
+
+      it 'requires the nested form key and filters unpermitted parameters' do
+        form = UserRegistrationForm.new(params)
+
+        expect(form).to have_attributes(
+          name: 'John Doe',
+          email: 'john@example.com',
+          age: 25,
+          terms_accepted: true
+        )
+        expect { form.extra_field }.to raise_error(NoMethodError)
+      end
+
+      it 'raises ParameterMissing when the nested form key is missing' do
+        missing_params = ActionController::Parameters.new(other_key: {})
+
+        expect { UserRegistrationForm.new(missing_params) }.to raise_error(ActionController::ParameterMissing)
+      end
+    end
+
     context 'with valid parameters' do
       let(:params) do
         {

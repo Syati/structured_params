@@ -37,7 +37,7 @@ module StructuredParams
   #   end
   #
   #   # In controller:
-  #   @form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
+  #   @form = UserRegistrationForm.new(params)
   #   if @form.valid?
   #     User.create!(@form.attributes)
   #     redirect_to user_path
@@ -98,7 +98,7 @@ module StructuredParams
 
       # Permit parameters with optional require
       #
-      # For Form Objects (with require):
+      # For Form Objects (explicit manual permit):
       #   UserRegistrationForm.permit(params)
       #   # equivalent to:
       #   params.require(:user_registration).permit(*UserRegistrationForm.permit_attribute_names)
@@ -130,6 +130,11 @@ module StructuredParams
                          type.value_class
                        end
         end
+      end
+
+      #: () -> bool
+      def require_nested_parameters_by_default?
+        name.end_with?('Form')
       end
 
       private
@@ -212,7 +217,7 @@ module StructuredParams
     def process_input_parameters(params)
       case params
       when ActionController::Parameters
-        self.class.permit(params, require: false).to_h
+        self.class.permit(params, require: self.class.require_nested_parameters_by_default?).to_h
       when Hash
         # ActiveModel::Attributes can handle both symbol and string keys
         params
