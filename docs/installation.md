@@ -36,7 +36,15 @@ Register the custom types in a Rails initializer:
 StructuredParams.register_types
 ```
 
-This registers the `:object` and `:array` types with ActiveModel::Type.
+This registers the `:object` and `:array` types with `ActiveModel::Type`.
+
+The registration is explicit on purpose:
+
+- `:object` and `:array` are convenient names in application code
+- They are also generic names, so auto-registering them at gem load time could silently collide with other code
+- Keeping registration in an initializer makes the opt-in explicit and keeps custom aliases available when needed
+
+If you skip this step, `attribute :name, :object` and `attribute :name, :array` will not resolve in ActiveModel type lookup.
 
 ## Configuration
 
@@ -53,6 +61,8 @@ StructuredParams.configure do |config|
   config.array_index_base = 1
 end
 ```
+
+If you only need configuration and want to avoid the default names, use `register_types_as(...)` first and then configure in the same initializer.
 
 | Option | Default | Description |
 |--------|---------|-------------|
@@ -77,3 +87,5 @@ class UserParams < StructuredParams::Params
   attribute :hobbies, :structured_array,  value_class: HobbyParams
 end
 ```
+
+Prefer custom names if your app or another gem already uses `:object` or `:array` in `ActiveModel::Type`.
