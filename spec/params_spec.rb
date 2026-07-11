@@ -417,7 +417,7 @@ RSpec.describe StructuredParams::Params do
     context 'with default (en) locale' do
       it 'includes index in full_message' do
         full_messages = user_param.errors.map(&:full_message)
-        expect(full_messages).to include(match(/Hobbies 0 Name/))
+        expect(full_messages).to include('Hobbies 0 Name can\'t be blank')
       end
     end
 

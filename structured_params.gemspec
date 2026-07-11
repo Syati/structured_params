@@ -10,7 +10,11 @@ Gem::Specification.new do |spec|
   spec.email = ['mizuki-y@syati.info']
 
   spec.summary = 'Typed parameter objects and form objects for Rails.'
-  spec.description = 'StructuredParams provides typed parameter objects for Rails APIs and forms, with nested object and array support, Strong Parameters integration, and raw-input validation via validates_raw.'
+  spec.description = (
+    'StructuredParams provides typed parameter objects for Rails APIs and forms, ' \
+      'with nested object and array support, Strong Parameters integration, and ' \
+      'raw-input validation via validates_raw.'
+  )
   spec.homepage = 'https://github.com/Syati/structured_params'
   spec.license = 'MIT'
   spec.required_ruby_version = '>= 3.2.0'

@@ -25,10 +25,10 @@ ActiveModel をベースに、ネストしたオブジェクトや配列も簡�
 ## クイックスタート
 
 ```ruby
-# インストール
+# Gemfile
 gem 'structured_params'
 
-# 組み込みの構造化型を登録
+# config/initializers/structured_params.rb
 StructuredParams.register_types
 ```
 

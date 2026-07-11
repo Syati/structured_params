@@ -4,7 +4,7 @@ English | [日本語](README_ja.md)
 
 **Typed parameter objects and form objects for Rails.**
 
-Supports Ruby `3.2+` and Rails / ActiveModel `7.2` to `< 9.0`.
+Supports Ruby `>= 3.2` and Rails / ActiveModel `>= 7.2, < 9.0`.
 
 StructuredParams solves these challenges:
 
@@ -25,10 +25,10 @@ Built on ActiveModel, making nested objects and arrays easy to handle.
 ## Quick Start
 
 ```ruby
-# Installation
+# Gemfile
 gem 'structured_params'
 
-# Register built-in structured types
+# config/initializers/structured_params.rb
 StructuredParams.register_types
 ```
 
