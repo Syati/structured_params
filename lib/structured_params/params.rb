@@ -50,6 +50,7 @@ module StructuredParams
   #     <%= f.text_field :name %>
   #     <%= f.text_field :email %>
   #   <% end %>
+  # rubocop:disable Metrics/ClassLength
   class Params
     include ActiveModel::Model
     include ActiveModel::Attributes
@@ -133,8 +134,8 @@ module StructuredParams
       end
 
       #: () -> bool
-      def require_nested_parameters_by_default?
-        name.end_with?('Form')
+      def form_class?
+        name&.end_with?('Form') || false
       end
 
       private
@@ -161,27 +162,17 @@ module StructuredParams
       @errors ||= Errors.new(self)
     end
 
-    # ========================================
-    # Form object support methods
-    # These methods enable integration with Rails form helpers (form_with, form_for)
-    # ========================================
-
-    # Indicates whether the form object has been persisted to database
-    # Always returns false for parameter/form objects
+    # Form object support for Rails helpers.
     #: () -> bool
     def persisted?
       false
     end
 
-    # Returns the primary key value for the model
-    # Always returns nil for parameter/form objects
     #: () -> nil
     def to_key
       nil
     end
 
-    # Returns self for form helpers
-    # Required by Rails form helpers to get the model object
     #: () -> self
     def to_model
       self
@@ -217,13 +208,38 @@ module StructuredParams
     def process_input_parameters(params)
       case params
       when ActionController::Parameters
-        self.class.permit(params, require: self.class.require_nested_parameters_by_default?).to_h
+        process_action_controller_parameters(params)
       when Hash
         # ActiveModel::Attributes can handle both symbol and string keys
         params
       else
         raise ArgumentError, "params must be ActionController::Parameters or Hash, got #{params.class}"
       end
+    end
+
+    #: (ActionController::Parameters) -> Hash[untyped, untyped]
+    def process_action_controller_parameters(params)
+      self.class.permit(params, require: require_nested_parameters?(params)).to_h
+    end
+
+    #: (ActionController::Parameters) -> bool
+    def require_nested_parameters?(params)
+      return false unless self.class.form_class?
+      return false if params.permitted?
+      return true if matches_model_name?(params)
+      return false if attribute_keys_present?(params)
+
+      true
+    end
+
+    #: (ActionController::Parameters) -> bool
+    def matches_model_name?(params)
+      params.key?(self.class.model_name.param_key)
+    end
+
+    #: (ActionController::Parameters) -> bool
+    def attribute_keys_present?(params)
+      params.keys.any? { |key| self.class.attribute_types.key?(key.to_s) }
     end
 
     # Execute structured parameter validation
@@ -304,4 +320,5 @@ module StructuredParams
       end
     end
   end
+  # rubocop:enable Metrics/ClassLength
 end

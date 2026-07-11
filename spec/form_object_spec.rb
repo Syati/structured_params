@@ -4,6 +4,22 @@ require 'spec_helper'
 
 # rubocop:disable RSpec/DescribeClass
 RSpec.describe 'StructuredParams::Params as Form Object' do
+  describe '.form_class?' do
+    it 'returns true for classes with a Form suffix' do
+      expect(UserRegistrationForm.form_class?).to be(true)
+    end
+
+    it 'returns false for classes without a Form suffix' do
+      expect(UserParameter.form_class?).to be(false)
+    end
+
+    it 'returns false for anonymous classes' do
+      klass = Class.new(StructuredParams::Params)
+
+      expect(klass.form_class?).to be(false)
+    end
+  end
+
   describe '.model_name' do
     it 'removes "Form" suffix from class name' do
       expect(UserRegistrationForm.model_name.name).to eq('UserRegistration')
@@ -69,6 +85,64 @@ RSpec.describe 'StructuredParams::Params as Form Object' do
         missing_params = ActionController::Parameters.new(other_key: {})
 
         expect { UserRegistrationForm.new(missing_params) }.to raise_error(ActionController::ParameterMissing)
+      end
+
+      it 'accepts already permitted form parameters without requiring again' do
+        permitted_params = UserRegistrationForm.permit(params)
+        form = UserRegistrationForm.new(permitted_params)
+
+        expect(form).to have_attributes(
+          name: 'John Doe',
+          email: 'john@example.com',
+          age: 25,
+          terms_accepted: true
+        )
+      end
+
+      it 'accepts scoped parameters without requiring again' do
+        form = UserRegistrationForm.new(params[:user_registration])
+
+        expect(form).to have_attributes(
+          name: 'John Doe',
+          email: 'john@example.com',
+          age: 25,
+          terms_accepted: true
+        )
+      end
+    end
+
+    context 'with flat ActionController::Parameters' do
+      let(:params) do
+        ActionController::Parameters.new(
+          name: 'Jane Doe',
+          email: 'jane@example.com',
+          age: 20,
+          terms_accepted: true
+        )
+      end
+
+      it 'permits flat parameters without requiring a nested key' do
+        form = UserRegistrationForm.new(params)
+
+        expect(form).to have_attributes(
+          name: 'Jane Doe',
+          email: 'jane@example.com',
+          age: 20,
+          terms_accepted: true
+        )
+      end
+    end
+
+    context 'with anonymous params class' do
+      it 'does not call form-only require logic' do
+        klass = Class.new(StructuredParams::Params) do
+          attribute :name, :string
+        end
+
+        params = ActionController::Parameters.new(name: 'Anonymous')
+        form = klass.new(params)
+
+        expect(form.name).to eq('Anonymous')
       end
     end
 

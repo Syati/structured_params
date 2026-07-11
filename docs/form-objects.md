@@ -2,6 +2,8 @@
 
 `StructuredParams::Params` can be used as a Rails form object. It integrates with `form_with` / `form_for` and works seamlessly in views.
 
+Classes whose names end with `Form` automatically require and permit the nested root key when initialized with `ActionController::Parameters`.
+
 ## Table of Contents
 
 - [Defining a Form Object](#defining-a-form-object)

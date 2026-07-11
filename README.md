@@ -94,6 +94,7 @@ end
 # Use in controller
 # Passing ActionController::Parameters to a Form class automatically calls
 # params.require(:user_registration).permit(...) internally.
+# Use a class name ending with `Form` to enable this behavior.
 def create
   form = UserRegistrationForm.new(params)
 

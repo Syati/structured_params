@@ -36,7 +36,7 @@ module StructuredParams
   #   end
   #
   #   # In controller:
-  #   @form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
+  #   @form = UserRegistrationForm.new(params)
   #   if @form.valid?
   #     User.create!(@form.attributes)
   #     redirect_to user_path
@@ -49,6 +49,7 @@ module StructuredParams
   #     <%= f.text_field :name %>
   #     <%= f.text_field :email %>
   #   <% end %>
+  # rubocop:disable Metrics/ClassLength
   class Params
     include ActiveModel::Model
 
@@ -84,7 +85,7 @@ module StructuredParams
 
     # Permit parameters with optional require
     #
-    # For Form Objects (with require):
+    # For Form Objects (explicit manual permit):
     #   UserRegistrationForm.permit(params)
     #   # equivalent to:
     #   params.require(:user_registration).permit(*UserRegistrationForm.permit_attribute_names)
@@ -101,6 +102,9 @@ module StructuredParams
     # : () -> Hash[Symbol, singleton(::StructuredParams::Params)]
     def self.structured_attributes: () -> Hash[Symbol, singleton(::StructuredParams::Params)]
 
+    # : () -> bool
+    def self.form_class?: () -> bool
+
     # Determine if the specified type is a StructuredParams type
     # : (ActiveModel::Type::Value) -> bool
     private def self.structured_params_type?: (ActiveModel::Type::Value) -> bool
@@ -111,18 +115,13 @@ module StructuredParams
     # : () -> ::StructuredParams::Errors
     def errors: () -> ::StructuredParams::Errors
 
-    # Indicates whether the form object has been persisted to database
-    # Always returns false for parameter/form objects
+    # Form object support for Rails helpers.
     # : () -> bool
     def persisted?: () -> bool
 
-    # Returns the primary key value for the model
-    # Always returns nil for parameter/form objects
     # : () -> nil
     def to_key: () -> nil
 
-    # Returns self for form helpers
-    # Required by Rails form helpers to get the model object
     # : () -> self
     def to_model: () -> self
 
@@ -137,6 +136,18 @@ module StructuredParams
     # Process input parameters
     # : (untyped) -> Hash[untyped, untyped]
     def process_input_parameters: (untyped) -> Hash[untyped, untyped]
+
+    # : (ActionController::Parameters) -> Hash[untyped, untyped]
+    def process_action_controller_parameters: (ActionController::Parameters) -> Hash[untyped, untyped]
+
+    # : (ActionController::Parameters) -> bool
+    def require_nested_parameters?: (ActionController::Parameters) -> bool
+
+    # : (ActionController::Parameters) -> bool
+    def matches_model_name?: (ActionController::Parameters) -> bool
+
+    # : (ActionController::Parameters) -> bool
+    def attribute_keys_present?: (ActionController::Parameters) -> bool
 
     # Execute structured parameter validation
     # : () -> void
