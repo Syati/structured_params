@@ -6,6 +6,33 @@ module StructuredParams
   module FormObject
     extend ActiveSupport::Concern
 
+    class_methods do
+      # @rbs @model_name: ::ActiveModel::Name?
+
+      #: () -> bool
+      def form_class?
+        name&.end_with?('Form') || false
+      end
+
+      # Override model_name for Rails form integration.
+      #
+      # Only applies to Form-suffixed classes, stripping the "Form" suffix so
+      # form_with/url helpers and i18n resolve to the underlying model name
+      # (e.g. UserRegistrationForm -> "UserRegistration"). Other Params
+      # subclasses (Parameters/Parameter/plain) keep the default ActiveModel
+      # model_name based on their own class name.
+      #: () -> ::ActiveModel::Name
+      def model_name
+        @model_name ||= if form_class?
+                          namespace = module_parents.detect { |mod| mod.respond_to?(:use_relative_model_naming?) }
+                          name_without_suffix = name.sub(/Form$/, '')
+                          ActiveModel::Name.new(self, namespace, name_without_suffix)
+                        else
+                          super
+                        end
+      end
+    end
+
     # Form object support for Rails helpers.
     #: () -> bool
     def persisted?

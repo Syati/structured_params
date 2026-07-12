@@ -37,7 +37,7 @@ RSpec.describe 'StructuredParams::Params.permit' do
     context 'with nested objects' do
       let(:params) do
         ActionController::Parameters.new(
-          user: {
+          user_parameter: {
             name: 'John',
             email: 'john@example.com',
             age: 30,
@@ -66,7 +66,7 @@ RSpec.describe 'StructuredParams::Params.permit' do
     context 'with arrays' do
       let(:params) do
         ActionController::Parameters.new(
-          user: {
+          user_parameter: {
             name: 'John',
             email: 'john@example.com',
             age: 30,

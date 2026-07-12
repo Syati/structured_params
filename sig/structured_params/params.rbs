@@ -66,13 +66,6 @@ module StructuredParams
 
     self.@structured_attributes: Hash[Symbol, singleton(::StructuredParams::Params)]?
 
-    self.@model_name: ::ActiveModel::Name?
-
-    # Override model_name for Rails integrations.
-    # By default, removes "Parameters", "Parameter", or "Form" suffix from class name.
-    # : () -> ::ActiveModel::Name
-    def self.model_name: () -> ::ActiveModel::Name
-
     # Generate permitted parameter structure for Strong Parameters
     # : () -> Array[untyped]
     def self.permit_attribute_names: () -> Array[untyped]
@@ -95,9 +88,6 @@ module StructuredParams
     # Get structured attributes and their classes
     # : () -> Hash[Symbol, singleton(::StructuredParams::Params)]
     def self.structured_attributes: () -> Hash[Symbol, singleton(::StructuredParams::Params)]
-
-    # : () -> bool
-    def self.form_class?: () -> bool
 
     # Determine if the specified type is a StructuredParams type
     # : (ActiveModel::Type::Value) -> bool

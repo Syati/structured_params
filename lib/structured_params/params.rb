@@ -62,18 +62,6 @@ module StructuredParams
 
     class << self
       # @rbs self.@structured_attributes: Hash[Symbol, singleton(::StructuredParams::Params)]?
-      # @rbs self.@model_name: ::ActiveModel::Name?
-
-      # Override model_name for Rails integrations.
-      # By default, removes "Parameters", "Parameter", or "Form" suffix from class name.
-      #: () -> ::ActiveModel::Name
-      def model_name
-        @model_name ||= begin
-          namespace = module_parents.detect { |name| name.respond_to?(:use_relative_model_naming?) }
-          name_without_suffix = name.sub(/(Parameters?|Form)$/, '')
-          ActiveModel::Name.new(self, namespace, name_without_suffix)
-        end
-      end
 
       # Generate permitted parameter structure for Strong Parameters
       #: () -> Array[untyped]
@@ -123,11 +111,6 @@ module StructuredParams
                          type.value_class
                        end
         end
-      end
-
-      #: () -> bool
-      def form_class?
-        name&.end_with?('Form') || false
       end
 
       private
