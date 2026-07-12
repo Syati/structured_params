@@ -53,7 +53,7 @@ module StructuredParams
 
     # Whether to call params.require(param_key) before permitting.
     #
-    # Only called for Form-suffixed classes (see Params#process_action_controller_parameters).
+    # Only called for Form-suffixed classes (see Params#process_input_parameters).
     #: (ActionController::Parameters) -> bool
     def require_nested_parameters?(params)
       return true if matches_model_name?(params)

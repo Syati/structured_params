@@ -167,19 +167,14 @@ module StructuredParams
     def process_input_parameters(params)
       case params
       when ActionController::Parameters
-        process_action_controller_parameters(params)
+        require = self.class.form_class? && require_nested_parameters?(params)
+        self.class.permit(params, require: require).to_h
       when Hash
         # ActiveModel::Attributes can handle both symbol and string keys
         params
       else
         raise ArgumentError, "params must be ActionController::Parameters or Hash, got #{params.class}"
       end
-    end
-
-    #: (ActionController::Parameters) -> Hash[untyped, untyped]
-    def process_action_controller_parameters(params)
-      require = self.class.form_class? && require_nested_parameters?(params)
-      self.class.permit(params, require: require).to_h
     end
 
     # Execute structured parameter validation

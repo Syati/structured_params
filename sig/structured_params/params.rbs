@@ -111,9 +111,6 @@ module StructuredParams
     # : (untyped) -> Hash[untyped, untyped]
     def process_input_parameters: (untyped) -> Hash[untyped, untyped]
 
-    # : (ActionController::Parameters) -> Hash[untyped, untyped]
-    def process_action_controller_parameters: (ActionController::Parameters) -> Hash[untyped, untyped]
-
     # Execute structured parameter validation
     # : () -> void
     def validate_structured_parameters: () -> void
