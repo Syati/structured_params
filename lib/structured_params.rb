@@ -3,6 +3,7 @@
 
 require 'active_model'
 require 'active_model/type'
+require 'active_support/concern'
 require 'action_controller/metal/strong_parameters'
 
 # version
@@ -13,6 +14,7 @@ require_relative 'structured_params/errors'
 require_relative 'structured_params/attribute_methods'
 require_relative 'structured_params/validations'
 require_relative 'structured_params/i18n'
+require_relative 'structured_params/form_object'
 
 # types (load first for module definition)
 require_relative 'structured_params/type/object'

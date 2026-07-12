@@ -1,0 +1,40 @@
+# Generated from lib/structured_params/form_object.rb with RBS::Inline
+
+module StructuredParams
+  # Form object behavior layered onto Params subclasses.
+  module FormObject
+    extend ActiveSupport::Concern
+
+    # Form object support for Rails helpers.
+    # : () -> bool
+    def persisted?: () -> bool
+
+    # : () -> nil
+    def to_key: () -> nil
+
+    # : () -> self
+    def to_model: () -> self
+
+    private
+
+    # Whether to call params.require(param_key) before permitting.
+    #
+    # Only ever true for Form-suffixed classes (form_class?); non-Form
+    # Params/Parameters subclasses always permit the top level directly.
+    # : (ActionController::Parameters) -> bool
+    def require_nested_parameters?: (ActionController::Parameters) -> bool
+
+    # : (ActionController::Parameters) -> bool
+    def matches_model_name?: (ActionController::Parameters) -> bool
+
+    # Only treat params as already-flat attributes when none of the top-level
+    # values are themselves nested. A nested value under some other key means
+    # the request shape is ambiguous, so we fall through to raising
+    # ParameterMissing instead of silently guessing which keys belong here.
+    # : (ActionController::Parameters) -> bool
+    def flat_parameters?: (ActionController::Parameters) -> bool
+
+    # : (ActionController::Parameters) -> bool
+    def attribute_keys_present?: (ActionController::Parameters) -> bool
+  end
+end
