@@ -158,6 +158,30 @@ RSpec.describe 'StructuredParams::Params as Form Object' do
       end
     end
 
+    context 'when a flat attribute name matches the model_name param_key' do
+      it 'permits the flat parameters instead of requiring the colliding key as a nested wrapper' do
+        params = ActionController::Parameters.new(comment: 'nice post', author: 'Bob')
+        form = CommentForm.new(params)
+
+        expect(form).to have_attributes(comment: 'nice post', author: 'Bob')
+      end
+    end
+
+    context 'when a stray top-level key matches an attribute name but the real payload is nested elsewhere' do
+      let(:params) do
+        ActionController::Parameters.new(
+          email: 'newsletter@example.com',
+          registration_data: {
+            name: 'Jane', email: 'jane@example.com', age: 22, terms_accepted: true
+          }
+        )
+      end
+
+      it 'raises ParameterMissing instead of silently building a form from the unrelated flat data' do
+        expect { UserRegistrationForm.new(params) }.to raise_error(ActionController::ParameterMissing)
+      end
+    end
+
     context 'with valid parameters' do
       let(:params) do
         {

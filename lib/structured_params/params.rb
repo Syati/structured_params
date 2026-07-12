@@ -222,19 +222,46 @@ module StructuredParams
       self.class.permit(params, require: require_nested_parameters?(params)).to_h
     end
 
+    # Whether to call params.require(param_key) before permitting.
+    #
+    # Only ever true for Form-suffixed classes (form_class?); non-Form
+    # Params/Parameters subclasses always permit the top level directly.
+    #
+    # - A value nested under the model's param_key (e.g. params[:user_registration])
+    #   always wins, even if params were already permitted higher up, since that
+    #   inner key still needs to be require()'d out.
+    # - Otherwise, params that are already permitted, or whose shape looks flat
+    #   (see flat_parameters?), are used as-is without requiring.
+    # - Anything else falls through to true, so params.require raises
+    #   ActionController::ParameterMissing instead of guessing which keys
+    #   belong to this form.
     #: (ActionController::Parameters) -> bool
     def require_nested_parameters?(params)
       return false unless self.class.form_class?
       return true if matches_model_name?(params)
       return false if params.permitted?
-      return false if attribute_keys_present?(params)
+      return false if flat_parameters?(params)
 
       true
     end
 
     #: (ActionController::Parameters) -> bool
     def matches_model_name?(params)
-      params.key?(self.class.model_name.param_key)
+      key = self.class.model_name.param_key
+      return false unless params.key?(key)
+
+      params[key].is_a?(ActionController::Parameters)
+    end
+
+    # Only treat params as already-flat attributes when none of the top-level
+    # values are themselves nested. A nested value under some other key means
+    # the request shape is ambiguous, so we fall through to raising
+    # ParameterMissing instead of silently guessing which keys belong here.
+    #: (ActionController::Parameters) -> bool
+    def flat_parameters?(params)
+      return false if params.values.any?(ActionController::Parameters)
+
+      attribute_keys_present?(params)
     end
 
     #: (ActionController::Parameters) -> bool

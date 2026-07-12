@@ -140,11 +140,31 @@ module StructuredParams
     # : (ActionController::Parameters) -> Hash[untyped, untyped]
     def process_action_controller_parameters: (ActionController::Parameters) -> Hash[untyped, untyped]
 
+    # Whether to call params.require(param_key) before permitting.
+    #
+    # Only ever true for Form-suffixed classes (form_class?); non-Form
+    # Params/Parameters subclasses always permit the top level directly.
+    #
+    # - A value nested under the model's param_key (e.g. params[:user_registration])
+    #   always wins, even if params were already permitted higher up, since that
+    #   inner key still needs to be require()'d out.
+    # - Otherwise, params that are already permitted, or whose shape looks flat
+    #   (see flat_parameters?), are used as-is without requiring.
+    # - Anything else falls through to true, so params.require raises
+    #   ActionController::ParameterMissing instead of guessing which keys
+    #   belong to this form.
     # : (ActionController::Parameters) -> bool
     def require_nested_parameters?: (ActionController::Parameters) -> bool
 
     # : (ActionController::Parameters) -> bool
     def matches_model_name?: (ActionController::Parameters) -> bool
+
+    # Only treat params as already-flat attributes when none of the top-level
+    # values are themselves nested. A nested value under some other key means
+    # the request shape is ambiguous, so we fall through to raising
+    # ParameterMissing instead of silently guessing which keys belong here.
+    # : (ActionController::Parameters) -> bool
+    def flat_parameters?: (ActionController::Parameters) -> bool
 
     # : (ActionController::Parameters) -> bool
     def attribute_keys_present?: (ActionController::Parameters) -> bool
