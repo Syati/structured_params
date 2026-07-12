@@ -31,6 +31,12 @@ class Profile < StructuredParams::Params
   attribute :bio, :string
 end
 
+# Class whose model_name.param_key coincides with one of its own attribute names
+class CommentForm < StructuredParams::Params
+  attribute :comment, :string
+  attribute :author, :string
+end
+
 # Namespaced classes for testing model_name / permit
 module Admin
   class UserForm < StructuredParams::Params

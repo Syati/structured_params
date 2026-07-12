@@ -2,6 +2,8 @@
 
 `StructuredParams::Params` can be used as a Rails form object. It integrates with `form_with` / `form_for` and works seamlessly in views.
 
+Classes whose names end with `Form` automatically require and permit the nested root key when initialized with `ActionController::Parameters`.
+
 ## Table of Contents
 
 - [Defining a Form Object](#defining-a-form-object)
@@ -20,7 +22,7 @@
 - [Strong Parameters Integration](#strong-parameters-integration)
 - [Testing](#testing)
 - [Best Practices](#best-practices)
-  - [Base Form Class with Auto-permit](#base-form-class-with-auto-permit)
+  - [ActionController::Parameters Support](#actioncontrollerparameters-support)
   - [Implementing a save Method](#implementing-a-save-method)
   - [Using Transactions](#using-transactions)
   - [Conditional Validations](#conditional-validations)
@@ -63,7 +65,7 @@ class UsersController < ApplicationController
   end
 
   def create
-    @form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
+    @form = UserRegistrationForm.new(params)
     
     if @form.valid?
       user = User.create!(@form.attributes.except('password_confirmation'))
@@ -74,7 +76,7 @@ class UsersController < ApplicationController
   end
 end
 
-# UserRegistrationForm.permit(params) is equivalent to:
+# UserRegistrationForm.new(params) internally resolves:
 # params.require(:user_registration).permit(UserRegistrationForm.permit_attribute_names)
 ```
 
@@ -315,7 +317,7 @@ Form objects can also be used for API request validation.
 ```ruby
 class Api::V1::UsersController < Api::V1::BaseController
   def create
-    @form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
+    @form = UserRegistrationForm.new(params)
     
     if @form.valid?
       user = User.create!(@form.attributes)
@@ -334,8 +336,8 @@ Form objects integrate automatically with Strong Parameters.
 ```ruby
 class UsersController < ApplicationController
   def create
-    # permit automatically calls require and permit internally
-    @form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
+    # Form classes automatically call require and permit internally
+    @form = UserRegistrationForm.new(params)
     
     if @form.valid?
       user = User.create!(@form.attributes)
@@ -411,41 +413,11 @@ end
 
 ## Best Practices
 
-### Base Form Class with Auto-permit
+### ActionController::Parameters Support
 
-When using form objects with Rails views, wrapping `permit` inside `initialize` via a shared base class eliminates the repetitive `FormClass.permit(params)` pattern in every controller action.
+`Form` classes call `require(model_name.param_key).permit(...)` automatically when initialized with `ActionController::Parameters`.
 
-```ruby
-# app/forms/application_form.rb
-class ApplicationForm < StructuredParams::Params
-  def initialize(params)
-    permitted = params.is_a?(ActionController::Parameters) ? self.class.permit(params) : params
-    super(permitted)
-  end
-end
-```
-
-All form objects inherit from `ApplicationForm`:
-
-```ruby
-class UserRegistrationForm < ApplicationForm
-  attribute :name, :string
-  attribute :email, :string
-  attribute :password, :string
-end
-```
-
-Controllers become simpler — `permit` is called transparently:
-
-```ruby
-# Before
-@form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
-
-# After
-@form = UserRegistrationForm.new(params)
-```
-
-The `ActionController::Parameters` guard ensures that plain hashes (e.g. in tests or `def new`) are passed through unchanged:
+Plain hashes (e.g. in tests or `def new`) are still passed through unchanged:
 
 ```ruby
 # Works fine in the new action
@@ -455,7 +427,7 @@ The `ActionController::Parameters` guard ensures that plain hashes (e.g. in test
 form = UserRegistrationForm.new(name: "Alice", email: "alice@example.com")
 ```
 
-> **Note:** This pattern is most useful when you consistently use form objects with Rails views. For API-only parameter classes, the plain `UserParams.new(params)` approach is sufficient and requires no base class.
+> **Note:** Automatic nested-key extraction is only enabled for classes whose names end with `Form`. API-oriented parameter classes can continue to use `UserParams.new(params)`.
 
 ### Implementing a save Method
 

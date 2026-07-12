@@ -44,7 +44,8 @@ The registration is explicit on purpose:
 - They are also generic names, so auto-registering them at gem load time could silently collide with other code
 - Keeping registration in an initializer makes the opt-in explicit and keeps custom aliases available when needed
 
-If you skip this step, `attribute :name, :object` and `attribute :name, :array` will not resolve in ActiveModel type lookup.
+If you skip this step, `attribute :name, :object` and `attribute :name, :array` will not resolve to
+StructuredParams' types in ActiveModel type lookup.
 
 ## Configuration
 

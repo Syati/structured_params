@@ -14,7 +14,7 @@ StructuredParams provides three ways to integrate with Strong Parameters dependi
 - [How `permit` Determines the Parameter Key](#how-permit-determines-the-parameter-key)
 - [Choosing the Right Approach](#choosing-the-right-approach)
   - [`UserParams.new(params)` — Recommended for APIs](#userparamsnewparams--recommended-for-apis)
-  - [`permit` method — Required for Form Objects](#permit-method--required-for-form-objects)
+  - [`UserRegistrationForm.new(params)` — Recommended for Form Objects](#userregistrationformnewparams--recommended-for-form-objects)
   - [`permit_attribute_names` — Manual Control](#permit_attribute_names--manual-control)
 
 ## API Requests
@@ -49,12 +49,12 @@ user_params = UserParams.new(UserParams.permit(params, require: false))
 
 ## Form Objects
 
-For web forms, use `permit` (default `require: true`). It automatically resolves nested parameter keys such as `params[:user_registration]`.
+For web forms, pass `params` directly to the form object. `Form` classes automatically resolve nested parameter keys such as `params[:user_registration]`.
 
 ```ruby
 class UsersController < ApplicationController
   def create
-    @form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
+    @form = UserRegistrationForm.new(params)
     
     if @form.valid?
       user = User.create!(@form.attributes)
@@ -145,7 +145,7 @@ end
 ```ruby
 class UsersController < ApplicationController
   def create
-    @form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
+    @form = UserRegistrationForm.new(params)
     
     if @form.valid?
       user = User.create!(@form.attributes)
@@ -186,15 +186,15 @@ See [Form Objects](form-objects.md) for details on `model_name` customization.
 user_params = UserParams.new(params)
 ```
 
-### `permit` method — Required for Form Objects
+### `UserRegistrationForm.new(params)` — Recommended for Form Objects
 
-- ✅ **Required for form helpers** — when using `form_with`/`form_for` in views
+- ✅ **Consistent interface** — instantiate form objects the same way as API parameter classes
 - ✅ **Nested key resolution** — automatically extracts from `params[:user_registration]` etc.
-- ✅ **Explicit intent** — makes Strong Parameters usage clear
+- ✅ **Works with form helpers** — fits `form_with`/`form_for` usage naturally
 
 ```ruby
-# Form object - Required
-@form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
+# Form object - Recommended
+@form = UserRegistrationForm.new(params)
 
 # API with explicit permit - Optional but acceptable
 user_params = UserParams.new(UserParams.permit(params, require: false))

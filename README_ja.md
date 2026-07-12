@@ -92,11 +92,11 @@ class UserRegistrationForm < StructuredParams::Params
 end
 
 # コントローラーで使用
-# permit は内部で params.require(:user_registration).permit(...) を呼びます。
-# API と異なり、フォームオブジェクトでは require によるキー絞り込みが必要なため permit を使う
-
+# ActionController::Parameters を Form クラスに渡すと、内部で
+# params.require(:user_registration).permit(...) が自動的に呼ばれます。
+# この挙動を使うには、クラス名を `Form` で終わらせてください。
 def create
-  form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
+  form = UserRegistrationForm.new(params)
 
   if form.valid?
     User.create!(form.attributes)

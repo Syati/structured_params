@@ -92,10 +92,11 @@ class UserRegistrationForm < StructuredParams::Params
 end
 
 # Use in controller
-# permit calls params.require(:user_registration).permit(...) internally.
-# Unlike API usage, form objects need require to scope to the correct key.
+# Passing ActionController::Parameters to a Form class automatically calls
+# params.require(:user_registration).permit(...) internally.
+# Use a class name ending with `Form` to enable this behavior.
 def create
-  form = UserRegistrationForm.new(UserRegistrationForm.permit(params))
+  form = UserRegistrationForm.new(params)
 
   if form.valid?
     User.create!(form.attributes)
