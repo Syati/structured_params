@@ -225,8 +225,8 @@ module StructuredParams
     #: (ActionController::Parameters) -> bool
     def require_nested_parameters?(params)
       return false unless self.class.form_class?
-      return false if params.permitted?
       return true if matches_model_name?(params)
+      return false if params.permitted?
       return false if attribute_keys_present?(params)
 
       true

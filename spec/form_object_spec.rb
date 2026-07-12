@@ -99,6 +99,18 @@ RSpec.describe 'StructuredParams::Params as Form Object' do
         )
       end
 
+      it 'requires the nested form key even when top-level params are already permitted' do
+        params.permit!
+        form = UserRegistrationForm.new(params)
+
+        expect(form).to have_attributes(
+          name: 'John Doe',
+          email: 'john@example.com',
+          age: 25,
+          terms_accepted: true
+        )
+      end
+
       it 'accepts scoped parameters without requiring again' do
         form = UserRegistrationForm.new(params[:user_registration])
 
