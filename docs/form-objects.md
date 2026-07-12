@@ -211,16 +211,18 @@ end
 
 ## Class Name Conventions
 
-`StructuredParams::Params` automatically removes the following suffixes from class names:
-
-- `Parameters` (plural)
-- `Parameter` (singular)
-- `Form`
+Classes whose names end with `Form` have their `model_name` customized: the `Form` suffix is stripped so form helpers, `param_key`, and i18n keys resolve to the underlying model name.
 
 ```ruby
 UserRegistrationForm.model_name.name       # => "UserRegistration"
 UserRegistrationForm.model_name.param_key  # => "user_registration"
-UserParameters.model_name.name             # => "User"
+```
+
+Classes without a `Form` suffix — including ones named `...Parameters` or `...Parameter` — use ActiveModel's default `model_name`, based on the class's own name as-is:
+
+```ruby
+UserParameters.model_name.name       # => "UserParameters"
+UserParameters.model_name.param_key  # => "user_parameters"
 ```
 
 ### Nested Modules
@@ -292,12 +294,12 @@ Labels for dot-notation nested attributes (e.g. `hobbies.0.name`, `address.posta
 ja:
   activemodel:
     attributes:
-      user:
+      user_parameter:
         hobbies: "趣味"
         address: "住所"
-      hobby:
+      hobby_parameter:
         name: "名前"
-      address:
+      address_parameter:
         postal_code: "郵便番号"
     errors:
       nested_attribute:
@@ -305,7 +307,7 @@ ja:
         object: "%{parent}の%{child}"
 ```
 
-Examples:
+Examples (`UserParameter` has no `Form` suffix, so its i18n scope is its own class name):
 
 - `UserParameter.human_attribute_name(:'hobbies.0.name')      # => "趣味 0 番目の名前"`
 - `UserParameter.human_attribute_name(:'address.postal_code')  # => "住所の郵便番号"`
