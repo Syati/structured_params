@@ -6,6 +6,7 @@ module StructuredParams
   module FormObject
     extend ActiveSupport::Concern
 
+    # @rbs module ClassMethods
     class_methods do
       # @rbs @model_name: ::ActiveModel::Name?
 
