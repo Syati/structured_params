@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.9.5] - 2026-07-12
+
+## What's Changed
+* Refine README and installation copy by @Syati in https://github.com/Syati/structured_params/pull/18
+* Simplify form object params initialization by @Syati in https://github.com/Syati/structured_params/pull/19
+
+
+**Full Changelog**: https://github.com/Syati/structured_params/compare/v0.9.4...v0.9.5
+
 ## [0.9.4] - 2026-05-02
 
 ## What's Changed
