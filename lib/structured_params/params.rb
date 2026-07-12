@@ -178,7 +178,8 @@ module StructuredParams
 
     #: (ActionController::Parameters) -> Hash[untyped, untyped]
     def process_action_controller_parameters(params)
-      self.class.permit(params, require: require_nested_parameters?(params)).to_h
+      require = self.class.form_class? && require_nested_parameters?(params)
+      self.class.permit(params, require: require).to_h
     end
 
     # Execute structured parameter validation

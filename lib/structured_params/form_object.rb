@@ -53,11 +53,9 @@ module StructuredParams
 
     # Whether to call params.require(param_key) before permitting.
     #
-    # Only ever true for Form-suffixed classes (form_class?); non-Form
-    # Params/Parameters subclasses always permit the top level directly.
+    # Only called for Form-suffixed classes (see Params#process_action_controller_parameters).
     #: (ActionController::Parameters) -> bool
     def require_nested_parameters?(params)
-      return false unless self.class.form_class?
       return true if matches_model_name?(params)
       return false if params.permitted?
       return false if flat_parameters?(params)
