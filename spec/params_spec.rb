@@ -432,7 +432,7 @@ RSpec.describe StructuredParams::Params do
                 array: '%<parent>s %<index>s 番目の%<child>s'
               },
               models: {
-                hobby: {
+                hobby_parameter: {
                   attributes: {
                     name: { blank: 'は必須です' },
                     years_experience: { greater_than_or_equal_to: 'は0以上にしてください' }

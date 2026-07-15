@@ -144,8 +144,8 @@ RSpec.describe StructuredParams::I18n do
           {
             activemodel: {
               attributes: {
-                user: { name: 'ユーザー名' },
-                hobby: { name: 'ホビー名' }
+                user_parameter: { name: 'ユーザー名' },
+                hobby_parameter: { name: 'ホビー名' }
               },
               errors: {
                 nested_attribute: {

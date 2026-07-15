@@ -76,7 +76,7 @@ For fine-grained control, use `permit_attribute_names` directly.
 ```ruby
 class UsersController < ApplicationController
   def create
-    permitted_params = params.require(:user).permit(*UserParams.permit_attribute_names)
+    permitted_params = params.require(:user_params).permit(*UserParams.permit_attribute_names)
     user_params = UserParams.new(permitted_params)
     
     if user_params.valid?
@@ -159,11 +159,11 @@ end
 
 ## How `permit` Determines the Parameter Key
 
-`permit` uses `model_name.param_key` to determine which key to `require`:
+`permit` uses `model_name.param_key` to determine which key to `require`. Only `Form`-suffixed classes have their suffix stripped from `model_name`; other classes use their own class name as-is:
 
 ```ruby
 UserParams.permit(params)
-# Internally calls: params.require(:user).permit(...)
+# Internally calls: params.require(:user_params).permit(...)
 
 UserRegistrationForm.permit(params)
 # Internally calls: params.require(:user_registration).permit(...)
@@ -172,7 +172,7 @@ Admin::UserForm.permit(params)
 # Internally calls: params.require(:admin_user).permit(...)
 ```
 
-See [Form Objects](form-objects.md) for details on `model_name` customization.
+See [Form Objects](form-objects.md#class-name-conventions) for details on `model_name` customization.
 
 ## Choosing the Right Approach
 
@@ -207,6 +207,6 @@ user_params = UserParams.new(UserParams.permit(params, require: false))
 - ✅ **Fine-grained control** — integrate with complex Strong Parameters code
 
 ```ruby
-permitted = params.require(:user).permit(*UserParams.permit_attribute_names, :custom_field)
+permitted = params.require(:user_params).permit(*UserParams.permit_attribute_names, :custom_field)
 user_params = UserParams.new(permitted)
 ```

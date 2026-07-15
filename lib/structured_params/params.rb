@@ -50,38 +50,18 @@ module StructuredParams
   #     <%= f.text_field :name %>
   #     <%= f.text_field :email %>
   #   <% end %>
-  # rubocop:disable Metrics/ClassLength
   class Params
     include ActiveModel::Model
     include ActiveModel::Attributes
     include AttributeMethods
     include Validations
     include I18n
+    include FormObject
 
     # @rbs @errors: ::StructuredParams::Errors?
 
     class << self
       # @rbs self.@structured_attributes: Hash[Symbol, singleton(::StructuredParams::Params)]?
-      # @rbs self.@model_name: ::ActiveModel::Name?
-
-      # Override model_name for form helpers
-      # By default, removes "Parameters", "Parameter", or "Form" suffix from class name
-      # This allows the class to work seamlessly with Rails form helpers
-      #
-      # Example:
-      #   UserRegistrationForm.model_name.name       # => "UserRegistration"
-      #   UserRegistrationForm.model_name.param_key  # => "user_registration"
-      #   UserParameters.model_name.name             # => "User"
-      #   Admin::UserForm.model_name.name            # => "Admin::User"
-      #: () -> ::ActiveModel::Name
-      def model_name
-        @model_name ||= begin
-          namespace = module_parents.detect { |n| n.respond_to?(:use_relative_model_naming?) }
-          # Remove suffix from the full class name (preserving namespace)
-          name_without_suffix = name.sub(/(Parameters?|Form)$/, '')
-          ActiveModel::Name.new(self, namespace, name_without_suffix)
-        end
-      end
 
       # Generate permitted parameter structure for Strong Parameters
       #: () -> Array[untyped]
@@ -133,11 +113,6 @@ module StructuredParams
         end
       end
 
-      #: () -> bool
-      def form_class?
-        name&.end_with?('Form') || false
-      end
-
       private
 
       # Determine if the specified type is a StructuredParams type
@@ -160,22 +135,6 @@ module StructuredParams
     #: () -> ::StructuredParams::Errors
     def errors
       @errors ||= Errors.new(self)
-    end
-
-    # Form object support for Rails helpers.
-    #: () -> bool
-    def persisted?
-      false
-    end
-
-    #: () -> nil
-    def to_key
-      nil
-    end
-
-    #: () -> self
-    def to_model
-      self
     end
 
     # Convert structured objects to Hash and get attributes
@@ -208,65 +167,14 @@ module StructuredParams
     def process_input_parameters(params)
       case params
       when ActionController::Parameters
-        process_action_controller_parameters(params)
+        require_nested = self.class.form_class? && require_nested_parameters?(params)
+        self.class.permit(params, require: require_nested).to_h
       when Hash
         # ActiveModel::Attributes can handle both symbol and string keys
         params
       else
         raise ArgumentError, "params must be ActionController::Parameters or Hash, got #{params.class}"
       end
-    end
-
-    #: (ActionController::Parameters) -> Hash[untyped, untyped]
-    def process_action_controller_parameters(params)
-      self.class.permit(params, require: require_nested_parameters?(params)).to_h
-    end
-
-    # Whether to call params.require(param_key) before permitting.
-    #
-    # Only ever true for Form-suffixed classes (form_class?); non-Form
-    # Params/Parameters subclasses always permit the top level directly.
-    #
-    # - A value nested under the model's param_key (e.g. params[:user_registration])
-    #   always wins, even if params were already permitted higher up, since that
-    #   inner key still needs to be require()'d out.
-    # - Otherwise, params that are already permitted, or whose shape looks flat
-    #   (see flat_parameters?), are used as-is without requiring.
-    # - Anything else falls through to true, so params.require raises
-    #   ActionController::ParameterMissing instead of guessing which keys
-    #   belong to this form.
-    #: (ActionController::Parameters) -> bool
-    def require_nested_parameters?(params)
-      return false unless self.class.form_class?
-      return true if matches_model_name?(params)
-      return false if params.permitted?
-      return false if flat_parameters?(params)
-
-      true
-    end
-
-    #: (ActionController::Parameters) -> bool
-    def matches_model_name?(params)
-      key = self.class.model_name.param_key
-      return false unless params.key?(key)
-
-      params[key].is_a?(ActionController::Parameters)
-    end
-
-    # Only treat params as already-flat attributes when none of the top-level
-    # values are themselves nested. A nested value under some other key means
-    # the request shape is ambiguous, so we fall through to raising
-    # ParameterMissing instead of silently guessing which keys belong here.
-    #: (ActionController::Parameters) -> bool
-    def flat_parameters?(params)
-      return false if params.values.any?(ActionController::Parameters)
-
-      attribute_keys_present?(params)
-    end
-
-    #: (ActionController::Parameters) -> bool
-    def attribute_keys_present?(params)
-      params.keys.any? { |key| self.class.attribute_types.key?(key.to_s) }
     end
 
     # Execute structured parameter validation
@@ -347,5 +255,4 @@ module StructuredParams
       end
     end
   end
-  # rubocop:enable Metrics/ClassLength
 end

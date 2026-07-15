@@ -220,16 +220,16 @@ RSpec.describe 'StructuredParams::Params as Form Object' do
   end
 
   describe 'class name with "Parameters" suffix' do
-    it 'removes "Parameters" suffix from model_name' do
-      expect(OrderParameters.model_name.name).to eq('Order')
-      expect(OrderParameters.model_name.param_key).to eq('order')
+    it 'keeps the default ActiveModel model_name (no suffix removal outside Form classes)' do
+      expect(OrderParameters.model_name.name).to eq('OrderParameters')
+      expect(OrderParameters.model_name.param_key).to eq('order_parameters')
     end
   end
 
   describe 'class name with "Parameter" suffix' do
-    it 'removes "Parameter" suffix from model_name' do
-      expect(PaymentParameter.model_name.name).to eq('Payment')
-      expect(PaymentParameter.model_name.param_key).to eq('payment')
+    it 'keeps the default ActiveModel model_name (no suffix removal outside Form classes)' do
+      expect(PaymentParameter.model_name.name).to eq('PaymentParameter')
+      expect(PaymentParameter.model_name.param_key).to eq('payment_parameter')
     end
   end
 
