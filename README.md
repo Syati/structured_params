@@ -107,11 +107,37 @@ def create
 end
 ```
 
+### 3. OpenAPI Drift Check
+
+Configure an OpenAPI document once and select the request parameter namespace.
+The default convention maps `CreateUserParams` to `#/components/schemas/CreateUser`.
+
+```ruby
+# config/initializers/structured_params.rb
+StructuredParams::OpenApi.configure do |config|
+  config.document = Rails.root.join('openapi.yml').to_s
+  config.parameter_class_filter = ->(parameter_class) do
+    parameter_class.name&.start_with?('Api::')
+  end
+end
+```
+
+Run the check in CI:
+
+```sh
+bundle exec rake structured_params:openapi:drift_check
+```
+
+See [OpenAPI Drift Check](docs/openapi-drift-check.md) for component-name
+overrides, property mappings, and supported schema types. New classes matching
+the filter are checked automatically; register only exceptional mappings.
+
 ## Documentation
 
 - **[Installation and Setup](docs/installation.md)** - Getting started with StructuredParams
 - **[Basic Usage](docs/basic-usage.md)** - Parameter classes, nested objects, and arrays
 - **[Validation](docs/validation.md)** - Using ActiveModel validations with nested structures
+- **[OpenAPI Drift Check](docs/openapi-drift-check.md)** - Detect differences between request schemas and Params classes
 - **[Strong Parameters](docs/strong-parameters.md)** - Automatic permit list generation
 - **[Error Handling](docs/error-handling.md)** - Flat and structured error formats
 - **[Serialization](docs/serialization.md)** - Converting parameters to hashes and JSON

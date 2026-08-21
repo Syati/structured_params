@@ -1,0 +1,35 @@
+# Generated from lib/structured_params/open_api/configuration.rb with RBS::Inline
+
+module StructuredParams
+  # OpenAPI contract configuration and drift-check utilities.
+  module OpenApi
+    # Global OpenAPI document and component-name convention for drift checks.
+    class Configuration
+      attr_accessor document: Hash[untyped, untyped] | String?
+
+      attr_writer schema_name_resolver: untyped
+
+      attr_writer parameter_class_filter: untyped
+
+      # : () -> void
+      def initialize: () -> void
+
+      # : () -> Array[singleton(StructuredParams::Params)]
+      def parameter_classes: () -> Array[singleton(StructuredParams::Params)]
+
+      # : (singleton(StructuredParams::Params), String?) -> String
+      def pointer_for: (singleton(StructuredParams::Params), String?) -> String
+    end
+
+    @configuration: Configuration?
+
+    # : () -> Configuration
+    def self.configuration: () -> Configuration
+
+    # : () { (Configuration) -> void } -> void
+    def self.configure: () { (Configuration) -> void } -> void
+
+    # : () -> void
+    def self.reset_configuration!: () -> void
+  end
+end

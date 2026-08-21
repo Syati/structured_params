@@ -1,0 +1,138 @@
+# Generated from lib/structured_params/open_api/drift_check.rb with RBS::Inline
+
+module StructuredParams
+  # Schema comparison types for OpenAPI drift checks.
+  module OpenApi
+    # Compares OpenAPI object schemas with StructuredParams declarations.
+    # rubocop:disable Metrics/ClassLength
+    class DriftCheck
+      @seen_pairs: Array[Array[untyped]]
+
+      @skipped: Array[Issue]
+
+      @errors: Array[Issue]
+
+      @document: Hash[untyped, untyped]?
+
+      @required_validation: :presence | :none
+
+      @property_names: Hash[Symbol, String]
+
+      @pointer: String?
+
+      @parameter_class: singleton(::StructuredParams::Params)
+
+      @schema_source: Hash[untyped, untyped] | String?
+
+      @openapi_source: Hash[untyped, untyped] | String?
+
+      class Issue < Struct[untyped]
+        attr_accessor kind(): untyped
+
+        attr_accessor path(): untyped
+
+        attr_accessor message(): untyped
+
+        def self.new: (?kind: untyped, ?path: untyped, ?message: untyped) -> instance
+                    | ({ ?kind: untyped, ?path: untyped, ?message: untyped }) -> instance
+      end
+
+      # Result of a single schema/class comparison.
+      class Result
+        attr_reader errors: Array[Issue]
+
+        attr_reader skipped: Array[Issue]
+
+        # : (Array[Issue], Array[Issue]) -> void
+        def initialize: (Array[Issue], Array[Issue]) -> void
+
+        # : () -> bool
+        def valid?: () -> bool
+
+        # : () -> String
+        def to_message: () -> String
+
+        private
+
+        # : (Array[Issue]) -> String
+        def format_issues: (Array[Issue]) -> String
+      end
+
+      # : (**untyped) -> Result
+      #  rubocop:disable Metrics/ParameterLists
+      def self.call: (**untyped) -> Result
+
+      # : (**untyped) -> void
+      #  rubocop:disable Metrics/ParameterLists
+      def initialize: (**untyped) -> void
+
+      # : () -> Result
+      def call: () -> Result
+
+      private
+
+      # : () -> Array[Hash[untyped, untyped]]
+      def load_schema: () -> Array[Hash[untyped, untyped]]
+
+      # : () -> Hash[untyped, untyped]
+      def load_document: () -> Hash[untyped, untyped]
+
+      # : () -> String?
+      def selected_pointer: () -> String?
+
+      # : (Hash[untyped, untyped], singleton(StructuredParams::Params), String) -> void
+      #  rubocop:disable Metrics/AbcSize
+      def check_object: (Hash[untyped, untyped], singleton(StructuredParams::Params), String) -> void
+
+      # : (Hash[Symbol, String], Hash[String, ActiveModel::Type::Value], String) -> void
+      def compare_attribute_names: (Hash[Symbol, String], Hash[String, ActiveModel::Type::Value], String) -> void
+
+      # : (Hash[untyped, untyped], Hash[Symbol, String], singleton(StructuredParams::Params), String) -> void
+      def compare_required_attributes: (Hash[untyped, untyped], Hash[Symbol, String], singleton(StructuredParams::Params), String) -> void
+
+      # : (Hash[untyped, untyped], ActiveModel::Type::Value, String) -> void
+      #  rubocop:disable Metrics/AbcSize
+      #  rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+      def compare_type: (Hash[untyped, untyped], ActiveModel::Type::Value, String) -> void
+
+      # : (Hash[untyped, untyped], Type::Array, String) -> void
+      def compare_array_item_type: (Hash[untyped, untyped], Type::Array, String) -> void
+
+      # : (Hash[untyped, untyped]) -> Symbol?
+      def schema_type: (Hash[untyped, untyped]) -> Symbol?
+
+      # : (Symbol?, Symbol) -> bool
+      def compatible_types?: (Symbol?, Symbol) -> bool
+
+      # : (singleton(StructuredParams::Params), Symbol) -> bool
+      def presence_validator?: (singleton(StructuredParams::Params), Symbol) -> bool
+
+      # : (Hash[untyped, untyped], String) -> bool
+      def skip_union?: (Hash[untyped, untyped], String) -> bool
+
+      # : (Hash[untyped, untyped]) -> Hash[untyped, untyped]
+      def resolve_references: (Hash[untyped, untyped]) -> Hash[untyped, untyped]
+
+      # : (Hash[untyped, untyped], String) -> Hash[untyped, untyped]
+      def resolve_pointer: (Hash[untyped, untyped], String) -> Hash[untyped, untyped]
+
+      # : (Hash[untyped, untyped], String) -> untyped
+      def value_for: (Hash[untyped, untyped], String) -> untyped
+
+      # : (untyped) -> Symbol
+      def attribute_name: (untyped) -> Symbol
+
+      # : (Hash[untyped, untyped], singleton(StructuredParams::Params)) -> bool
+      def seen?: (Hash[untyped, untyped], singleton(StructuredParams::Params)) -> bool
+
+      # : (String, String) -> String
+      def join_path: (String, String) -> String
+
+      # : (String, Symbol, String) -> void
+      def error: (String, Symbol, String) -> void
+
+      # : (String, String) -> void
+      def skip: (String, String) -> void
+    end
+  end
+end

@@ -107,11 +107,37 @@ def create
 end
 ```
 
+### 3. OpenAPI drift check
+
+OpenAPI ドキュメントを一度設定し、各リクエスト用パラメータクラスを登録します。
+既定では `CreateUserParams` を `#/components/schemas/CreateUser` に対応付けます。
+
+```ruby
+# config/initializers/structured_params.rb
+StructuredParams::OpenApi.configure do |config|
+  config.document = Rails.root.join('openapi.yml').to_s
+  config.parameter_class_filter = ->(parameter_class) do
+    parameter_class.name&.start_with?('Api::')
+  end
+end
+```
+
+CI では次を実行します。
+
+```sh
+bundle exec rake structured_params:openapi:drift_check
+```
+
+filter に一致する新しい class は自動で検査されます。component 名の例外指定、
+property mapping、対応する schema 型の詳細は
+[OpenAPI Drift Check](docs/openapi-drift-check.md) を参照してください。
+
 ## ドキュメント
 
 - **[インストールとセットアップ](docs/installation.md)** - StructuredParams の始め方
 - **[基本的な使い方](docs/basic-usage.md)** - パラメータクラス、ネストオブジェクト、配列
 - **[バリデーション](docs/validation.md)** - ネスト構造での ActiveModel バリデーション
+- **[OpenAPI Drift Check](docs/openapi-drift-check.md)** - OpenAPI schema と Params class の乖離検出
 - **[Strong Parameters](docs/strong-parameters.md)** - permit リストの自動生成
 - **[エラーハンドリング](docs/error-handling.md)** - フラット形式と構造化形式のエラー
 - **[シリアライゼーション](docs/serialization.md)** - パラメータのハッシュと JSON 変換

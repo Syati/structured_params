@@ -1,0 +1,33 @@
+# Generated from lib/structured_params/open_api/registry.rb with RBS::Inline
+
+module StructuredParams
+  # OpenAPI contract registration and bulk execution utilities.
+  module OpenApi
+    # Raised by Registry.check_all! when one or more registered contracts drift.
+    class DriftError < StandardError
+    end
+
+    # Collects exceptional mappings and runs all configured drift checks.
+    class Registry
+      @entries: Array[Array[untyped]]?
+
+      # : (singleton(StructuredParams::Params), **untyped) -> void
+      def self.register: (singleton(StructuredParams::Params), **untyped) -> void
+
+      # : (?auto_discover: bool) -> Array[DriftCheck::Result]
+      def self.check_all: (?auto_discover: bool) -> Array[DriftCheck::Result]
+
+      # : (?auto_discover: bool) -> Array[DriftCheck::Result]
+      def self.check_all!: (?auto_discover: bool) -> Array[DriftCheck::Result]
+
+      # : () -> void
+      def self.clear: () -> void
+
+      # : () -> Hash[singleton(StructuredParams::Params), Hash[untyped, untyped]]
+      private def self.auto_discovered_checks: () -> Hash[singleton(StructuredParams::Params), Hash[untyped, untyped]]
+
+      # : () -> Array[Array[untyped]]
+      private def self.entries: () -> Array[Array[untyped]]
+    end
+  end
+end

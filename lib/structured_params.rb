@@ -18,6 +18,12 @@ require_relative 'structured_params/i18n'
 require_relative 'structured_params/type/object'
 require_relative 'structured_params/type/array'
 
+# OpenAPI contract checks
+require_relative 'structured_params/open_api/configuration'
+require_relative 'structured_params/open_api/drift_check'
+require_relative 'structured_params/open_api/registry'
+load File.expand_path('tasks/structured_params_open_api.rake', __dir__) if defined?(Rake)
+
 # params (load after type definitions)
 require_relative 'structured_params/params'
 
