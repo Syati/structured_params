@@ -11,8 +11,10 @@ module StructuredParams
     class Registry
       @entries: Array[Array[untyped]]?
 
-      # : (singleton(StructuredParams::Params), **untyped) -> void
-      def self.register: (singleton(StructuredParams::Params), **untyped) -> void
+      # +parameter_class+ may be a class name String (e.g. from a Rails initializer,
+      # before Zeitwerk autoloading is set up); it is resolved lazily in +check_all+.
+      # : (singleton(StructuredParams::Params) | String, **untyped) -> void
+      def self.register: (singleton(StructuredParams::Params) | String, **untyped) -> void
 
       # : (?auto_discover: bool) -> Array[DriftCheck::Result]
       def self.check_all: (?auto_discover: bool) -> Array[DriftCheck::Result]
@@ -28,6 +30,9 @@ module StructuredParams
 
       # : () -> Array[Array[untyped]]
       private def self.entries: () -> Array[Array[untyped]]
+
+      # : (singleton(StructuredParams::Params) | String) -> singleton(StructuredParams::Params)
+      private def self.resolve: (singleton(StructuredParams::Params) | String) -> singleton(StructuredParams::Params)
     end
   end
 end

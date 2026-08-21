@@ -6,6 +6,8 @@ module StructuredParams
   module OpenApi
     # Global OpenAPI document and component-name convention for drift checks.
     class Configuration
+      # @rbs @ignored_issues: Array[Hash[Symbol, untyped]]
+
       attr_accessor :document #: Hash[untyped, untyped]|String?
       attr_writer :schema_name_resolver #: untyped
       attr_writer :parameter_class_filter #: untyped
@@ -15,6 +17,24 @@ module StructuredParams
         @schema_name_resolver = lambda do |parameter_class|
           parameter_class.name.split('::').last.sub(/(?:Params?|Parameters?|Form)$/, '')
         end
+        @ignored_issues = []
+      end
+
+      # Suppresses a specific finding (matched by +path+ and, optionally, +kind+) across
+      # every drift check, instead of raising it as an error. Applies wherever that path
+      # occurs, including once per parent class for a nested object reused by several
+      # top-level parameter classes. Omit +kind+ to ignore every kind at that path.
+      #
+      # Ignored findings are moved to DriftCheck::Result#ignored rather than dropped, so
+      # they stay auditable; #valid? and #to_message treat them as resolved.
+      #: (path: String, ?kind: Symbol?) -> void
+      def ignore_drift(path:, kind: nil)
+        @ignored_issues << { path: path, kind: kind }
+      end
+
+      #: (Symbol, String) -> bool
+      def ignored?(kind, path)
+        @ignored_issues.any? { |rule| rule.fetch(:path) == path && [nil, kind].include?(rule.fetch(:kind)) }
       end
 
       #: () -> Array[singleton(StructuredParams::Params)]

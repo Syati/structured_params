@@ -50,4 +50,17 @@ RSpec.describe StructuredParams::OpenApi::Registry do
       expect(results).to have_attributes(size: 1)
     end
   end
+
+  it 'resolves a class-name String registered before autoloading has run' do
+    stub_const('Api', Module.new)
+    stub_const('Api::CreateUserParams', Class.new(StructuredParams::Params)).tap do |klass|
+      klass.attribute :name, :string
+    end
+    schema = { 'type' => 'object', 'properties' => { 'name' => { 'type' => 'string' } } }
+    described_class.register('Api::CreateUserParams', schema: schema)
+
+    results = described_class.check_all
+
+    expect(results).to all(be_valid)
+  end
 end

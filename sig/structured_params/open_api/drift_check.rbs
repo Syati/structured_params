@@ -8,6 +8,8 @@ module StructuredParams
     class DriftCheck
       @seen_pairs: Array[Array[untyped]]
 
+      @ignored: Array[Issue]
+
       @skipped: Array[Issue]
 
       @errors: Array[Issue]
@@ -39,12 +41,16 @@ module StructuredParams
 
       # Result of a single schema/class comparison.
       class Result
+        @parameter_class: singleton(::StructuredParams::Params)
+
         attr_reader errors: Array[Issue]
 
         attr_reader skipped: Array[Issue]
 
-        # : (Array[Issue], Array[Issue]) -> void
-        def initialize: (Array[Issue], Array[Issue]) -> void
+        attr_reader ignored: Array[Issue]
+
+        # : (singleton(::StructuredParams::Params), Array[Issue], Array[Issue], Array[Issue]) -> void
+        def initialize: (singleton(::StructuredParams::Params), Array[Issue], Array[Issue], Array[Issue]) -> void
 
         # : () -> bool
         def valid?: () -> bool
@@ -112,6 +118,14 @@ module StructuredParams
 
       # : (Hash[untyped, untyped]) -> Hash[untyped, untyped]
       def resolve_references: (Hash[untyped, untyped]) -> Hash[untyped, untyped]
+
+      # OpenAPI/JSON Schema forbid sibling keys next to `$ref`, so generators such as TypeSpec
+      # commonly wrap a single `$ref` in `allOf` to attach a `description`, `default`, etc.
+      # That's equivalent to the ref carrying those siblings directly, so unwrap and merge it
+      # instead of treating it as unsupported schema composition. `allOf` with more than one
+      # entry is genuine composition and stays out of scope (reported via skip_union?).
+      # : (Hash[untyped, untyped]) -> Hash[untyped, untyped]
+      def unwrap_single_all_of: (Hash[untyped, untyped]) -> Hash[untyped, untyped]
 
       # : (Hash[untyped, untyped], String) -> Hash[untyped, untyped]
       def resolve_pointer: (Hash[untyped, untyped], String) -> Hash[untyped, untyped]

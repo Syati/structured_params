@@ -43,4 +43,25 @@ RSpec.describe StructuredParams::OpenApi::Configuration do
 
     expect(StructuredParams::OpenApi.configuration.parameter_classes).to include(parameter_class)
   end
+
+  describe '#ignore_drift and #ignored?' do
+    it 'matches only the given kind at the given path when kind is specified' do
+      StructuredParams::OpenApi.configure do |config|
+        config.ignore_drift(path: 'wallet_information.wallet_type', kind: :missing_presence_validation)
+      end
+
+      expect(StructuredParams::OpenApi.configuration.ignored?(:missing_presence_validation,
+                                                              'wallet_information.wallet_type')).to be true
+      expect(StructuredParams::OpenApi.configuration.ignored?(:type_mismatch,
+                                                              'wallet_information.wallet_type')).to be false
+      expect(StructuredParams::OpenApi.configuration.ignored?(:missing_presence_validation, 'other_path')).to be false
+    end
+
+    it 'matches every kind at the path when kind is omitted' do
+      StructuredParams::OpenApi.configure { |config| config.ignore_drift(path: 'legacy_field') }
+
+      expect(StructuredParams::OpenApi.configuration.ignored?(:type_mismatch, 'legacy_field')).to be true
+      expect(StructuredParams::OpenApi.configuration.ignored?(:missing_attribute, 'legacy_field')).to be true
+    end
+  end
 end

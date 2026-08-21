@@ -22,7 +22,6 @@ require_relative 'structured_params/type/array'
 require_relative 'structured_params/open_api/configuration'
 require_relative 'structured_params/open_api/drift_check'
 require_relative 'structured_params/open_api/registry'
-load File.expand_path('tasks/structured_params_open_api.rake', __dir__) if defined?(Rake)
 
 # params (load after type definitions)
 require_relative 'structured_params/params'
@@ -99,5 +98,20 @@ module StructuredParams
       ActiveModel::Type.register(object_name, StructuredParams::Type::Object)
       ActiveModel::Type.register(array_name, StructuredParams::Type::Array)
     end
+  end
+
+  RAKE_TASK_PATH = File.expand_path('tasks/structured_params_open_api.rake', __dir__) #: String
+
+  if defined?(Rails::Railtie)
+    # Defers loading the OpenAPI drift-check rake task until Rails actually
+    # loads rake tasks, so requiring this gem never depends on the Rake DSL
+    # being mixed into +main+ (e.g. `rails runner`, `rails console`, app boot).
+    class Railtie < Rails::Railtie
+      rake_tasks do
+        load StructuredParams::RAKE_TASK_PATH
+      end
+    end
+  elsif defined?(Rake::DSL)
+    load RAKE_TASK_PATH
   end
 end

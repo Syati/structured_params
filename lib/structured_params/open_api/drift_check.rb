@@ -18,18 +18,23 @@ module StructuredParams
       # @rbs @document: Hash[untyped, untyped]?
       # @rbs @errors: Array[Issue]
       # @rbs @skipped: Array[Issue]
+      # @rbs @ignored: Array[Issue]
       # @rbs @seen_pairs: Array[Array[untyped]]
 
       Issue = Struct.new(:kind, :path, :message, keyword_init: true)
 
       # Result of a single schema/class comparison.
       class Result
-        attr_reader :errors, :skipped #: Array[Issue]
+        # @rbs @parameter_class: singleton(::StructuredParams::Params)
 
-        #: (Array[Issue], Array[Issue]) -> void
-        def initialize(errors, skipped)
+        attr_reader :errors, :skipped, :ignored #: Array[Issue]
+
+        #: (singleton(::StructuredParams::Params), Array[Issue], Array[Issue], Array[Issue]) -> void
+        def initialize(parameter_class, errors, skipped, ignored)
+          @parameter_class = parameter_class
           @errors = errors
           @skipped = skipped
+          @ignored = ignored
         end
 
         #: () -> bool
@@ -42,7 +47,9 @@ module StructuredParams
           sections = []
           sections << "OpenAPI drift detected:\n#{format_issues(errors)}" unless valid?
           sections << "OpenAPI checks skipped:\n#{format_issues(skipped)}" unless skipped.empty?
-          sections.join("\n")
+          return '' if sections.empty?
+
+          "#{@parameter_class.name || @parameter_class.inspect}\n#{sections.join("\n")}"
         end
 
         private
@@ -94,6 +101,7 @@ module StructuredParams
         @required_validation = required_validation
         @errors = []
         @skipped = []
+        @ignored = []
         @seen_pairs = [] #: Array[Array[untyped]]
 
         unless %i[presence none].include?(required_validation)
@@ -108,9 +116,16 @@ module StructuredParams
 
       #: () -> Result
       def call
-        schema, @document = load_schema
+        begin
+          schema, @document = load_schema
+        rescue KeyError => e
+          skip('', "no matching OpenAPI schema found (#{e.message}); " \
+                   'check the schema_name_resolver convention or register an explicit schema name')
+          return Result.new(@parameter_class, @errors, @skipped, @ignored)
+        end
+
         check_object(resolve_references(schema), @parameter_class, '')
-        Result.new(@errors, @skipped)
+        Result.new(@parameter_class, @errors, @skipped, @ignored)
       end
 
       private
@@ -271,6 +286,7 @@ module StructuredParams
 
       #: (Hash[untyped, untyped]) -> Hash[untyped, untyped]
       def resolve_references(schema)
+        schema = unwrap_single_all_of(schema)
         reference = value_for(schema, '$ref')
         return schema unless reference
 
@@ -282,6 +298,20 @@ module StructuredParams
         referenced_schema = resolve_pointer(@document, reference.delete_prefix('#'))
         overrides = schema.reject { |key, _| key.to_s == '$ref' }
         resolve_references(referenced_schema.merge(overrides))
+      end
+
+      # OpenAPI/JSON Schema forbid sibling keys next to `$ref`, so generators such as TypeSpec
+      # commonly wrap a single `$ref` in `allOf` to attach a `description`, `default`, etc.
+      # That's equivalent to the ref carrying those siblings directly, so unwrap and merge it
+      # instead of treating it as unsupported schema composition. `allOf` with more than one
+      # entry is genuine composition and stays out of scope (reported via skip_union?).
+      #: (Hash[untyped, untyped]) -> Hash[untyped, untyped]
+      def unwrap_single_all_of(schema)
+        all_of = value_for(schema, 'allOf')
+        return schema unless all_of.is_a?(Array) && all_of.size == 1
+
+        overrides = schema.reject { |key, _| key.to_s == 'allOf' }
+        all_of.first.merge(overrides)
       end
 
       #: (Hash[untyped, untyped], String) -> Hash[untyped, untyped]
@@ -317,7 +347,9 @@ module StructuredParams
 
       #: (String, Symbol, String) -> void
       def error(path, kind, message)
-        @errors << Issue.new(kind: kind, path: path, message: message)
+        issue = Issue.new(kind: kind, path: path, message: message)
+        target = OpenApi.configuration.ignored?(kind, path) ? @ignored : @errors
+        target << issue
       end
 
       #: (String, String) -> void

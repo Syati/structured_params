@@ -70,6 +70,25 @@ validator also rejects blank values (including `false`). For APIs where those
 semantics are intentionally different, pass `required_validation: :none` and check
 required-key behavior separately.
 
+## Ignoring a specific finding
+
+`required_validation: :none` and the Registry both operate on a whole class, so they
+aren't precise enough to accept one known finding while still checking everything else
+at that path. For that, configure an ignore rule instead:
+
+```ruby
+StructuredParams::OpenApi.configure do |config|
+  config.ignore_drift(path: 'wallet_information.wallet_type', kind: :missing_presence_validation)
+end
+```
+
+This applies wherever that path occurs, including once per parent class for a nested
+object reused by several top-level parameter classes. Omit `kind:` to ignore every
+finding at that path. Ignored findings move to `result.ignored` instead of
+`result.errors`, so `valid?` treats them as resolved and they don't appear in
+`to_message` — but they stay available on the result object for anyone who wants to
+audit what's being suppressed and why, rather than disappearing silently.
+
 ## Rake task
 
 The gem provides `structured_params:openapi:drift_check` in Rails applications.
@@ -85,6 +104,18 @@ StructuredParams::OpenApi::Registry.register(
 )
 ```
 
+`parameter_class` may also be a class name String, which is resolved lazily when
+the task runs. This is useful for registering from a plain `config/initializers/*.rb`
+file, where Rails hasn't finished setting up autoloading yet and referencing the
+class constant directly would raise `NameError`.
+
+```ruby
+StructuredParams::OpenApi::Registry.register(
+  'LegacyUserParams',
+  schema: 'LegacyCreateUserRequest'
+)
+```
+
 Run it in CI with:
 
 ```sh
@@ -94,3 +125,12 @@ bundle exec rake structured_params:openapi:drift_check
 The current scope deliberately skips `oneOf`, `anyOf`, `allOf`, multiple-type
 schemas, and external references. Skips are reported in `result.skipped` so they
 remain visible for manual review without being reported as a false type match.
+
+A class whose resolved schema name has no matching component is also skipped
+rather than raising, so one misconfigured or intentionally out-of-scope class
+(for example, one backed by query parameters instead of a requestBody schema)
+doesn't stop the whole task from reporting every other class's drift.
+
+`result.to_message` is prefixed with the checked class's name, so `check_all!`'s
+combined `DriftError` message reads as one block per class instead of a flat,
+unattributed list of paths.

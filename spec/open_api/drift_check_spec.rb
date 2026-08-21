@@ -63,6 +63,23 @@ RSpec.describe StructuredParams::OpenApi::DriftCheck do
       expect(result.to_message).to include('extra', 'schema type :integer does not match attribute type :string')
     end
 
+    it 'moves a finding matching a configured Configuration#ignore rule to result.ignored' do
+      parameter_class._validators[:age].clear
+      StructuredParams::OpenApi.configure do |config|
+        config.ignore_drift(path: 'age', kind: :missing_presence_validation)
+      end
+
+      begin
+        result = described_class.call(schema: schema, parameter_class: parameter_class)
+      ensure
+        StructuredParams::OpenApi.reset_configuration!
+      end
+
+      expect(result).to be_valid
+      expect(result.errors).to be_empty
+      expect(result.ignored.map(&:path)).to contain_exactly('age')
+    end
+
     it 'maps differently named schema properties to attributes' do
       schema['properties']['userId'] = schema['properties'].delete('name')
       schema['required'][0] = 'userId'
@@ -83,6 +100,27 @@ RSpec.describe StructuredParams::OpenApi::DriftCheck do
 
       expect(result).to be_valid
       expect(result.skipped.first.message).to include('oneOf')
+    end
+
+    it 'unwraps a single-entry allOf instead of treating it as unsupported composition' do
+      # Generators such as TypeSpec commonly wrap a single $ref in allOf because
+      # OpenAPI/JSON Schema forbid sibling keys (e.g. description) directly next to $ref.
+      schema['properties']['age'] = { 'allOf' => [{ 'type' => 'string' }], 'description' => 'wrapped' }
+      parameter_class.attribute :age, :string
+
+      result = described_class.call(schema: schema, parameter_class: parameter_class)
+
+      expect(result).to be_valid
+      expect(result.skipped).to be_empty
+    end
+
+    it 'still reports multi-entry allOf as skipped composition' do
+      schema['properties']['age'] = { 'allOf' => [{ 'type' => 'integer' }, { 'minimum' => 0 }] }
+
+      result = described_class.call(schema: schema, parameter_class: parameter_class)
+
+      expect(result).to be_valid
+      expect(result.skipped.first.message).to include('allOf')
     end
 
     it 'allows required validation checking to be disabled' do
@@ -126,6 +164,24 @@ RSpec.describe StructuredParams::OpenApi::DriftCheck do
       )
 
       expect(result).to be_valid
+    end
+
+    it 'skips instead of raising when no schema matches the requested name' do
+      document = { 'components' => { 'schemas' => { 'Other' => schema } } }
+
+      result = described_class.call(openapi: document, schema: 'Missing', parameter_class: parameter_class)
+
+      expect(result).to be_valid
+      expect(result.skipped.first.message).to include('no matching OpenAPI schema found')
+    end
+
+    it 'prefixes the message with the parameter class name' do
+      stub_const('DriftCheckSampleParameter', Class.new(StructuredParams::Params) { attribute :name, :string })
+      minimal_schema = { 'type' => 'object', 'properties' => { 'other' => { 'type' => 'string' } } }
+
+      result = described_class.call(schema: minimal_schema, parameter_class: DriftCheckSampleParameter)
+
+      expect(result.to_message).to start_with('DriftCheckSampleParameter')
     end
   end
 end
