@@ -1,24 +1,18 @@
 name: Release and Publish
 
+# Publishes the structured_params gem when a GitHub Release tagged vX.Y.Z is published.
+# The structured_params-openapi gem is released by release-openapi.yml from openapi-vX.Y.Z tags.
 on:
   release:
     types: [ published ]
-  workflow_run:
-    workflows: ["Update Version"]
-    types: [completed]
-    branches: [main]
 
 jobs:
-  update-changelog-and-publish:
+  release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
       id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
-    # Only run if the workflow_run was successful or if triggered by a core release (tag vX.Y.Z).
-    # structured_params-openapi releases (tag openapi-vX.Y.Z) are handled by release-openapi.yml.
-    if: |
-      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
-      (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v'))
+    if: startsWith(github.event.release.tag_name, 'v')
 
     steps:
       - name: Checkout code
@@ -32,50 +26,60 @@ jobs:
 
       - name: Extract version from release
         id: extract_version
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name }}
         run: |
-          TAG_NAME=${{ github.event.release.tag_name }}
           VERSION=${TAG_NAME#v}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+
+      - name: Update version file
+        env:
+          VERSION: ${{ steps.extract_version.outputs.version }}
+        run: |
+          sed -i "s/VERSION = '[^']*'/VERSION = '$VERSION'/" structured_params/lib/structured_params/version.rb
 
       - name: Update CHANGELOG
+        env:
+          VERSION: ${{ steps.extract_version.outputs.version }}
+          TAG_NAME: ${{ github.event.release.tag_name }}
+          RELEASE_NOTES: ${{ github.event.release.body }}
         run: |
-          VERSION="${{ steps.extract_version.outputs.version }}"
+          CHANGELOG=structured_params/CHANGELOG.md
           CURRENT_DATE=$(date +%Y-%m-%d)
-          RELEASE_NOTES="${{ github.event.release.body }}"
-          
+
           # Create temporary changelog entry
           echo "## [$VERSION] - $CURRENT_DATE" > temp_changelog.md
           echo "" >> temp_changelog.md
-          
+
           # Add release notes from GitHub release
           if [ -n "$RELEASE_NOTES" ]; then
             echo "$RELEASE_NOTES" >> temp_changelog.md
           else
-            echo "- Release ${{ steps.extract_version.outputs.tag_name }}" >> temp_changelog.md
+            echo "- Release $TAG_NAME" >> temp_changelog.md
           fi
           echo "" >> temp_changelog.md
-          
+
           # Prepend to existing CHANGELOG (skip the header)
-          if [ -f structured_params/CHANGELOG.md ]; then
-            tail -n +3 structured_params/CHANGELOG.md >> temp_changelog.md
+          if [ -f "$CHANGELOG" ]; then
+            tail -n +3 "$CHANGELOG" >> temp_changelog.md
           fi
-          
+
           # Add header back
-          echo "# Changelog" > structured_params/CHANGELOG.md
-          echo "" >> structured_params/CHANGELOG.md
-          cat temp_changelog.md >> structured_params/CHANGELOG.md
-          
-          # Clean up temporary file
+          echo "# Changelog" > "$CHANGELOG"
+          echo "" >> "$CHANGELOG"
+          cat temp_changelog.md >> "$CHANGELOG"
+
           rm -f temp_changelog.md
 
-      - name: Commit CHANGELOG update
+      - name: Commit version and CHANGELOG
+        env:
+          VERSION: ${{ steps.extract_version.outputs.version }}
         run: |
-          git add structured_params/CHANGELOG.md
+          git add structured_params/lib/structured_params/version.rb structured_params/CHANGELOG.md
           if git diff --staged --quiet; then
-            echo "No CHANGELOG changes to commit"
+            echo "No changes to commit"
           else
-            git commit -m "Update CHANGELOG for ${{ steps.extract_version.outputs.tag_name }}"
+            git commit -m "Update structured_params to $VERSION"
             git push origin main
           fi
 
@@ -90,6 +94,7 @@ jobs:
         run: |
           gem build structured_params.gemspec
 
+      # `rake release` finds the Release's tag (vX.Y.Z), so it only builds and pushes the gem.
       - name: Publish to RubyGems
         uses: rubygems/release-gem@v1
         with:
