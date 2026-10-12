@@ -28,4 +28,11 @@ if RUBY_VERSION >= '3.3.0'
   default_tasks << :steep
 end
 
+# The OpenAPI plugin lives in its own gem directory with its own spec suite.
+desc 'Run the structured_params-openapi specs'
+task :spec_openapi do
+  Dir.chdir('structured_params-openapi') { sh 'bundle exec rspec' }
+end
+default_tasks << :spec_openapi
+
 task default: default_tasks

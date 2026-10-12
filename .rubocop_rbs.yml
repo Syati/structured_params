@@ -8,14 +8,14 @@ plugins:
 Style/RbsInline/MissingTypeAnnotation:
   EnforcedStyle: method_type_signature
   Exclude:
-    - 'spec/**/*'
+    - '**/spec/**/*'
 Style/RbsInline/UntypedInstanceVariable:
   Exclude:
     - 'lib/structured_params/params.rb'
     - 'lib/structured_params.rb'
-    - 'lib/structured_params/open_api/configuration.rb'
-    - 'lib/structured_params/open_api/registry.rb'
+    - 'structured_params-openapi/lib/structured_params/openapi/configuration.rb'
+    - 'structured_params-openapi/lib/structured_params/openapi/registry.rb'
 
 Style/RbsInline/RequireRbsInlineComment:
   Exclude:
-    - 'spec/**/*'
+    - '**/spec/**/*'

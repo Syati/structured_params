@@ -11,6 +11,10 @@
 
 ## 主要ディレクトリ
 
+- `structured_params-openapi/`: OpenAPI drift check の別 gem(`structured_params-openapi`)。
+  独自の `lib/`・`sig/`・`spec/`・`docs/` と gemspec を持ちます。コアとは同じリポジトリで管理し、
+  テストは `cd structured_params-openapi && bundle exec rspec` で実行します。
+
 - `lib/structured_params.rb`: エントリーポイント
 - `lib/structured_params/params.rb`: コアの `Params` 実装
 - `lib/structured_params/type/`: `array` / `object` 型ハンドラ
@@ -61,9 +65,9 @@ bundle exec rubocop lib/structured_params/params.rb
 
 `lefthook.yml` によりコミット前に以下が走ります。
 
-- `bundle exec rbs-inline --output=sig lib/**/*.rb`
+- `bundle exec rbs-inline --output=sig lib/**/*.rb`(`structured_params-openapi/` でも同様)
 - `bundle exec rubocop`
-- `bundle exec rspec`
+- `bundle exec rspec`(`structured_params-openapi/` でも実行)
 - `bundle exec steep check`
 
 フックで失敗しない状態まで揃えてから完了扱いにしてください。

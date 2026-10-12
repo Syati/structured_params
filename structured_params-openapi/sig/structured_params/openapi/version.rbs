@@ -1,0 +1,7 @@
+# Generated from lib/structured_params/openapi/version.rb with RBS::Inline
+
+module StructuredParams
+  module OpenAPI
+    VERSION: String
+  end
+end

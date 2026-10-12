@@ -23,7 +23,6 @@ Gem::Specification.new do |spec|
     'LICENSE.txt',
     'CHANGELOG.md',
     'lib/**/*.rb',
-    'lib/tasks/**/*.rake',
     'sig/**/*.rbs'
   ]
 

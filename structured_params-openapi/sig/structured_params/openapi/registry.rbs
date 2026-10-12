@@ -1,0 +1,46 @@
+# Generated from lib/structured_params/openapi/registry.rb with RBS::Inline
+
+module StructuredParams
+  # OpenAPI contract registration and bulk execution utilities.
+  module OpenAPI
+    # Raised by Registry.check_all! when one or more registered contracts drift.
+    class DriftError < StandardError
+    end
+
+    # Collects exceptional mappings and runs all configured drift checks.
+    class Registry
+      self.@entries: Array[Array[untyped]]?
+
+      # +parameter_class+ may be a class name String (e.g. from a Rails initializer,
+      # before Zeitwerk autoloading is set up); it is resolved lazily in +check_all+.
+      # +openapi+ (a file path or Hash) overrides the configured document for this class, so
+      # one app can check classes against several OpenAPI files.
+      # : (singleton(StructuredParams::Params) | String, **untyped) -> void
+      # rubocop:disable-next Metrics/ParameterLists
+      def self.register: (singleton(StructuredParams::Params) | String, **untyped) -> void
+
+      # : (?auto_discover: bool) -> Array[DriftCheck::Result]
+      def self.check_all: (?auto_discover: bool) -> Array[DriftCheck::Result]
+
+      # With +strict+, a check that skipped part of a schema also fails the run.
+      # : (?auto_discover: bool, ?strict: bool) -> Array[DriftCheck::Result]
+      def self.check_all!: (?auto_discover: bool, ?strict: bool) -> Array[DriftCheck::Result]
+
+      # Describes what passing checks skipped or ignored, plus a one-line summary.
+      # : (Array[DriftCheck::Result]) -> String
+      def self.report: (Array[DriftCheck::Result]) -> String
+
+      # : () -> void
+      def self.clear: () -> void
+
+      # : () -> Hash[singleton(StructuredParams::Params), Hash[untyped, untyped]]
+      private def self.auto_discovered_checks: () -> Hash[singleton(StructuredParams::Params), Hash[untyped, untyped]]
+
+      # : () -> Array[Array[untyped]]
+      private def self.entries: () -> Array[Array[untyped]]
+
+      # : (singleton(StructuredParams::Params) | String) -> singleton(StructuredParams::Params)
+      private def self.resolve: (singleton(StructuredParams::Params) | String) -> singleton(StructuredParams::Params)
+    end
+  end
+end
