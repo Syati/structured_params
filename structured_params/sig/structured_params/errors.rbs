@@ -1,6 +1,5 @@
 # Generated from lib/structured_params/errors.rb with RBS::Inline
 
-# rubocop:disable-next Style/OptionalBooleanParameter
 module StructuredParams
   # Custom errors collection that handles nested attribute names
   class Errors < ActiveModel::Errors
@@ -8,6 +7,7 @@ module StructuredParams
     # Add structured option to get nested structure for dot-notation attributes
     # : (?bool, ?structured: false) -> Hash[Symbol, String]
     # : (?bool, structured: bool) -> Hash[Symbol, untyped]
+    # rubocop:disable-next Style/OptionalBooleanParameter
     def to_hash: (?bool, ?structured: false) -> Hash[Symbol, String]
                | (?bool, structured: bool) -> Hash[Symbol, untyped]
 
@@ -26,6 +26,7 @@ module StructuredParams
     # Build a hash with attribute names as keys and their error messages as values
     # This is used for to_hash(structured: true)
     # : (bool) -> Hash[Symbol, Array[String]]
+    # rubocop:disable-next Style/OptionalBooleanParameter
     def build_attribute_messages_hash: (bool) -> Hash[Symbol, Array[String]]
 
     # Build a nested hash structure from flat dot-notation keys

@@ -113,6 +113,16 @@ RSpec.describe StructuredParams::OpenAPI::DriftCheck do
       expect(result.skipped).to be_empty
     end
 
+    it 'reports a dangling $ref inside a scalar oneOf once instead of only skipping' do
+      options = [{ '$ref' => '#/components/schemas/Missing' }, { 'type' => 'string' }]
+      schema['properties']['age'] = { 'oneOf' => options }
+      document = { 'components' => { 'schemas' => { 'Request' => schema } } }
+
+      result = described_class.call(openapi: document, schema: 'Request', parameter_class: parameter_class)
+
+      expect(result.errors).to contain_exactly(have_attributes(kind: :unresolved_reference, path: 'age'))
+    end
+
     it 'compares oneOf/anyOf with a null option and a type array with null as nullable schemas' do
       schema['properties']['age'] = { 'oneOf' => [{ 'type' => 'string' }, { 'type' => 'null' }] }
       schema['properties']['name'] = { 'type' => %w[string null] }
