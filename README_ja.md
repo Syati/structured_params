@@ -107,11 +107,26 @@ def create
 end
 ```
 
+### 3. OpenAPI drift check(別 gem)
+
+OpenAPI の schema と Params クラスの差分検出は、別 gem の
+[`structured_params-openapi`](structured_params-openapi/README_ja.md) として提供しています。
+
+```ruby
+# Gemfile
+gem 'structured_params-openapi'
+```
+
+```sh
+bundle exec rake structured_params:openapi:drift_check
+```
+
 ## ドキュメント
 
 - **[インストールとセットアップ](docs/installation.md)** - StructuredParams の始め方
 - **[基本的な使い方](docs/basic-usage.md)** - パラメータクラス、ネストオブジェクト、配列
 - **[バリデーション](docs/validation.md)** - ネスト構造での ActiveModel バリデーション
+- **[OpenAPI Drift Check](structured_params-openapi/docs/drift-check_ja.md)** - OpenAPI schema と Params class の乖離検出(`structured_params-openapi` gem)
 - **[Strong Parameters](docs/strong-parameters.md)** - permit リストの自動生成
 - **[エラーハンドリング](docs/error-handling.md)** - フラット形式と構造化形式のエラー
 - **[シリアライゼーション](docs/serialization.md)** - パラメータのハッシュと JSON 変換

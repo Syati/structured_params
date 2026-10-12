@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-# rubocop:disable RSpec/DescribeClass
+# rubocop:disable-next RSpec/DescribeClass
 RSpec.describe 'StructuredParams::Params.permit' do
   describe 'Form Object context (with nested params structure)' do
     let(:params) do
@@ -79,7 +79,7 @@ RSpec.describe 'StructuredParams::Params.permit' do
         )
       end
 
-      # rubocop:disable RSpec/MultipleExpectations
+      # rubocop:disable-next RSpec/MultipleExpectations
       it 'permits array parameters' do
         permitted = UserParameter.permit(params)
 
@@ -90,7 +90,6 @@ RSpec.describe 'StructuredParams::Params.permit' do
         expect(permitted[:hobbies][0][:extra]).to be_nil
         expect(permitted[:tags]).to eq(%w[tag1 tag2 tag3])
       end
-      # rubocop:enable RSpec/MultipleExpectations
     end
 
     context 'with namespaced form' do
@@ -150,7 +149,7 @@ RSpec.describe 'StructuredParams::Params.permit' do
         )
       end
 
-      # rubocop:disable RSpec/MultipleExpectations
+      # rubocop:disable-next RSpec/MultipleExpectations
       it 'permits nested object parameters without require' do
         permitted = UserParameter.permit(params, require: false)
 
@@ -161,7 +160,6 @@ RSpec.describe 'StructuredParams::Params.permit' do
         expect(permitted[:address][:extra]).to be_nil
         expect(permitted[:extra_field]).to be_nil
       end
-      # rubocop:enable RSpec/MultipleExpectations
     end
 
     context 'with arrays' do
@@ -179,7 +177,7 @@ RSpec.describe 'StructuredParams::Params.permit' do
         )
       end
 
-      # rubocop:disable RSpec/MultipleExpectations
+      # rubocop:disable-next RSpec/MultipleExpectations
       it 'permits array parameters without require' do
         permitted = UserParameter.permit(params, require: false)
 
@@ -191,7 +189,6 @@ RSpec.describe 'StructuredParams::Params.permit' do
         expect(permitted[:tags]).to eq(%w[tag1 tag2 tag3])
         expect(permitted[:extra_field]).to be_nil
       end
-      # rubocop:enable RSpec/MultipleExpectations
     end
 
     context 'when user manually extracts nested params' do
@@ -217,4 +214,3 @@ RSpec.describe 'StructuredParams::Params.permit' do
     end
   end
 end
-# rubocop:enable RSpec/DescribeClass

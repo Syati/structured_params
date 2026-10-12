@@ -12,3 +12,13 @@ target :lib do
     hash[Steep::Diagnostic::Ruby::LibraryRBSError] = nil
   end
 end
+
+target :openapi do
+  signature 'sig', 'structured_params-openapi/sig'
+
+  check 'structured_params-openapi/lib'
+
+  configure_code_diagnostics do |hash|
+    hash[Steep::Diagnostic::Ruby::LibraryRBSError] = nil
+  end
+end

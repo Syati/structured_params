@@ -107,11 +107,26 @@ def create
 end
 ```
 
+### 3. OpenAPI Drift Check (optional gem)
+
+Detecting differences between your OpenAPI schemas and Params classes is provided by a
+separate gem, [`structured_params-openapi`](structured_params-openapi/README.md):
+
+```ruby
+# Gemfile
+gem 'structured_params-openapi'
+```
+
+```sh
+bundle exec rake structured_params:openapi:drift_check
+```
+
 ## Documentation
 
 - **[Installation and Setup](docs/installation.md)** - Getting started with StructuredParams
 - **[Basic Usage](docs/basic-usage.md)** - Parameter classes, nested objects, and arrays
 - **[Validation](docs/validation.md)** - Using ActiveModel validations with nested structures
+- **[OpenAPI Drift Check](structured_params-openapi/docs/drift-check.md)** - Detect differences between request schemas and Params classes (`structured_params-openapi` gem)
 - **[Strong Parameters](docs/strong-parameters.md)** - Automatic permit list generation
 - **[Error Handling](docs/error-handling.md)** - Flat and structured error formats
 - **[Serialization](docs/serialization.md)** - Converting parameters to hashes and JSON

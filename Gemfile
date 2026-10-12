@@ -4,6 +4,7 @@
 source 'https://rubygems.org'
 
 gemspec
+gemspec path: 'structured_params-openapi'
 
 # Allow testing different Rails versions via environment variable
 rails_version = ENV['RAILS_VERSION'] || '~> 8.0.0'
