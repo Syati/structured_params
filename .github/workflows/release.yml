@@ -91,3 +91,5 @@ jobs:
 
       - name: Publish to RubyGems
         uses: rubygems/release-gem@v1
+        with:
+          working-directory: structured_params

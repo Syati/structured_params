@@ -1,14 +1,11 @@
 # frozen_string_literal: true
 # rbs_inline: enabled
 
-require 'bundler/gem_helper'
 require 'rubocop/rake_task'
 
-# The repository holds two gems, each in its own directory with its own spec suite.
-# `rake build`/`install`/`release` act on the core gem; build the others from their directory.
+# The repository holds two gems, each in its own directory with its own spec suite and its
+# own Rakefile for `build`/`install`/`release` (run those from the gem's directory).
 GEM_DIRS = %w[structured_params structured_params-openapi].freeze #: Array[String]
-
-Bundler::GemHelper.install_tasks(dir: 'structured_params', name: 'structured_params')
 
 GEM_DIRS.each do |gem_dir|
   desc "Run the #{gem_dir} specs"
