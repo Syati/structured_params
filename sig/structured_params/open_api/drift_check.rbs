@@ -4,7 +4,7 @@ module StructuredParams
   # Schema comparison types for OpenAPI drift checks.
   module OpenApi
     # Compares OpenAPI object schemas with StructuredParams declarations.
-    # rubocop:disable Metrics/ClassLength
+    # rubocop:disable-next Metrics/ClassLength
     class DriftCheck
       @seen_pairs: Array[Array[untyped]]
 
@@ -28,15 +28,15 @@ module StructuredParams
 
       @openapi_source: Hash[untyped, untyped] | String?
 
-      class Issue < Struct[untyped]
-        attr_accessor kind(): untyped
+      class Issue < Struct[Symbol | String]
+        attr_accessor kind(): Symbol
 
-        attr_accessor path(): untyped
+        attr_accessor path(): String
 
-        attr_accessor message(): untyped
+        attr_accessor message(): String
 
-        def self.new: (?kind: untyped, ?path: untyped, ?message: untyped) -> instance
-                    | ({ ?kind: untyped, ?path: untyped, ?message: untyped }) -> instance
+        def self.new: (?kind: Symbol, ?path: String, ?message: String) -> instance
+                    | ({ ?kind: Symbol, ?path: String, ?message: String }) -> instance
       end
 
       # Result of a single schema/class comparison.
@@ -65,11 +65,11 @@ module StructuredParams
       end
 
       # : (**untyped) -> Result
-      #  rubocop:disable Metrics/ParameterLists
+      #  rubocop:disable-next Metrics/ParameterLists
       def self.call: (**untyped) -> Result
 
       # : (**untyped) -> void
-      #  rubocop:disable Metrics/ParameterLists
+      #  rubocop:disable-next Metrics/ParameterLists
       def initialize: (**untyped) -> void
 
       # : () -> Result
@@ -87,7 +87,7 @@ module StructuredParams
       def selected_pointer: () -> String?
 
       # : (Hash[untyped, untyped], singleton(StructuredParams::Params), String) -> void
-      #  rubocop:disable Metrics/AbcSize
+      #  rubocop:disable-next Metrics/AbcSize
       def check_object: (Hash[untyped, untyped], singleton(StructuredParams::Params), String) -> void
 
       # : (Hash[Symbol, String], Hash[String, ActiveModel::Type::Value], String) -> void
@@ -97,8 +97,7 @@ module StructuredParams
       def compare_required_attributes: (Hash[untyped, untyped], Hash[Symbol, String], singleton(StructuredParams::Params), String) -> void
 
       # : (Hash[untyped, untyped], ActiveModel::Type::Value, String) -> void
-      #  rubocop:disable Metrics/AbcSize
-      #  rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+      #  rubocop:disable-next Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       def compare_type: (Hash[untyped, untyped], ActiveModel::Type::Value, String) -> void
 
       # : (Hash[untyped, untyped], Type::Array, String) -> void

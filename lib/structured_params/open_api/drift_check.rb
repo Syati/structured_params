@@ -7,7 +7,7 @@ module StructuredParams
   # Schema comparison types for OpenAPI drift checks.
   module OpenApi
     # Compares OpenAPI object schemas with StructuredParams declarations.
-    # rubocop:disable Metrics/ClassLength
+    # rubocop:disable-next Metrics/ClassLength
     class DriftCheck
       # @rbs @openapi_source: Hash[untyped, untyped]|String?
       # @rbs @schema_source: Hash[untyped, untyped]|String?
@@ -21,7 +21,12 @@ module StructuredParams
       # @rbs @ignored: Array[Issue]
       # @rbs @seen_pairs: Array[Array[untyped]]
 
-      Issue = Struct.new(:kind, :path, :message, keyword_init: true)
+      Issue = Struct.new(
+        :kind, #: Symbol
+        :path, #: String
+        :message, #: String
+        keyword_init: true
+      )
 
       # Result of a single schema/class comparison.
       class Result
@@ -62,7 +67,7 @@ module StructuredParams
 
       class << self
         #: (**untyped) -> Result
-        # rubocop:disable Metrics/ParameterLists
+        # rubocop:disable-next Metrics/ParameterLists
         def call(
           parameter_class:,
           openapi: nil,
@@ -80,11 +85,10 @@ module StructuredParams
             required_validation: required_validation
           ).call
         end
-        # rubocop:enable Metrics/ParameterLists
       end
 
       #: (**untyped) -> void
-      # rubocop:disable Metrics/ParameterLists
+      # rubocop:disable-next Metrics/ParameterLists
       def initialize(
         parameter_class:,
         openapi: nil,
@@ -112,7 +116,6 @@ module StructuredParams
 
         raise ArgumentError, 'configure an OpenAPI document or pass schema as a Hash'
       end
-      # rubocop:enable Metrics/ParameterLists
 
       #: () -> Result
       def call
@@ -159,7 +162,7 @@ module StructuredParams
       end
 
       #: (Hash[untyped, untyped], singleton(StructuredParams::Params), String) -> void
-      # rubocop:disable Metrics/AbcSize
+      # rubocop:disable-next Metrics/AbcSize
       def check_object(schema, parameter_class, path)
         return if skip_union?(schema, path)
         return if seen?(schema, parameter_class)
@@ -180,7 +183,6 @@ module StructuredParams
           compare_type(property_schema, attribute_types.fetch(attribute.to_s), join_path(path, attribute))
         end
       end
-      # rubocop:enable Metrics/AbcSize
 
       #: (Hash[Symbol, String], Hash[String, ActiveModel::Type::Value], String) -> void
       def compare_attribute_names(schema_attributes, attribute_types, path)
@@ -213,8 +215,7 @@ module StructuredParams
       end
 
       #: (Hash[untyped, untyped], ActiveModel::Type::Value, String) -> void
-      # rubocop:disable Metrics/AbcSize
-      # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+      # rubocop:disable-next Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       def compare_type(schema, attribute_type, path)
         return if skip_union?(schema, path)
 
@@ -237,8 +238,6 @@ module StructuredParams
           compare_array_item_type(schema, attribute_type, path)
         end
       end
-      # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
-      # rubocop:enable Metrics/AbcSize
 
       #: (Hash[untyped, untyped], Type::Array, String) -> void
       def compare_array_item_type(schema, attribute_type, path)
@@ -357,6 +356,5 @@ module StructuredParams
         @skipped << Issue.new(kind: :unsupported, path: path.empty? ? '(root)' : path, message: message)
       end
     end
-    # rubocop:enable Metrics/ClassLength
   end
 end

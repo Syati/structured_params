@@ -36,7 +36,7 @@ module StructuredParams
       def pointer_for: (singleton(StructuredParams::Params), String?) -> String
     end
 
-    @configuration: Configuration?
+    self.@configuration: Configuration?
 
     # : () -> Configuration
     def self.configuration: () -> Configuration

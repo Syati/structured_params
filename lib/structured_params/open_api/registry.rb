@@ -10,7 +10,7 @@ module StructuredParams
     # Collects exceptional mappings and runs all configured drift checks.
     class Registry
       class << self
-        # @rbs @entries: Array[Array[untyped]]?
+        # @rbs self.@entries: Array[Array[untyped]]?
 
         # +parameter_class+ may be a class name String (e.g. from a Rails initializer,
         # before Zeitwerk autoloading is set up); it is resolved lazily in +check_all+.

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-# rubocop:disable RSpec/DescribeClass
+# rubocop:disable-next RSpec/DescribeClass
 RSpec.describe 'StructuredParams::Params as Form Object' do
   describe '.form_class?' do
     it 'returns true for classes with a Form suffix' do
@@ -258,4 +258,3 @@ RSpec.describe 'StructuredParams::Params as Form Object' do
     end
   end
 end
-# rubocop:enable RSpec/DescribeClass
