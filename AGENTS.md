@@ -34,7 +34,7 @@ bin/setup
 通常の確認:
 
 ```bash
-bundle exec rspec
+bundle exec rake spec        # 両方の gem の spec(各 gem のフォルダで bundle exec rspec でも可)
 bundle exec rubocop
 bundle exec steep check
 ```

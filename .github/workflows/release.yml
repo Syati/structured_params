@@ -6,13 +6,19 @@ on:
   release:
     types: [ published ]
 
+# Both release workflows commit to main, so never run two at once.
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
 jobs:
   release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
       id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
-    if: startsWith(github.event.release.tag_name, 'v')
+    # Pre-releases are not published to RubyGems by this workflow.
+    if: startsWith(github.event.release.tag_name, 'v') && !github.event.release.prerelease
 
     steps:
       - name: Checkout code
@@ -24,12 +30,28 @@ jobs:
       - name: Configure Git
         uses: ./.github/actions/configure-git
 
-      - name: Extract version from release
+      - name: Extract and validate the version
         id: extract_version
         env:
           TAG_NAME: ${{ github.event.release.tag_name }}
         run: |
           VERSION=${TAG_NAME#v}
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Release tag '$TAG_NAME' must look like vX.Y.Z"
+            exit 1
+          fi
+
+          # The tagged commit must be on main, and the version must not go backwards
+          # (re-running an old release must not downgrade version.rb).
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" HEAD; then
+            echo "::error::The tagged commit is not on main"
+            exit 1
+          fi
+          CURRENT=$(sed -n "s/.*VERSION = '\([^']*\)'.*/\1/p" structured_params/lib/structured_params/version.rb)
+          if [ "$(printf '%s\n%s\n' "$CURRENT" "$VERSION" | sort -V | tail -n 1)" != "$VERSION" ]; then
+            echo "::error::Version $VERSION is older than the current $CURRENT"
+            exit 1
+          fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Update version file
@@ -37,6 +59,7 @@ jobs:
           VERSION: ${{ steps.extract_version.outputs.version }}
         run: |
           sed -i "s/VERSION = '[^']*'/VERSION = '$VERSION'/" structured_params/lib/structured_params/version.rb
+          grep -qF "VERSION = '$VERSION'" structured_params/lib/structured_params/version.rb || { echo "::error::VERSION was not updated"; exit 1; }
 
       - name: Update CHANGELOG
         env:
@@ -45,15 +68,21 @@ jobs:
           RELEASE_NOTES: ${{ github.event.release.body }}
         run: |
           CHANGELOG=structured_params/CHANGELOG.md
+          # A re-run after a failed publish must not add the entry twice.
+          if grep -q "^## \[$VERSION\]" "$CHANGELOG"; then
+            echo "CHANGELOG already has $VERSION"
+            exit 0
+          fi
           CURRENT_DATE=$(date +%Y-%m-%d)
+          NOTES=$(printf '%s' "$RELEASE_NOTES" | tr -d '\r')
 
           # Create temporary changelog entry
           echo "## [$VERSION] - $CURRENT_DATE" > temp_changelog.md
           echo "" >> temp_changelog.md
 
           # Add release notes from GitHub release
-          if [ -n "$RELEASE_NOTES" ]; then
-            echo "$RELEASE_NOTES" >> temp_changelog.md
+          if [ -n "$NOTES" ]; then
+            printf '%s\n' "$NOTES" >> temp_changelog.md
           else
             echo "- Release $TAG_NAME" >> temp_changelog.md
           fi
@@ -71,6 +100,8 @@ jobs:
 
           rm -f temp_changelog.md
 
+      # Committed here, pushed only after the gem has been built, so a failure
+      # before that point leaves main untouched.
       - name: Commit version and CHANGELOG
         env:
           VERSION: ${{ steps.extract_version.outputs.version }}
@@ -80,7 +111,6 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "Update structured_params to $VERSION"
-            git push origin main
           fi
 
       - name: Set up Ruby
@@ -91,10 +121,18 @@ jobs:
 
       - name: Build gem
         working-directory: structured_params
+        env:
+          VERSION: ${{ steps.extract_version.outputs.version }}
         run: |
           gem build structured_params.gemspec
+          test -f "structured_params-$VERSION.gem"
 
-      # `rake release` finds the Release's tag (vX.Y.Z), so it only builds and pushes the gem.
+      - name: Push the version and CHANGELOG to main
+        run: git push origin main
+
+      # `rake release` (see structured_params/Rakefile) tags releases vX.Y.Z. The Release already
+      # created that tag, so only the build and the RubyGems push happen here. That relies on the
+      # tag being exactly v plus the VERSION written above, which the validation guarantees.
       - name: Publish to RubyGems
         uses: rubygems/release-gem@v1
         with:
