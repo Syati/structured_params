@@ -130,9 +130,19 @@ jobs:
       - name: Push the version and CHANGELOG to main
         run: git push origin main
 
-      # `rake release` (see structured_params-openapi/Rakefile) tags releases openapi-vX.Y.Z. The Release already
-      # created that tag, so only the build and the RubyGems push happen here. That relies on the
-      # tag being exactly openapi-v plus the VERSION written above, which the validation guarantees.
+      # The Release created its tag before the version commit. Point the tag at the commit that is
+      # built and published, so the tag reproduces the gem. `rake release` then finds the tag and
+      # skips tagging. Done before publishing so a refused tag push fails the job with nothing released.
+      - name: Point the release tag at the published commit
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name }}
+        run: |
+          git tag -f "$TAG_NAME" HEAD
+          git push --force origin "refs/tags/$TAG_NAME"
+
+      # `rake release` (see structured_params-openapi/Rakefile) tags releases openapi-vX.Y.Z. The tag exists (it was moved
+      # above), so only the build and the RubyGems push happen here. That relies on the tag being
+      # exactly openapi-v plus the VERSION written above, which the validation guarantees.
       - name: Publish to RubyGems
         uses: rubygems/release-gem@v1
         with:

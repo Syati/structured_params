@@ -223,11 +223,11 @@ To release a gem:
 3. Publishing the Release runs the workflow, which:
    - checks that the tag looks like `vX.Y.Z` / `openapi-vX.Y.Z`, that its commit is on `main`, and that the version does not go backwards;
    - sets `VERSION`, prepends the release notes to the gem's `CHANGELOG.md` and commits both;
-   - builds the gem, then pushes that commit to `main`, then publishes the gem to RubyGems through Trusted Publishing.
+   - builds the gem, pushes that commit to `main`, moves the Release's tag onto it, then publishes the gem to RubyGems through Trusted Publishing.
 
 Things to know:
 
-- The Release's tag points at the commit *before* the version commit, and the gem is built from `main` plus that commit. The tag therefore does not contain the bumped `version.rb`.
+- The Release creates its tag first, then the workflow commits the version and CHANGELOG and **force-moves the tag onto that commit**, so the tag contains exactly what is published. This needs permission to update tags (tag protection rules that forbid it would fail the job before anything is published).
 - If a run fails, re-run it: the steps are idempotent (the CHANGELOG entry is not added twice and an already pushed commit is a no-op). A gem that was already published to RubyGems cannot be published again, so a failure after publishing needs a new version.
 - Pre-releases are ignored by the workflows, and a tag that matches neither `v*` nor `openapi-v*` releases nothing. If `main` has branch protection, the `github-actions` bot must be allowed to push to it.
 - The two workflows share a `concurrency` group because both push to `main`; keep the tag prefixes consistent in three places: the workflow `if:` and tag parsing, and `tag_prefix` in the gem's `Rakefile`.
