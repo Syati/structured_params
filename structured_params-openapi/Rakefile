@@ -1,0 +1,11 @@
+# frozen_string_literal: true
+# rbs_inline: enabled
+
+# Release tasks (`rake build`, `rake release`) for this gem; run them from this directory.
+# The repository-wide checks (specs, RuboCop, Steep) live in the root Rakefile.
+require 'bundler/gem_helper'
+
+# Tag releases openapi-vX.Y.Z so they never collide with the core gem's vX.Y.Z tags.
+gem_helper = Bundler::GemHelper.new
+gem_helper.tag_prefix = 'openapi-'
+gem_helper.install

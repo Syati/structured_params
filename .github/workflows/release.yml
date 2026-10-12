@@ -14,10 +14,11 @@ jobs:
     permissions:
       contents: write
       id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
-    # Only run if the workflow_run was successful or if triggered by release event
+    # Only run if the workflow_run was successful or if triggered by a core release (tag vX.Y.Z).
+    # structured_params-openapi releases (tag openapi-vX.Y.Z) are handled by release-openapi.yml.
     if: |
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
-      (github.event_name == 'release')
+      (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v'))
 
     steps:
       - name: Checkout code

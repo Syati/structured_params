@@ -206,6 +206,25 @@ RAILS_VERSION="~> 8.0.0" bundle update && bundle exec rspec
 └── structured_params-openapi/        # OpenAPI drift check gem (same layout)
 ```
 
+## Releasing
+
+The repository holds two gems that are released independently, each from a GitHub Release.
+
+| Gem | Release tag | Workflow | Version file |
+|-----|-------------|----------|--------------|
+| `structured_params` | `vX.Y.Z` | `tagging.yml` + `release.yml` | `structured_params/lib/structured_params/version.rb` |
+| `structured_params-openapi` | `openapi-vX.Y.Z` | `release-openapi.yml` | `structured_params-openapi/lib/structured_params/openapi/version.rb` |
+
+To release `structured_params-openapi`:
+
+1. Make sure `main` contains the changes to ship and CI is green.
+2. Create a GitHub Release with a new tag `openapi-vX.Y.Z` targeting `main`, and write the release notes.
+3. Publishing the Release runs `release-openapi.yml`, which sets `VERSION` and prepends the release notes to `structured_params-openapi/CHANGELOG.md` (one commit to `main`), then builds the gem and publishes it to RubyGems through Trusted Publishing.
+
+The `openapi-` prefix keeps the tags apart: `release.yml` ignores `openapi-v*` releases and `tagging.yml` only reacts to `v*` tags.
+
+One-time setup for a new gem: register a (pending) Trusted Publisher on rubygems.org for `structured_params-openapi` with repository `Syati/structured_params` and workflow `release-openapi.yml`.
+
 ## Submitting Changes
 
 ### Pull Request Process

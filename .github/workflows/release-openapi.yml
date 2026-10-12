@@ -1,0 +1,101 @@
+name: Release structured_params-openapi
+
+# Publishes the structured_params-openapi gem when a GitHub Release tagged openapi-vX.Y.Z is
+# published. The core gem is released by release.yml from vX.Y.Z tags.
+on:
+  release:
+    types: [ published ]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
+    if: startsWith(github.event.release.tag_name, 'openapi-v')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Configure Git
+        uses: ./.github/actions/configure-git
+
+      - name: Extract version from release
+        id: extract_version
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name }}
+        run: |
+          VERSION=${TAG_NAME#openapi-v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update version file
+        env:
+          VERSION: ${{ steps.extract_version.outputs.version }}
+        run: |
+          sed -i "s/VERSION = '[^']*'/VERSION = '$VERSION'/" structured_params-openapi/lib/structured_params/openapi/version.rb
+
+      - name: Update CHANGELOG
+        env:
+          VERSION: ${{ steps.extract_version.outputs.version }}
+          TAG_NAME: ${{ github.event.release.tag_name }}
+          RELEASE_NOTES: ${{ github.event.release.body }}
+        run: |
+          CHANGELOG=structured_params-openapi/CHANGELOG.md
+          CURRENT_DATE=$(date +%Y-%m-%d)
+
+          # Create temporary changelog entry
+          echo "## [$VERSION] - $CURRENT_DATE" > temp_changelog.md
+          echo "" >> temp_changelog.md
+
+          # Add release notes from GitHub release
+          if [ -n "$RELEASE_NOTES" ]; then
+            echo "$RELEASE_NOTES" >> temp_changelog.md
+          else
+            echo "- Release $TAG_NAME" >> temp_changelog.md
+          fi
+          echo "" >> temp_changelog.md
+
+          # Prepend to existing CHANGELOG (skip the header)
+          if [ -f "$CHANGELOG" ]; then
+            tail -n +3 "$CHANGELOG" >> temp_changelog.md
+          fi
+
+          # Add header back
+          echo "# Changelog" > "$CHANGELOG"
+          echo "" >> "$CHANGELOG"
+          cat temp_changelog.md >> "$CHANGELOG"
+
+          rm -f temp_changelog.md
+
+      - name: Commit version and CHANGELOG
+        env:
+          VERSION: ${{ steps.extract_version.outputs.version }}
+        run: |
+          git add structured_params-openapi/lib/structured_params/openapi/version.rb structured_params-openapi/CHANGELOG.md
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update structured_params-openapi to $VERSION"
+            git push origin main
+          fi
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+          bundler-cache: true
+
+      - name: Build gem
+        working-directory: structured_params-openapi
+        run: |
+          gem build structured_params-openapi.gemspec
+
+      # `rake release` finds the Release's tag (openapi-vX.Y.Z), so it only builds and pushes the gem.
+      - name: Publish to RubyGems
+        uses: rubygems/release-gem@v1
+        with:
+          working-directory: structured_params-openapi

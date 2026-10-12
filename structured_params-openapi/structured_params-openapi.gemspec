@@ -22,6 +22,7 @@ Gem::Specification.new do |spec|
   spec.files = Dir[
     'LICENSE.txt',
     'README*.md',
+    'CHANGELOG.md',
     'docs/**/*.md',
     'lib/**/*.rb',
     'lib/tasks/**/*.rake',
@@ -30,6 +31,7 @@ Gem::Specification.new do |spec|
 
   spec.metadata = {
     'homepage_uri' => 'https://github.com/Syati/structured_params/tree/main/structured_params-openapi#readme',
+    'changelog_uri' => 'https://github.com/Syati/structured_params/blob/main/structured_params-openapi/CHANGELOG.md',
     'bug_tracker_uri' => 'https://github.com/Syati/structured_params/issues',
     'source_code_uri' => 'https://github.com/Syati/structured_params/tree/main/structured_params-openapi',
     'rubygems_mfa_required' => 'true'
