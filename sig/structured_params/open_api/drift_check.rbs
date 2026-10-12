@@ -31,6 +31,9 @@ module StructuredParams
       # Finding kinds that can be raised as errors (and therefore matched by +ignore_drift+).
       ERROR_KINDS: Array[Symbol]
 
+      # Options that stop a presence validator from enforcing presence on every validation.
+      CONDITIONAL_PRESENCE_OPTIONS: Array[Symbol]
+
       class Issue < Struct[Symbol | String]
         attr_accessor kind(): Symbol
 

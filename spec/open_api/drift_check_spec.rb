@@ -314,16 +314,19 @@ RSpec.describe StructuredParams::OpenApi::DriftCheck do
       expect(result.errors).to contain_exactly(have_attributes(kind: :type_mismatch, path: 'address.city'))
     end
 
-    it 'does not treat a conditional presence validator as unconditional' do
-      conditional = Class.new(StructuredParams::Params) do
-        attribute :name, :string
-        validates :name, presence: true, if: -> { true }
+    [{ if: -> { true } }, { on: :create }, { allow_nil: true }, { allow_blank: true }].each do |options|
+      it "does not treat a presence validator with #{options.keys.first}: as unconditional" do
+        conditional = Class.new(StructuredParams::Params) do
+          attribute :name, :string
+          validates :name, presence: true, **options
+        end
+        name_schema = { 'type' => 'object', 'properties' => { 'name' => { 'type' => 'string' } },
+                        'required' => ['name'] }
+
+        result = described_class.call(schema: name_schema, parameter_class: conditional)
+
+        expect(result.errors.map(&:kind)).to eq([:missing_presence_validation])
       end
-      name_schema = { 'type' => 'object', 'properties' => { 'name' => { 'type' => 'string' } }, 'required' => ['name'] }
-
-      result = described_class.call(schema: name_schema, parameter_class: conditional)
-
-      expect(result.errors.map(&:kind)).to eq([:missing_presence_validation])
     end
 
     it 'accepts compatible numeric types and rejects an integer attribute for a number schema' do

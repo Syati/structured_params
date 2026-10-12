@@ -28,6 +28,9 @@ module StructuredParams
         missing_schema unresolved_reference
       ].freeze #: Array[Symbol]
 
+      # Options that stop a presence validator from enforcing presence on every validation.
+      CONDITIONAL_PRESENCE_OPTIONS = %i[if unless on allow_nil allow_blank].freeze #: Array[Symbol]
+
       Issue = Struct.new(
         :kind,     #: Symbol
         :path,     #: String
@@ -342,7 +345,7 @@ module StructuredParams
       #: (singleton(StructuredParams::Params), Symbol) -> bool
       def presence_validator?(parameter_class, attribute)
         parameter_class._validators.fetch(attribute.to_sym, []).any? do |validator|
-          validator.kind == :presence && validator.options.slice(:if, :unless).empty?
+          validator.kind == :presence && validator.options.slice(*CONDITIONAL_PRESENCE_OPTIONS).empty?
         end
       end
 

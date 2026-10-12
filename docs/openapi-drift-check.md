@@ -56,8 +56,8 @@ reported as a `type_mismatch`.
 
 The checker compares schema properties with `attribute` declarations, scalar and
 nested object/array types, and schema `required` properties with unconditional
-`validates ..., presence: true` declarations ("unconditional" means no `if:` or
-`unless:` option; `on:` and `allow_nil` are not considered). Use `property_names` when the JSON
+`validates ..., presence: true` declarations ("unconditional" means none of the
+`if:`, `unless:`, `on:`, `allow_nil:` or `allow_blank:` options). Use `property_names` when the JSON
 property name differs from the Ruby attribute name.
 
 ```ruby
