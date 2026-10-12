@@ -359,7 +359,8 @@ module StructuredParams
       def scalar_option_type(option, path)
         return unless option.is_a?(Hash)
 
-        resolved = without_reporting { resolve_references(option, path) }
+        # Not silenced: a dangling $ref in an option must surface as :unresolved_reference.
+        resolved = resolve_references(option, path)
         schema_type(resolved) unless value_for(resolved, 'properties')
       end
 
