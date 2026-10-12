@@ -1,7 +1,7 @@
 # rbs_inline: enabled
 # frozen_string_literal: true
 
-# rubocop:disable Style/OptionalBooleanParameter
+# rubocop:disable-next Style/OptionalBooleanParameter
 module StructuredParams
   # Custom errors collection that handles nested attribute names
   class Errors < ActiveModel::Errors
@@ -65,4 +65,3 @@ module StructuredParams
     end
   end
 end
-# rubocop:enable Style/OptionalBooleanParameter

@@ -4,7 +4,7 @@ module StructuredParams
   # Schema comparison types for OpenAPI drift checks.
   module OpenApi
     # Compares OpenAPI object schemas with StructuredParams declarations.
-    # rubocop:disable Metrics/ClassLength
+    # rubocop:disable-next Metrics/ClassLength
     class DriftCheck
       @active_pairs: Array[Array[untyped]]
 
@@ -112,7 +112,7 @@ module StructuredParams
       def check_object: (Hash[untyped, untyped], singleton(StructuredParams::Params), String) -> void
 
       # : (Hash[untyped, untyped], singleton(StructuredParams::Params), String) -> void
-      #  rubocop:disable Metrics/AbcSize
+      #  rubocop:disable-next Metrics/AbcSize
       def check_object_properties: (Hash[untyped, untyped], singleton(StructuredParams::Params), String) -> void
 
       # : (untyped, ActiveModel::Type::Value, String) -> void

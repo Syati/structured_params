@@ -1,6 +1,6 @@
 # Generated from lib/structured_params/errors.rb with RBS::Inline
 
-# rubocop:disable Style/OptionalBooleanParameter
+# rubocop:disable-next Style/OptionalBooleanParameter
 module StructuredParams
   # Custom errors collection that handles nested attribute names
   class Errors < ActiveModel::Errors
