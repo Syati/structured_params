@@ -1,0 +1,19 @@
+# Generated from lib/structured_params/open_api/drift_check/issue.rb with RBS::Inline
+
+module StructuredParams
+  module OpenApi
+    class DriftCheck
+      # A single finding (error, skipped check, or ignored finding) from a drift check.
+      class Issue < Struct[Symbol | String]
+        attr_accessor kind(): Symbol
+
+        attr_accessor path(): String
+
+        attr_accessor message(): String
+
+        def self.new: (?kind: Symbol, ?path: String, ?message: String) -> instance
+                    | ({ ?kind: Symbol, ?path: String, ?message: String }) -> instance
+      end
+    end
+  end
+end

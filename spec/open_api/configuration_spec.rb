@@ -73,6 +73,20 @@ RSpec.describe StructuredParams::OpenApi::Configuration do
         .to raise_error(ArgumentError, /unknown kind/)
     end
 
+    it 'matches every path when path is omitted' do
+      configuration = StructuredParams::OpenApi.configuration
+      configuration.ignore_drift(kind: :missing_schema, parameter_class: 'ScopedParams')
+
+      expect(configuration.ignored?(:missing_schema, '(root)', 'ScopedParams')).to be true
+      expect(configuration.ignored?(:missing_schema, 'anything', 'ScopedParams')).to be true
+      expect(configuration.ignored?(:missing_schema, '(root)', 'OtherParams')).to be false
+      expect(configuration.ignored?(:type_mismatch, '(root)', 'ScopedParams')).to be false
+    end
+
+    it 'requires at least one narrowing argument so a rule cannot ignore everything' do
+      expect { StructuredParams::OpenApi.configuration.ignore_drift }.to raise_error(ArgumentError, /at least one/)
+    end
+
     it 'scopes a rule to the given parameter class' do
       configuration = StructuredParams::OpenApi.configuration
       configuration.ignore_drift(path: 'a', parameter_class: 'ScopedParams')
@@ -150,6 +164,32 @@ RSpec.describe StructuredParams::OpenApi::Configuration do
 
     it 'raises for a missing file' do
       expect { configuration.load_document('/nonexistent/openapi.yml') }.to raise_error(Errno::ENOENT)
+    end
+  end
+
+  describe '#document_for' do
+    subject(:configuration) { described_class.new }
+
+    it 'falls back to the global document without a resolver or when it returns nil' do
+      configuration.document = 'openapi.yml'
+      expect(configuration.document_for(Class.new)).to eq('openapi.yml')
+
+      configuration.document_resolver = ->(_klass) {}
+      expect(configuration.document_for(Class.new)).to eq('openapi.yml')
+    end
+
+    it 'uses the resolver result and lets each class pick its own file' do
+      configuration.document = 'openapi.yml'
+      configuration.document_resolver = lambda do |klass|
+        case klass.name
+        when /\AAdminApi::/ then 'admin_api.yml'
+        when /\AFrontApi::/ then 'front_api.yml'
+        end
+      end
+
+      expect(configuration.document_for(stub_const('AdminApi::UserParams', Class.new))).to eq('admin_api.yml')
+      expect(configuration.document_for(stub_const('FrontApi::UserParams', Class.new))).to eq('front_api.yml')
+      expect(configuration.document_for(stub_const('Other::UserParams', Class.new))).to eq('openapi.yml')
     end
   end
 end

@@ -34,49 +34,8 @@ module StructuredParams
       # Options that stop a presence validator from enforcing presence on every validation.
       CONDITIONAL_PRESENCE_OPTIONS: Array[Symbol]
 
-      class Issue < Struct[Symbol | String]
-        attr_accessor kind(): Symbol
-
-        attr_accessor path(): String
-
-        attr_accessor message(): String
-
-        def self.new: (?kind: Symbol, ?path: String, ?message: String) -> instance
-                    | ({ ?kind: Symbol, ?path: String, ?message: String }) -> instance
-      end
-
-      # Result of a single schema/class comparison.
-      class Result
-        attr_reader errors: Array[Issue]
-
-        attr_reader skipped: Array[Issue]
-
-        attr_reader ignored: Array[Issue]
-
-        attr_reader parameter_class: singleton(::StructuredParams::Params)
-
-        # : (singleton(::StructuredParams::Params), Array[Issue], Array[Issue], Array[Issue]) -> void
-        def initialize: (singleton(::StructuredParams::Params), Array[Issue], Array[Issue], Array[Issue]) -> void
-
-        # : () -> bool
-        def valid?: () -> bool
-
-        # : () -> String
-        def to_message: () -> String
-
-        # Lists what a passing check still left unverified (skipped) or suppressed (ignored),
-        # so those stay visible in CI output instead of only on the result object.
-        # : () -> String
-        def to_report: () -> String
-
-        private
-
-        # : () -> String
-        def class_label: () -> String
-
-        # : (Array[Issue]) -> String
-        def format_issues: (Array[Issue]) -> String
-      end
+      # Schema types that a +oneOf+/+anyOf+ of plain scalars may offer.
+      SCALAR_SCHEMA_TYPES: Array[Symbol]
 
       # rubocop:disable Metrics/ParameterLists
       # : (**untyped) -> Result
@@ -124,6 +83,21 @@ module StructuredParams
       # : (Hash[untyped, untyped], Hash[Symbol, String], singleton(StructuredParams::Params), String) -> void
       def compare_required_attributes: (Hash[untyped, untyped], Hash[Symbol, String], singleton(StructuredParams::Params), String) -> void
 
+      # A required property that the schema allows to be null must not demand +presence+,
+      # which would reject the null the contract permits.
+      # : (Hash[untyped, untyped], String, String) -> bool
+      def nullable_property?: (Hash[untyped, untyped], String, String) -> bool
+
+      # : (Hash[untyped, untyped]) -> bool
+      def nullable_schema?: (Hash[untyped, untyped]) -> bool
+
+      # : (untyped) -> bool
+      def null_type?: (untyped) -> bool
+
+      # Runs a lookup whose findings are reported elsewhere, so they are not recorded twice.
+      # : [T] () { () -> T } -> T
+      def without_reporting: [T] () { () -> T } -> T
+
       # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       # : (Hash[untyped, untyped], ActiveModel::Type::Value, String) -> void
       def compare_type: (Hash[untyped, untyped], ActiveModel::Type::Value, String) -> void
@@ -139,6 +113,38 @@ module StructuredParams
 
       # : (singleton(StructuredParams::Params), Symbol) -> bool
       def presence_validator?: (singleton(StructuredParams::Params), Symbol) -> bool
+
+      # A +oneOf+/+anyOf+ of plain scalars matches when the attribute fits any of them.
+      # : (Array[Symbol], ActiveModel::Type::Value, String) -> void
+      def compare_scalar_union: (Array[Symbol], ActiveModel::Type::Value, String) -> void
+
+      # The scalar types offered by a +oneOf+/+anyOf+, or nil when it is not a plain scalar union.
+      # : (Hash[untyped, untyped], String) -> Array[Symbol]?
+      def scalar_union_types: (Hash[untyped, untyped], String) -> Array[Symbol]?
+
+      # : (untyped, String) -> Symbol?
+      def scalar_option_type: (untyped, String) -> Symbol?
+
+      # : (Hash[untyped, untyped]) -> String?
+      def union_key: (Hash[untyped, untyped]) -> String?
+
+      # +oneOf: [X, {type: null}]+ and +type: [T, 'null']+ are how OpenAPI 3.1 says "X or null".
+      # Collapse them to X and mark the result +nullable+, so they are compared like a 3.0
+      # +nullable: true+ schema instead of being treated as unsupported unions.
+      # : (Hash[untyped, untyped]) -> Hash[untyped, untyped]
+      def collapse_nullable: (Hash[untyped, untyped]) -> Hash[untyped, untyped]
+
+      # : (Hash[untyped, untyped]) -> Hash[untyped, untyped]?
+      def collapse_null_type: (Hash[untyped, untyped]) -> Hash[untyped, untyped]?
+
+      # : (Hash[untyped, untyped]) -> Hash[untyped, untyped]?
+      def collapse_null_union: (Hash[untyped, untyped]) -> Hash[untyped, untyped]?
+
+      # : (untyped, Hash[untyped, untyped]) -> Hash[untyped, untyped]?
+      def nullable_option: (untyped, Hash[untyped, untyped]) -> Hash[untyped, untyped]?
+
+      # : (untyped) -> bool
+      def null_option?: (untyped) -> bool
 
       # : (Hash[untyped, untyped], String) -> bool
       def skip_union?: (Hash[untyped, untyped], String) -> bool

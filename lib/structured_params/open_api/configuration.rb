@@ -14,6 +14,7 @@ module StructuredParams
 
       attr_accessor :document #: Hash[untyped, untyped]|String?
       attr_writer :schema_name_resolver #: untyped
+      attr_writer :document_resolver #: untyped
       attr_writer :parameter_class_filter #: untyped
 
       #: () -> void
@@ -23,6 +24,14 @@ module StructuredParams
         end
         @ignored_issues = []
         @documents = {}
+      end
+
+      # The OpenAPI document for +parameter_class+: the +document_resolver+ result when it
+      # returns one, otherwise the global +document+. Lets one app check classes from several
+      # API namespaces (e.g. admin and front) against separate files.
+      #: (singleton(StructuredParams::Params)) -> (Hash[untyped, untyped] | String)?
+      def document_for(parameter_class)
+        @document_resolver&.call(parameter_class) || document
       end
 
       # Parses an OpenAPI file once per modification time, so a bulk check across many
@@ -46,19 +55,25 @@ module StructuredParams
         document
       end
 
-      # Suppresses a specific finding (matched by exact +path+ and, optionally, +kind+) instead
-      # of raising it as an error. Without +parameter_class+ it applies to every drift check,
+      # Suppresses matching findings instead of raising them as errors. Each of +path+, +kind+
+      # and +parameter_class+ narrows the rule; an omitted one matches everything, but at least
+      # one must be given. Without +parameter_class+ the rule applies to every drift check,
       # including once per parent class for a nested object reused by several top-level
-      # parameter classes. Omit +kind+ to ignore every error kind at that path. Skips
-      # (unsupported schema features) are never ignored; they only appear in Result#skipped.
+      # parameter classes. Skips (unsupported schema features) are never ignored; they only
+      # appear in Result#skipped.
       #
       # Paths use attribute names joined with +.+ and +[]+ for array items, e.g.
-      # +items[].sku+; a schema that cannot be found at all is reported at +(root)+.
+      # +items[].sku+. A schema that cannot be found at all (+:missing_schema+) concerns the
+      # whole class rather than a property, so omit +path+ for it.
       #
       # Ignored findings are moved to DriftCheck::Result#ignored rather than dropped, so
       # they stay auditable; #valid? and #to_message treat them as resolved.
-      #: (path: String, ?kind: Symbol?, ?parameter_class: (Class | String)?) -> void
-      def ignore_drift(path:, kind: nil, parameter_class: nil)
+      #: (?path: String?, ?kind: Symbol?, ?parameter_class: (Class | String)?) -> void
+      def ignore_drift(path: nil, kind: nil, parameter_class: nil)
+        if path.nil? && kind.nil? && parameter_class.nil?
+          raise ArgumentError, 'give at least one of path:, kind: or parameter_class: to ignore_drift'
+        end
+
         if kind && !DriftCheck::ERROR_KINDS.include?(kind)
           raise ArgumentError, "unknown kind #{kind.inspect}; expected one of #{DriftCheck::ERROR_KINDS.inspect}"
         end
@@ -69,7 +84,7 @@ module StructuredParams
       #: (Symbol, String, ?untyped) -> bool
       def ignored?(kind, path, parameter_class = nil)
         @ignored_issues.any? do |rule|
-          rule.fetch(:path) == path &&
+          [nil, path].include?(rule.fetch(:path)) &&
             [nil, kind].include?(rule.fetch(:kind)) &&
             [nil, parameter_class&.to_s].include?(rule.fetch(:parameter_class))
         end

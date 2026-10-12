@@ -67,7 +67,7 @@ RSpec.describe StructuredParams::OpenApi::Registry do
   describe 'skipped and ignored checks' do
     let(:parameter_class) { Class.new(StructuredParams::Params) { attribute :name, :string } }
     let(:skipping_schema) do
-      { 'type' => 'object', 'properties' => { 'name' => { 'type' => %w[string null] } } }
+      { 'type' => 'object', 'properties' => { 'name' => { 'type' => %w[string integer] } } }
     end
 
     before { described_class.register(parameter_class, schema: skipping_schema) }
@@ -122,5 +122,41 @@ RSpec.describe StructuredParams::OpenApi::Registry do
     described_class.register(parameter_class, schema: schema, property_names: { user_id: 'userId' })
 
     expect(described_class.check_all).to all(be_valid)
+  end
+
+  it 'checks a class against its own OpenAPI document instead of the configured one' do
+    parameter_class = Class.new(StructuredParams::Params) { attribute :name, :string }
+    other_document = { 'components' => { 'schemas' => { 'Admin' => {
+      'type' => 'object', 'properties' => { 'name' => { 'type' => 'string' } }
+    } } } }
+    StructuredParams::OpenApi.configure { |config| config.document = { 'components' => { 'schemas' => {} } } }
+    described_class.register(parameter_class, openapi: other_document, schema: 'Admin')
+
+    expect(described_class.check_all).to all(be_valid)
+  end
+
+  describe 'with a document_resolver' do
+    def document_with(property)
+      props = { property => { 'type' => 'string' } }
+      { 'components' => { 'schemas' => { 'User' => { 'type' => 'object', 'properties' => props } } } }
+    end
+
+    it 'checks auto-discovered classes against the document chosen per class' do
+      stub_const('AdminApi', Module.new)
+      stub_const('FrontApi', Module.new)
+      classes = { 'AdminApi::UserParams' => :role, 'FrontApi::UserParams' => :nickname }.map do |name, attribute|
+        stub_const(name, Class.new(StructuredParams::Params)).tap { |klass| klass.attribute attribute, :string }
+      end
+      documents = { 'AdminApi::UserParams' => document_with('role'), 'FrontApi::UserParams' => document_with('nickname') }
+      StructuredParams::OpenApi.configure do |config|
+        config.parameter_class_filter = ->(klass) { classes.include?(klass) }
+        config.document_resolver = ->(klass) { documents.fetch(klass.name) }
+      end
+
+      results = described_class.check_all(auto_discover: true)
+
+      expect(results.size).to eq(2)
+      expect(results).to all(be_valid)
+    end
   end
 end

@@ -1,0 +1,40 @@
+# Generated from lib/structured_params/open_api/drift_check/result.rb with RBS::Inline
+
+module StructuredParams
+  module OpenApi
+    class DriftCheck
+      # Result of a single schema/class comparison.
+      class Result
+        attr_reader errors: Array[Issue]
+
+        attr_reader skipped: Array[Issue]
+
+        attr_reader ignored: Array[Issue]
+
+        attr_reader parameter_class: singleton(::StructuredParams::Params)
+
+        # : (singleton(::StructuredParams::Params), Array[Issue], Array[Issue], Array[Issue]) -> void
+        def initialize: (singleton(::StructuredParams::Params), Array[Issue], Array[Issue], Array[Issue]) -> void
+
+        # : () -> bool
+        def valid?: () -> bool
+
+        # : () -> String
+        def to_message: () -> String
+
+        # Lists what a passing check still left unverified (skipped) or suppressed (ignored),
+        # so those stay visible in CI output instead of only on the result object.
+        # : () -> String
+        def to_report: () -> String
+
+        private
+
+        # : () -> String
+        def class_label: () -> String
+
+        # : (Array[Issue]) -> String
+        def format_issues: (Array[Issue]) -> String
+      end
+    end
+  end
+end

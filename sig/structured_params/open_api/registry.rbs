@@ -13,7 +13,10 @@ module StructuredParams
 
       # +parameter_class+ may be a class name String (e.g. from a Rails initializer,
       # before Zeitwerk autoloading is set up); it is resolved lazily in +check_all+.
+      # +openapi+ (a file path or Hash) overrides the configured document for this class, so
+      # one app can check classes against several OpenAPI files.
       # : (singleton(StructuredParams::Params) | String, **untyped) -> void
+      # rubocop:disable-next Metrics/ParameterLists
       def self.register: (singleton(StructuredParams::Params) | String, **untyped) -> void
 
       # : (?auto_discover: bool) -> Array[DriftCheck::Result]

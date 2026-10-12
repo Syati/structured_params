@@ -93,13 +93,42 @@ RSpec.describe StructuredParams::OpenApi::DriftCheck do
       expect(result).to be_valid
     end
 
-    it 'reports union schemas as skipped instead of treating them as compatible' do
-      schema['properties']['age'] = { 'oneOf' => [{ 'type' => 'integer' }, { 'type' => 'string' }] }
+    it 'reports object unions as skipped instead of treating them as compatible' do
+      schema['properties']['address'] = { 'oneOf' => [{ 'type' => 'object', 'properties' => {} },
+                                                      { 'type' => 'object', 'properties' => {} }] }
 
       result = described_class.call(schema: schema, parameter_class: parameter_class)
 
       expect(result).to be_valid
-      expect(result.skipped.first.message).to include('oneOf')
+      expect(result.skipped).to contain_exactly(have_attributes(path: 'address', message: a_string_including('oneOf')))
+    end
+
+    it 'accepts a scalar oneOf/anyOf when the attribute fits one option and rejects it otherwise' do
+      schema['properties']['age'] = { 'oneOf' => [{ 'type' => 'integer' }, { 'type' => 'string' }] }
+      schema['properties']['name'] = { 'anyOf' => [{ 'type' => 'integer' }, { 'type' => 'boolean' }] }
+
+      result = described_class.call(schema: schema, parameter_class: parameter_class)
+
+      expect(result.errors).to contain_exactly(have_attributes(kind: :type_mismatch, path: 'name'))
+      expect(result.skipped).to be_empty
+    end
+
+    it 'compares oneOf/anyOf with a null option and a type array with null as nullable schemas' do
+      schema['properties']['age'] = { 'oneOf' => [{ 'type' => 'string' }, { 'type' => 'null' }] }
+      schema['properties']['name'] = { 'type' => %w[string null] }
+      address_or_null = [{ '$ref' => '#/components/schemas/Address' }, { 'type' => 'null' }]
+      schema['properties']['address'] = { 'anyOf' => address_or_null, 'description' => 'optional' }
+      document = { 'components' => { 'schemas' => { 'Request' => schema, 'Address' => {
+        'type' => 'object', 'properties' => { 'city' => { 'type' => 'integer' } }, 'required' => ['city']
+      } } } }
+
+      result = described_class.call(openapi: document, schema: 'Request', parameter_class: parameter_class)
+
+      expect(result.skipped).to be_empty
+      expect(result.errors).to contain_exactly(
+        have_attributes(kind: :type_mismatch, path: 'age'),
+        have_attributes(kind: :type_mismatch, path: 'address.city')
+      )
     end
 
     it 'unwraps a single-entry allOf instead of treating it as unsupported composition' do
@@ -180,7 +209,7 @@ RSpec.describe StructuredParams::OpenApi::DriftCheck do
     it 'lets a missing schema be ignored for one class only' do
       document = { 'components' => { 'schemas' => { 'Other' => schema } } }
       StructuredParams::OpenApi.configure do |config|
-        config.ignore_drift(path: '(root)', kind: :missing_schema, parameter_class: parameter_class)
+        config.ignore_drift(kind: :missing_schema, parameter_class: parameter_class)
       end
 
       result = described_class.call(openapi: document, schema: 'Missing', parameter_class: parameter_class)
@@ -288,8 +317,8 @@ RSpec.describe StructuredParams::OpenApi::DriftCheck do
       expect(result.errors).to be_frozen
     end
 
-    it 'skips nullable type arrays, objects without properties and arrays without items' do
-      schema['properties']['name'] = { 'type' => %w[string null] }
+    it 'skips multiple-type arrays, objects without properties and arrays without items' do
+      schema['properties']['name'] = { 'type' => %w[string integer] }
       schema['properties']['address'] = { 'type' => 'object' }
       schema['properties']['tags'] = { 'type' => 'array' }
 
@@ -312,6 +341,46 @@ RSpec.describe StructuredParams::OpenApi::DriftCheck do
       result = described_class.call(schema: schema, parameter_class: parameter_class)
 
       expect(result.errors).to contain_exactly(have_attributes(kind: :type_mismatch, path: 'address.city'))
+    end
+
+    describe 'required properties that the schema allows to be null' do
+      let(:nickname_class) { Class.new(StructuredParams::Params) { attribute :nickname, :string } }
+      let(:components) do
+        { 'Nullable' => { 'type' => 'string', 'nullable' => true }, 'Plain' => { 'type' => 'string' } }
+      end
+
+      def check(property_schema, parameter_class: nickname_class)
+        document = {
+          'components' => { 'schemas' => components.merge(
+            'Request' => { 'type' => 'object', 'properties' => { 'nickname' => property_schema },
+                           'required' => ['nickname'] }
+          ) }
+        }
+        described_class.call(openapi: document, schema: 'Request', parameter_class: parameter_class)
+      end
+
+      [
+        ['3.0 nullable', { 'type' => 'string', 'nullable' => true }],
+        ['3.0 nullable wrapped in allOf',
+         { 'allOf' => [{ '$ref' => '#/components/schemas/Plain' }], 'nullable' => true }],
+        ['3.1 type array', { 'type' => %w[string null] }],
+        ['3.1 oneOf with null', { 'oneOf' => [{ 'type' => 'string' }, { 'type' => 'null' }] }],
+        ['nullable behind a $ref', { '$ref' => '#/components/schemas/Nullable' }]
+      ].each do |label, property_schema|
+        it "does not require presence for #{label}" do
+          expect(check(property_schema).errors).to be_empty
+        end
+      end
+
+      it 'still requires presence when the property is not nullable' do
+        expect(check({ 'type' => 'string' }).errors.map(&:kind)).to eq([:missing_presence_validation])
+      end
+
+      it 'does not record findings twice while looking up nullability' do
+        result = check({ '$ref' => '#/components/schemas/Missing' })
+
+        expect(result.errors.map(&:kind)).to contain_exactly(:unresolved_reference, :missing_presence_validation)
+      end
     end
 
     [{ if: -> { true } }, { on: :create }, { allow_nil: true }, { allow_blank: true }].each do |options|

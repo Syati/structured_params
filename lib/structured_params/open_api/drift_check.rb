@@ -3,6 +3,8 @@
 
 require 'date'
 require 'yaml'
+require_relative 'drift_check/issue'
+require_relative 'drift_check/result'
 
 module StructuredParams
   # Schema comparison types for OpenAPI drift checks.
@@ -31,65 +33,8 @@ module StructuredParams
       # Options that stop a presence validator from enforcing presence on every validation.
       CONDITIONAL_PRESENCE_OPTIONS = %i[if unless on allow_nil allow_blank].freeze #: Array[Symbol]
 
-      Issue = Struct.new(
-        :kind,     #: Symbol
-        :path,     #: String
-        :message,  #: String
-        keyword_init: true
-      )
-
-      # Result of a single schema/class comparison.
-      class Result
-        attr_reader :errors, :skipped, :ignored #: Array[Issue]
-        attr_reader :parameter_class #: singleton(::StructuredParams::Params)
-
-        #: (singleton(::StructuredParams::Params), Array[Issue], Array[Issue], Array[Issue]) -> void
-        def initialize(parameter_class, errors, skipped, ignored)
-          @parameter_class = parameter_class
-          @errors = errors
-          @skipped = skipped
-          @ignored = ignored
-        end
-
-        #: () -> bool
-        def valid?
-          errors.empty?
-        end
-
-        #: () -> String
-        def to_message
-          sections = []
-          sections << "OpenAPI drift detected:\n#{format_issues(errors)}" unless valid?
-          sections << "OpenAPI checks skipped:\n#{format_issues(skipped)}" unless skipped.empty?
-          return '' if sections.empty?
-
-          "#{class_label}\n#{sections.join("\n")}"
-        end
-
-        # Lists what a passing check still left unverified (skipped) or suppressed (ignored),
-        # so those stay visible in CI output instead of only on the result object.
-        #: () -> String
-        def to_report
-          sections = []
-          sections << "OpenAPI checks skipped:\n#{format_issues(skipped)}" unless skipped.empty?
-          sections << "OpenAPI findings ignored:\n#{format_issues(ignored)}" unless ignored.empty?
-          return '' if sections.empty?
-
-          "#{class_label}\n#{sections.join("\n")}"
-        end
-
-        private
-
-        #: () -> String
-        def class_label
-          @parameter_class.name || @parameter_class.inspect
-        end
-
-        #: (Array[Issue]) -> String
-        def format_issues(issues)
-          issues.map { |issue| "- #{issue.path}: #{issue.message}" }.join("\n")
-        end
-      end
+      # Schema types that a +oneOf+/+anyOf+ of plain scalars may offer.
+      SCALAR_SCHEMA_TYPES = %i[string integer number boolean].freeze #: Array[Symbol]
 
       class << self
         # rubocop:disable Metrics/ParameterLists
@@ -124,7 +69,7 @@ module StructuredParams
         property_names: {},
         required_validation: :presence
       )
-        @openapi_source = openapi || OpenApi.configuration.document
+        @openapi_source = openapi || OpenApi.configuration.document_for(parameter_class)
         @schema_source = schema
         @parameter_class = parameter_class
         @pointer = pointer
@@ -279,16 +224,58 @@ module StructuredParams
           attribute = attribute_name(property)
           next unless schema_attributes.key?(attribute)
           next if presence_validator?(parameter_class, attribute)
+          next if nullable_property?(schema, property, join_path(path, property))
 
           error(join_path(path, property), :missing_presence_validation,
                 'required schema property has no unconditional presence validation')
         end
       end
 
+      # A required property that the schema allows to be null must not demand +presence+,
+      # which would reject the null the contract permits.
+      #: (Hash[untyped, untyped], String, String) -> bool
+      def nullable_property?(schema, property, path)
+        property_schema = value_for(value_for(schema, 'properties') || {}, property)
+        return false unless property_schema.is_a?(Hash)
+
+        resolved = without_reporting { resolve_references(property_schema, path) }
+        nullable_schema?(resolved)
+      end
+
+      #: (Hash[untyped, untyped]) -> bool
+      def nullable_schema?(schema)
+        return true if value_for(schema, 'nullable') == true
+        return true if null_type?(value_for(schema, 'type'))
+
+        %w[oneOf anyOf].any? do |key|
+          Array(value_for(schema, key)).any? { |option| option.is_a?(Hash) && nullable_schema?(option) }
+        end
+      end
+
+      #: (untyped) -> bool
+      def null_type?(type)
+        type == 'null' || (type.is_a?(Array) && type.include?('null'))
+      end
+
+      # Runs a lookup whose findings are reported elsewhere, so they are not recorded twice.
+      #: [T] () { () -> T } -> T
+      def without_reporting
+        sizes = [@errors.size, @skipped.size, @ignored.size]
+        yield
+      ensure
+        @errors.slice!(sizes[0]..)
+        @skipped.slice!(sizes[1]..)
+        @ignored.slice!(sizes[2]..)
+      end
+
       # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       #: (Hash[untyped, untyped], ActiveModel::Type::Value, String) -> void
       def compare_type(schema, attribute_type, path)
-        return if unresolved_reference?(schema) || skip_union?(schema, path)
+        return if unresolved_reference?(schema)
+
+        scalar_types = scalar_union_types(schema, path)
+        return compare_scalar_union(scalar_types, attribute_type, path) if scalar_types
+        return if skip_union?(schema, path)
 
         if value_for(schema, 'type').is_a?(Array)
           skip(path, 'multiple schema types are outside the supported drift-check scope')
@@ -348,6 +335,78 @@ module StructuredParams
         end
       end
 
+      # A +oneOf+/+anyOf+ of plain scalars matches when the attribute fits any of them.
+      #: (Array[Symbol], ActiveModel::Type::Value, String) -> void
+      def compare_scalar_union(types, attribute_type, path)
+        actual_type = attribute_type.type
+        return if types.any? { |type| compatible_types?(type, actual_type) }
+
+        error(path, :type_mismatch, "schema types #{types.inspect} do not match attribute type #{actual_type.inspect}")
+      end
+
+      # The scalar types offered by a +oneOf+/+anyOf+, or nil when it is not a plain scalar union.
+      #: (Hash[untyped, untyped], String) -> Array[Symbol]?
+      def scalar_union_types(schema, path)
+        key = union_key(schema)
+        return unless key
+
+        options = value_for(schema, key).reject { |option| null_option?(option) }
+        types = options.map { |option| scalar_option_type(option, path) }
+        types if types.size > 1 && types.all? { |type| SCALAR_SCHEMA_TYPES.include?(type) }
+      end
+
+      #: (untyped, String) -> Symbol?
+      def scalar_option_type(option, path)
+        return unless option.is_a?(Hash)
+
+        resolved = without_reporting { resolve_references(option, path) }
+        schema_type(resolved) unless value_for(resolved, 'properties')
+      end
+
+      #: (Hash[untyped, untyped]) -> String?
+      def union_key(schema)
+        %w[oneOf anyOf].find { |name| value_for(schema, name).is_a?(Array) }
+      end
+
+      # +oneOf: [X, {type: null}]+ and +type: [T, 'null']+ are how OpenAPI 3.1 says "X or null".
+      # Collapse them to X and mark the result +nullable+, so they are compared like a 3.0
+      # +nullable: true+ schema instead of being treated as unsupported unions.
+      #: (Hash[untyped, untyped]) -> Hash[untyped, untyped]
+      def collapse_nullable(schema)
+        collapse_null_type(schema) || collapse_null_union(schema) || schema
+      end
+
+      #: (Hash[untyped, untyped]) -> Hash[untyped, untyped]?
+      def collapse_null_type(schema)
+        type = value_for(schema, 'type')
+        return unless type.is_a?(Array) && type.include?('null')
+
+        others = type - ['null']
+        schema.merge('type' => others.first, 'nullable' => true) if others.size == 1
+      end
+
+      #: (Hash[untyped, untyped]) -> Hash[untyped, untyped]?
+      def collapse_null_union(schema)
+        key = union_key(schema)
+        return unless key
+
+        options = value_for(schema, key)
+        present = options.reject { |option| null_option?(option) }
+        return unless present.size == 1 && present.size < options.size
+
+        nullable_option(present.first, schema.reject { |name, _| name.to_s == key })
+      end
+
+      #: (untyped, Hash[untyped, untyped]) -> Hash[untyped, untyped]?
+      def nullable_option(option, siblings)
+        option.merge(siblings).merge('nullable' => true) if option.is_a?(Hash)
+      end
+
+      #: (untyped) -> bool
+      def null_option?(option)
+        option.is_a?(Hash) && null_type?(value_for(option, 'type')) && !value_for(option, 'type').is_a?(Array)
+      end
+
       #: (Hash[untyped, untyped], String) -> bool
       def skip_union?(schema, path)
         union_key = %w[oneOf anyOf allOf].find { |key| value_for(schema, key) }
@@ -359,7 +418,7 @@ module StructuredParams
 
       #: (Hash[untyped, untyped], String, ?Array[String]) -> Hash[untyped, untyped]
       def resolve_references(schema, path, followed = [])
-        schema = unwrap_single_all_of(schema)
+        schema = collapse_nullable(unwrap_single_all_of(schema))
         reference = value_for(schema, '$ref')
         return schema unless reference
 

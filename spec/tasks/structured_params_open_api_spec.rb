@@ -31,7 +31,7 @@ RSpec.describe Rake::Task do
     before do
       described_class.define_task(:environment)
       parameter_class = Class.new(StructuredParams::Params) { attribute :name, :string }
-      schema = { 'type' => 'object', 'properties' => { 'name' => { 'type' => %w[string null] } } }
+      schema = { 'type' => 'object', 'properties' => { 'name' => { 'type' => %w[string integer] } } }
       StructuredParams::OpenApi::Registry.register(parameter_class, schema: schema)
     end
 
