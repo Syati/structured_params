@@ -1,7 +1,7 @@
 prepare-commit-msg:
   commands:
     rbs-inline:
-      run: (cd structured_params && bundle exec rbs-inline --output=sig lib/**/*.rb) && (cd structured_params-openapi && bundle exec rbs-inline --output=sig lib/**/*.rb) && git add structured_params/sig/ structured_params-openapi/sig/
+      run: (cd structured_params && bundle exec rbs-inline --output=sig lib) && (cd structured_params-openapi && bundle exec rbs-inline --output=sig lib) && git add structured_params/sig/ structured_params-openapi/sig/
 
 pre-commit:
   commands:

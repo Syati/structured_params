@@ -50,7 +50,7 @@ bundle exec rubocop structured_params/lib/structured_params/params.rb
 
 ## 変更時のルール
 
-- `sig/**/*.rbs` は手編集しないでください。必要なら各 gem のフォルダ(`structured_params/` など)で `bundle exec rbs-inline --output=sig lib/**/*.rb` を実行して再生成します。
+- `sig/**/*.rbs` は手編集しないでください。必要なら各 gem のフォルダ(`structured_params/` など)で `bundle exec rbs-inline --output=sig lib` を実行して再生成します。
 - Ruby メソッドの型注釈は `rbs-inline` の `method_type_signature` スタイルを使ってください。
 - インスタンス変数の型注釈は `# @rbs` コメントを使ってください。
 - 既存の公開 API を変える場合は、README と `docs/` の整合も確認してください。
@@ -66,7 +66,7 @@ bundle exec rubocop structured_params/lib/structured_params/params.rb
 
 `lefthook.yml` によりコミット前に以下が走ります。
 
-- 各 gem のフォルダでの `bundle exec rbs-inline --output=sig lib/**/*.rb`(`structured_params/` と `structured_params-openapi/`)
+- 各 gem のフォルダでの `bundle exec rbs-inline --output=sig lib`(`structured_params/` と `structured_params-openapi/`)
 - `bundle exec rubocop`
 - 各 gem のフォルダでの `bundle exec rspec`(`structured_params/` と `structured_params-openapi/`)
 - `bundle exec steep check`

@@ -78,7 +78,7 @@ Generate all signatures manually:
 
 ```bash
 # Generate for all lib files (run inside each gem folder, e.g. structured_params/)
-cd structured_params && bundle exec rbs-inline --output=sig lib/**/*.rb
+cd structured_params && bundle exec rbs-inline --output=sig lib
 ```
 
 ### Automatic Generation (Git Hooks)
@@ -96,7 +96,7 @@ The git hook configuration is in `lefthook.yml`:
 prepare-commit-msg:
   commands:
     rbs-inline:
-      run: (cd structured_params && bundle exec rbs-inline --output=sig lib/**/*.rb) && ...
+      run: (cd structured_params && bundle exec rbs-inline --output=sig lib) && ...
 ```
 
 ## Coding Style
@@ -175,10 +175,10 @@ You can test against different Rails versions using the `RAILS_VERSION` environm
 
 ```bash
 # Test with Rails 7.2
-RAILS_VERSION="~> 7.2.0" bundle update && bundle exec rspec
+RAILS_VERSION="~> 7.2.0" bundle update && bundle exec rake spec
 
 # Test with Rails 8.0
-RAILS_VERSION="~> 8.0.0" bundle update && bundle exec rspec
+RAILS_VERSION="~> 8.0.0" bundle update && bundle exec rake spec
 ```
 
 ## Project Structure
@@ -241,7 +241,7 @@ One-time setup for a new gem: on rubygems.org, register a (pending) Trusted Publ
 1. **Fork the repository** and create your branch from `main`
 2. **Write tests** for your changes
 3. **Update documentation** if needed (README, docs/, inline comments)
-4. **Ensure all tests pass**: `bundle exec rspec`
+4. **Ensure all tests pass**: `bundle exec rake spec`
 5. **Ensure code quality**: `bundle exec rubocop`
 6. **Ensure type safety** (Ruby 3.3+): `bundle exec steep check`
 7. **RBS signatures will be auto-generated** by git hooks
