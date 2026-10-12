@@ -106,7 +106,7 @@ RSpec.describe StructuredParams::Errors do
           errors.add('items.1.subitems.0.description', 'is too long')
         end
 
-        # rubocop:disable-next RSpec/ExampleLength
+        # rubocop:disable RSpec/ExampleLength
         it 'creates deep nested structure' do
           expect(errors.to_hash(false, structured: true)).to eq({
                                                                   items: {
@@ -127,6 +127,7 @@ RSpec.describe StructuredParams::Errors do
                                                                   }
                                                                 })
         end
+        # rubocop:enable RSpec/ExampleLength
       end
 
       context 'with mixed flat and nested attributes' do

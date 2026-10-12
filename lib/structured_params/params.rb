@@ -50,7 +50,7 @@ module StructuredParams
   #     <%= f.text_field :name %>
   #     <%= f.text_field :email %>
   #   <% end %>
-  # rubocop:disable-next Metrics/ClassLength
+  # rubocop:disable Metrics/ClassLength
   class Params
     include ActiveModel::Model
     include ActiveModel::Attributes
@@ -347,4 +347,5 @@ module StructuredParams
       end
     end
   end
+  # rubocop:enable Metrics/ClassLength
 end

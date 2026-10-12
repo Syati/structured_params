@@ -19,8 +19,13 @@ module StructuredParams
       # : (?auto_discover: bool) -> Array[DriftCheck::Result]
       def self.check_all: (?auto_discover: bool) -> Array[DriftCheck::Result]
 
-      # : (?auto_discover: bool) -> Array[DriftCheck::Result]
-      def self.check_all!: (?auto_discover: bool) -> Array[DriftCheck::Result]
+      # With +strict+, a check that skipped part of a schema also fails the run.
+      # : (?auto_discover: bool, ?strict: bool) -> Array[DriftCheck::Result]
+      def self.check_all!: (?auto_discover: bool, ?strict: bool) -> Array[DriftCheck::Result]
+
+      # Describes what passing checks skipped or ignored, plus a one-line summary.
+      # : (Array[DriftCheck::Result]) -> String
+      def self.report: (Array[DriftCheck::Result]) -> String
 
       # : () -> void
       def self.clear: () -> void

@@ -34,15 +34,30 @@ module StructuredParams
           checks.map { |parameter_class, options| DriftCheck.call(parameter_class: parameter_class, **options) }
         end
 
-        #: (?auto_discover: bool) -> Array[DriftCheck::Result]
-        def check_all!(auto_discover: false)
+        # With +strict+, a check that skipped part of a schema also fails the run.
+        #: (?auto_discover: bool, ?strict: bool) -> Array[DriftCheck::Result]
+        def check_all!(auto_discover: false, strict: false)
           results = check_all(auto_discover: auto_discover)
-          errors = results.reject(&:valid?).map(&:to_message)
+          failing = results.reject { |result| result.valid? && (!strict || result.skipped.empty?) }
+          errors = failing.map(&:to_message)
           # Leading blank line so the first class's message doesn't get glued onto the
           # "ClassName: " prefix Ruby/Rake print ahead of an exception's message.
           raise DriftError, "\n\n#{errors.join("\n\n")}" unless errors.empty?
 
           results
+        end
+
+        # Describes what passing checks skipped or ignored, plus a one-line summary.
+        #: (Array[DriftCheck::Result]) -> String
+        def report(results)
+          return 'No parameter classes were checked; set parameter_class_filter or register classes.' if results.empty?
+
+          skipped = results.count { |result| !result.skipped.empty? }
+          ignored = results.count { |result| !result.ignored.empty? }
+          sections = results.map(&:to_report).reject(&:empty?)
+          sections << "Checked #{results.size} classes: #{skipped} with skipped checks, " \
+                      "#{ignored} with ignored findings."
+          sections.join("\n\n")
         end
 
         #: () -> void

@@ -3,7 +3,7 @@
 require 'spec_helper'
 require 'open3'
 
-# rubocop:disable-next RSpec/DescribeClass
+# rubocop:disable RSpec/DescribeClass
 RSpec.describe 'loading the OpenAPI drift-check rake task' do
   it 'does not raise when Rake is defined without its DSL mixed into main' do
     # Thor::Actions (used by Rails::Command, e.g. `rails runner`/`rails console`)
@@ -20,3 +20,4 @@ RSpec.describe 'loading the OpenAPI drift-check rake task' do
     expect(output).to include('ok')
   end
 end
+# rubocop:enable RSpec/DescribeClass

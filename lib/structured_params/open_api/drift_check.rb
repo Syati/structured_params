@@ -1,13 +1,14 @@
 # rbs_inline: enabled
 # frozen_string_literal: true
 
+require 'date'
 require 'yaml'
 
 module StructuredParams
   # Schema comparison types for OpenAPI drift checks.
   module OpenApi
     # Compares OpenAPI object schemas with StructuredParams declarations.
-    # rubocop:disable-next Metrics/ClassLength
+    # rubocop:disable Metrics/ClassLength
     class DriftCheck
       # @rbs @openapi_source: Hash[untyped, untyped]|String?
       # @rbs @schema_source: Hash[untyped, untyped]|String?
@@ -19,7 +20,13 @@ module StructuredParams
       # @rbs @errors: Array[Issue]
       # @rbs @skipped: Array[Issue]
       # @rbs @ignored: Array[Issue]
-      # @rbs @seen_pairs: Array[Array[untyped]]
+      # @rbs @active_pairs: Array[Array[untyped]]
+
+      # Finding kinds that can be raised as errors (and therefore matched by +ignore_drift+).
+      ERROR_KINDS = %i[
+        missing_attribute unexpected_attribute missing_presence_validation type_mismatch
+        missing_schema unresolved_reference
+      ].freeze #: Array[Symbol]
 
       Issue = Struct.new(
         :kind,     #: Symbol
@@ -30,9 +37,8 @@ module StructuredParams
 
       # Result of a single schema/class comparison.
       class Result
-        # @rbs @parameter_class: singleton(::StructuredParams::Params)
-
         attr_reader :errors, :skipped, :ignored #: Array[Issue]
+        attr_reader :parameter_class #: singleton(::StructuredParams::Params)
 
         #: (singleton(::StructuredParams::Params), Array[Issue], Array[Issue], Array[Issue]) -> void
         def initialize(parameter_class, errors, skipped, ignored)
@@ -54,10 +60,27 @@ module StructuredParams
           sections << "OpenAPI checks skipped:\n#{format_issues(skipped)}" unless skipped.empty?
           return '' if sections.empty?
 
-          "#{@parameter_class.name || @parameter_class.inspect}\n#{sections.join("\n")}"
+          "#{class_label}\n#{sections.join("\n")}"
+        end
+
+        # Lists what a passing check still left unverified (skipped) or suppressed (ignored),
+        # so those stay visible in CI output instead of only on the result object.
+        #: () -> String
+        def to_report
+          sections = []
+          sections << "OpenAPI checks skipped:\n#{format_issues(skipped)}" unless skipped.empty?
+          sections << "OpenAPI findings ignored:\n#{format_issues(ignored)}" unless ignored.empty?
+          return '' if sections.empty?
+
+          "#{class_label}\n#{sections.join("\n")}"
         end
 
         private
+
+        #: () -> String
+        def class_label
+          @parameter_class.name || @parameter_class.inspect
+        end
 
         #: (Array[Issue]) -> String
         def format_issues(issues)
@@ -66,8 +89,8 @@ module StructuredParams
       end
 
       class << self
+        # rubocop:disable Metrics/ParameterLists
         #: (**untyped) -> Result
-        # rubocop:disable-next Metrics/ParameterLists
         def call(
           parameter_class:,
           openapi: nil,
@@ -85,10 +108,11 @@ module StructuredParams
             required_validation: required_validation
           ).call
         end
+        # rubocop:enable Metrics/ParameterLists
       end
 
+      # rubocop:disable Metrics/ParameterLists
       #: (**untyped) -> void
-      # rubocop:disable-next Metrics/ParameterLists
       def initialize(
         parameter_class:,
         openapi: nil,
@@ -106,7 +130,7 @@ module StructuredParams
         @errors = []
         @skipped = []
         @ignored = []
-        @seen_pairs = [] #: Array[Array[untyped]]
+        @active_pairs = [] #: Array[Array[untyped]]
 
         unless %i[presence none].include?(required_validation)
           raise ArgumentError, "required_validation must be :presence or :none, got #{required_validation.inspect}"
@@ -116,24 +140,43 @@ module StructuredParams
 
         raise ArgumentError, 'configure an OpenAPI document or pass schema as a Hash'
       end
+      # rubocop:enable Metrics/ParameterLists
 
       #: () -> Result
       def call
-        begin
-          schema, @document = load_schema
-        rescue KeyError => e
-          skip('', "no matching OpenAPI schema found (#{e.message}); " \
-                   'check the schema_name_resolver convention or register an explicit schema name')
-          return Result.new(@parameter_class, @errors, @skipped, @ignored)
-        end
+        @errors = []
+        @skipped = []
+        @ignored = []
+        @active_pairs = []
 
-        check_object(resolve_references(schema), @parameter_class, '')
-        Result.new(@parameter_class, @errors, @skipped, @ignored)
+        schema = load_root_schema
+        check_object(resolve_references(schema, ''), @parameter_class, '') if schema
+        Result.new(@parameter_class, @errors.dup.freeze, @skipped.dup.freeze, @ignored.dup.freeze)
       end
 
       private
 
-      #: () -> Array[Hash[untyped, untyped]]
+      # A missing or mistyped schema means the class silently lost its contract coverage,
+      # so it is an error (suppressible with +ignore_drift+) rather than a skip.
+      #: () -> Hash[untyped, untyped]?
+      def load_root_schema
+        schema, @document = load_schema
+        return schema if schema.is_a?(Hash)
+
+        report_missing_schema('the selected schema is not an object')
+      rescue IndexError => e # also covers KeyError
+        report_missing_schema(e.message)
+      end
+
+      #: (String) -> nil
+      def report_missing_schema(detail)
+        error('(root)', :missing_schema,
+              "no matching OpenAPI schema found (#{detail}); " \
+              'check the schema_name_resolver convention or register an explicit schema name')
+        nil
+      end
+
+      #: () -> [Hash[untyped, untyped], Hash[untyped, untyped]]
       def load_schema
         if @schema_source.is_a?(Hash)
           return [@schema_source, @schema_source] if selected_pointer.nil?
@@ -150,7 +193,7 @@ module StructuredParams
       def load_document
         return @openapi_source if @openapi_source.is_a?(Hash)
 
-        YAML.safe_load_file(@openapi_source, aliases: true)
+        OpenApi.configuration.load_document(@openapi_source)
       end
 
       #: () -> String?
@@ -162,11 +205,26 @@ module StructuredParams
       end
 
       #: (Hash[untyped, untyped], singleton(StructuredParams::Params), String) -> void
-      # rubocop:disable-next Metrics/AbcSize
       def check_object(schema, parameter_class, path)
-        return if skip_union?(schema, path)
-        return if seen?(schema, parameter_class)
+        return if unresolved_reference?(schema) || skip_union?(schema, path)
 
+        # Only ancestors are tracked (compared by structural equality), so a schema reused by
+        # sibling properties is still compared each time while a self-referencing schema
+        # stops silently at its second visit.
+        pair = [schema, parameter_class]
+        return if @active_pairs.include?(pair)
+
+        @active_pairs.push(pair)
+        begin
+          check_object_properties(schema, parameter_class, path)
+        ensure
+          @active_pairs.pop
+        end
+      end
+
+      #: (Hash[untyped, untyped], singleton(StructuredParams::Params), String) -> void
+      # rubocop:disable Metrics/AbcSize
+      def check_object_properties(schema, parameter_class, path)
         properties = value_for(schema, 'properties')
         unless properties.is_a?(Hash)
           skip(path, 'schema has no properties; only object schemas are supported')
@@ -179,9 +237,20 @@ module StructuredParams
         compare_required_attributes(schema, schema_attributes, parameter_class, path)
 
         (schema_attributes.keys & attribute_types.keys.map(&:to_sym)).each do |attribute|
-          property_schema = resolve_references(value_for(properties, schema_attributes.fetch(attribute)))
-          compare_type(property_schema, attribute_types.fetch(attribute.to_s), join_path(path, attribute))
+          compare_property(value_for(properties, schema_attributes.fetch(attribute)),
+                           attribute_types.fetch(attribute.to_s), join_path(path, attribute))
         end
+      end
+      # rubocop:enable Metrics/AbcSize
+
+      #: (untyped, ActiveModel::Type::Value, String) -> void
+      def compare_property(property_schema, attribute_type, path)
+        unless property_schema.is_a?(Hash)
+          skip(path, 'property schema is not an object')
+          return
+        end
+
+        compare_type(resolve_references(property_schema, path), attribute_type, path)
       end
 
       #: (Hash[Symbol, String], Hash[String, ActiveModel::Type::Value], String) -> void
@@ -214,10 +283,10 @@ module StructuredParams
         end
       end
 
+      # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       #: (Hash[untyped, untyped], ActiveModel::Type::Value, String) -> void
-      # rubocop:disable-next Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       def compare_type(schema, attribute_type, path)
-        return if skip_union?(schema, path)
+        return if unresolved_reference?(schema) || skip_union?(schema, path)
 
         if value_for(schema, 'type').is_a?(Array)
           skip(path, 'multiple schema types are outside the supported drift-check scope')
@@ -238,6 +307,7 @@ module StructuredParams
           compare_array_item_type(schema, attribute_type, path)
         end
       end
+      # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
       #: (Hash[untyped, untyped], Type::Array, String) -> void
       def compare_array_item_type(schema, attribute_type, path)
@@ -247,7 +317,7 @@ module StructuredParams
           return
         end
 
-        compare_type(resolve_references(items), attribute_type.item_type, "#{path}[]")
+        compare_type(resolve_references(items, "#{path}[]"), attribute_type.item_type, "#{path}[]")
       end
 
       #: (Hash[untyped, untyped]) -> Symbol?
@@ -263,6 +333,8 @@ module StructuredParams
       def compatible_types?(schema_type, attribute_type)
         return false if schema_type.nil?
         return %i[float decimal].include?(attribute_type) if schema_type == :number
+        return %i[date datetime time string].include?(attribute_type) if schema_type == :string
+        return %i[integer big_integer].include?(attribute_type) if schema_type == :integer
 
         schema_type == attribute_type
       end
@@ -283,27 +355,57 @@ module StructuredParams
         true
       end
 
-      #: (Hash[untyped, untyped]) -> Hash[untyped, untyped]
-      def resolve_references(schema)
+      #: (Hash[untyped, untyped], String, ?Array[String]) -> Hash[untyped, untyped]
+      def resolve_references(schema, path, followed = [])
         schema = unwrap_single_all_of(schema)
         reference = value_for(schema, '$ref')
         return schema unless reference
 
         unless reference.start_with?('#/')
-          skip('', "external reference #{reference.inspect} is outside the supported drift-check scope")
+          skip(path, "external reference #{reference.inspect} is outside the supported drift-check scope")
           return schema
         end
 
-        referenced_schema = resolve_pointer(@document, reference.delete_prefix('#'))
+        referenced_schema = fetch_reference(reference, path, followed)
+        return schema unless referenced_schema
+
         overrides = schema.reject { |key, _| key.to_s == '$ref' }
-        resolve_references(referenced_schema.merge(overrides))
+        resolve_references(referenced_schema.merge(overrides), path, followed + [reference])
+      end
+
+      # A dangling or circular local reference is a broken contract, not an unsupported feature.
+      #: (String, String, Array[String]) -> Hash[untyped, untyped]?
+      def fetch_reference(reference, path, followed)
+        return unresolved_reference(path, reference, 'it refers back to itself') if followed.include?(reference)
+
+        target = resolve_pointer(@document, reference.delete_prefix('#'))
+        return target if target.is_a?(Hash)
+
+        unresolved_reference(path, reference, 'it does not point to a schema object')
+      rescue IndexError => e # also covers KeyError
+        unresolved_reference(path, reference, e.message)
+      end
+
+      #: (String, String, String) -> nil
+      def unresolved_reference(path, reference, detail)
+        error(display_path(path), :unresolved_reference,
+              "reference #{reference.inspect} could not be resolved (#{detail})")
+        nil
+      end
+
+      # A `$ref` left after resolve_references was already reported (skipped if external, an
+      # error if unresolvable), so comparing it further would only add misleading findings.
+      #: (Hash[untyped, untyped]) -> bool
+      def unresolved_reference?(schema)
+        !value_for(schema, '$ref').nil?
       end
 
       # OpenAPI/JSON Schema forbid sibling keys next to `$ref`, so generators such as TypeSpec
       # commonly wrap a single `$ref` in `allOf` to attach a `description`, `default`, etc.
-      # That's equivalent to the ref carrying those siblings directly, so unwrap and merge it
-      # instead of treating it as unsupported schema composition. `allOf` with more than one
-      # entry is genuine composition and stays out of scope (reported via skip_union?).
+      # That's equivalent to the ref carrying those siblings directly, so unwrap and merge a
+      # single-entry `allOf` (typically a `$ref`, though an inline schema is unwrapped the same
+      # way) instead of treating it as unsupported schema composition. `allOf` with more than
+      # one entry is genuine composition and stays out of scope (reported via skip_union?).
       #: (Hash[untyped, untyped]) -> Hash[untyped, untyped]
       def unwrap_single_all_of(schema)
         all_of = value_for(schema, 'allOf')
@@ -313,11 +415,22 @@ module StructuredParams
         all_of.first.merge(overrides)
       end
 
-      #: (Hash[untyped, untyped], String) -> Hash[untyped, untyped]
+      #: (untyped, String) -> untyped
       def resolve_pointer(document, pointer)
         pointer.delete_prefix('#').delete_prefix('/').split('/').reduce(document) do |value, segment|
-          value.fetch(segment.gsub('~1', '/').gsub('~0', '~'))
+          dig_pointer_segment(value, segment.gsub('~1', '/').gsub('~0', '~'))
         end
+      end
+
+      #: (untyped, String) -> untyped
+      def dig_pointer_segment(value, segment)
+        case value
+        when Hash then value.fetch(segment)
+        when Array then value.fetch(Integer(segment))
+        else raise KeyError, "key not found: #{segment.inspect}"
+        end
+      rescue ArgumentError
+        raise KeyError, "key not found: #{segment.inspect}"
       end
 
       #: (Hash[untyped, untyped], String) -> untyped
@@ -330,15 +443,6 @@ module StructuredParams
         @property_names.invert.fetch(property.to_s, property).to_sym
       end
 
-      #: (Hash[untyped, untyped], singleton(StructuredParams::Params)) -> bool
-      def seen?(schema, parameter_class)
-        pair = [schema.object_id, parameter_class]
-        return true if @seen_pairs.include?(pair)
-
-        @seen_pairs << pair
-        false
-      end
-
       #: (String, String) -> String
       def join_path(path, name)
         path.empty? ? name.to_s : "#{path}.#{name}"
@@ -347,14 +451,20 @@ module StructuredParams
       #: (String, Symbol, String) -> void
       def error(path, kind, message)
         issue = Issue.new(kind: kind, path: path, message: message)
-        target = OpenApi.configuration.ignored?(kind, path) ? @ignored : @errors
+        target = OpenApi.configuration.ignored?(kind, path, @parameter_class) ? @ignored : @errors
         target << issue
+      end
+
+      #: (String) -> String
+      def display_path(path)
+        path.empty? ? '(root)' : path
       end
 
       #: (String, String) -> void
       def skip(path, message)
-        @skipped << Issue.new(kind: :unsupported, path: path.empty? ? '(root)' : path, message: message)
+        @skipped << Issue.new(kind: :unsupported, path: display_path(path), message: message)
       end
     end
+    # rubocop:enable Metrics/ClassLength
   end
 end

@@ -7,6 +7,8 @@ module StructuredParams
     class Configuration
       @ignored_issues: Array[Hash[Symbol, untyped]]
 
+      @documents: Hash[String, Array[untyped]]
+
       attr_accessor document: Hash[untyped, untyped] | String?
 
       attr_writer schema_name_resolver: untyped
@@ -16,24 +18,36 @@ module StructuredParams
       # : () -> void
       def initialize: () -> void
 
-      # Suppresses a specific finding (matched by +path+ and, optionally, +kind+) across
-      # every drift check, instead of raising it as an error. Applies wherever that path
-      # occurs, including once per parent class for a nested object reused by several
-      # top-level parameter classes. Omit +kind+ to ignore every kind at that path.
+      # Parses an OpenAPI file once per modification time, so a bulk check across many
+      # parameter classes does not re-read the same document for each of them. JSON files
+      # work too, since JSON is valid YAML. Only the mtime invalidates the cache, so two writes
+      # within the filesystem's timestamp granularity can serve a stale parse. YAML dates such as
+      # `example: 2020-01-01` load as Date, hence +permitted_classes+.
+      # : (String) -> Hash[untyped, untyped]
+      def load_document: (String) -> Hash[untyped, untyped]
+
+      # Suppresses a specific finding (matched by exact +path+ and, optionally, +kind+) instead
+      # of raising it as an error. Without +parameter_class+ it applies to every drift check,
+      # including once per parent class for a nested object reused by several top-level
+      # parameter classes. Omit +kind+ to ignore every error kind at that path. Skips
+      # (unsupported schema features) are never ignored; they only appear in Result#skipped.
+      #
+      # Paths use attribute names joined with +.+ and +[]+ for array items, e.g.
+      # +items[].sku+; a schema that cannot be found at all is reported at +(root)+.
       #
       # Ignored findings are moved to DriftCheck::Result#ignored rather than dropped, so
       # they stay auditable; #valid? and #to_message treat them as resolved.
-      # : (path: String, ?kind: Symbol?) -> void
-      def ignore_drift: (path: String, ?kind: Symbol?) -> void
+      # : (path: String, ?kind: Symbol?, ?parameter_class: (Class | String)?) -> void
+      def ignore_drift: (path: String, ?kind: Symbol?, ?parameter_class: (Class | String)?) -> void
 
-      # : (Symbol, String) -> bool
-      def ignored?: (Symbol, String) -> bool
+      # : (Symbol, String, ?untyped) -> bool
+      def ignored?: (Symbol, String, ?untyped) -> bool
 
       # : () -> Array[singleton(StructuredParams::Params)]
       def parameter_classes: () -> Array[singleton(StructuredParams::Params)]
 
-      # : (singleton(StructuredParams::Params), String?) -> String
-      def pointer_for: (singleton(StructuredParams::Params), String?) -> String
+      # : (singleton(StructuredParams::Params), ?String?) -> String
+      def pointer_for: (singleton(StructuredParams::Params), ?String?) -> String
     end
 
     self.@configuration: Configuration?

@@ -63,4 +63,64 @@ RSpec.describe StructuredParams::OpenApi::Registry do
 
     expect(results).to all(be_valid)
   end
+
+  describe 'skipped and ignored checks' do
+    let(:parameter_class) { Class.new(StructuredParams::Params) { attribute :name, :string } }
+    let(:skipping_schema) do
+      { 'type' => 'object', 'properties' => { 'name' => { 'type' => %w[string null] } } }
+    end
+
+    before { described_class.register(parameter_class, schema: skipping_schema) }
+
+    it 'does not raise for a skipped-only result but reports it' do
+      results = described_class.check_all!
+
+      expect(results).to all(be_valid)
+      expect(described_class.report(results)).to include('OpenAPI checks skipped', 'name', 'with skipped checks')
+    end
+
+    it 'raises for a skipped-only result in strict mode' do
+      expect { described_class.check_all!(strict: true) }
+        .to raise_error(StructuredParams::OpenApi::DriftError, /checks skipped/)
+    end
+
+    it 'includes skips in the message when the class also has errors' do
+      skipping_schema['properties']['age'] = { 'type' => 'integer' }
+
+      expect { described_class.check_all! }
+        .to raise_error(StructuredParams::OpenApi::DriftError, /drift detected.*checks skipped/m)
+    end
+
+    it 'joins the messages of every failing class' do
+      other = Class.new(StructuredParams::Params) { attribute :id, :integer }
+      described_class.register(other, schema: { 'type' => 'object', 'properties' => { 'x' => { 'type' => 'string' } } })
+      skipping_schema['properties']['age'] = { 'type' => 'integer' }
+
+      expect { described_class.check_all! }
+        .to raise_error(StructuredParams::OpenApi::DriftError) { |error| expect(error.message.scan('drift detected').size).to eq(2) }
+    end
+  end
+
+  describe '.report' do
+    it 'warns when nothing was checked and lists ignored findings' do
+      expect(described_class.report([])).to include('No parameter classes were checked')
+
+      parameter_class = Class.new(StructuredParams::Params) { attribute :name, :string }
+      StructuredParams::OpenApi.configure { |config| config.ignore_drift(path: 'age') }
+      described_class.register(parameter_class,
+                               schema: { 'type' => 'object', 'properties' => { 'age' => { 'type' => 'integer' } } })
+
+      report = described_class.report(described_class.check_all)
+
+      expect(report).to include('OpenAPI findings ignored', 'age')
+    end
+  end
+
+  it 'passes register options through to the check' do
+    parameter_class = Class.new(StructuredParams::Params) { attribute :user_id, :integer }
+    schema = { 'type' => 'object', 'properties' => { 'userId' => { 'type' => 'integer' } } }
+    described_class.register(parameter_class, schema: schema, property_names: { user_id: 'userId' })
+
+    expect(described_class.check_all).to all(be_valid)
+  end
 end

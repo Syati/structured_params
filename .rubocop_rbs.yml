@@ -13,6 +13,8 @@ Style/RbsInline/UntypedInstanceVariable:
   Exclude:
     - 'lib/structured_params/params.rb'
     - 'lib/structured_params.rb'
+    - 'lib/structured_params/open_api/configuration.rb'
+    - 'lib/structured_params/open_api/registry.rb'
 
 Style/RbsInline/RequireRbsInlineComment:
   Exclude:

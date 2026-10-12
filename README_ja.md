@@ -109,7 +109,7 @@ end
 
 ### 3. OpenAPI drift check
 
-OpenAPI ドキュメントを一度設定し、各リクエスト用パラメータクラスを登録します。
+OpenAPI ドキュメントを一度設定し、filter でリクエスト用パラメータクラスの namespace を選択します。
 既定では `CreateUserParams` を `#/components/schemas/CreateUser` に対応付けます。
 
 ```ruby
