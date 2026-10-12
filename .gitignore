@@ -18,7 +18,7 @@ Gemfile.lock
 /.config
 /coverage/
 /InstalledFiles
-/pkg/
+pkg/
 /spec/reports/
 /spec/examples.txt
 /test/tmp/

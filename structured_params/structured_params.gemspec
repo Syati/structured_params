@@ -28,7 +28,7 @@ Gem::Specification.new do |spec|
 
   spec.metadata = {
     'homepage_uri' => 'https://github.com/Syati/structured_params#readme',
-    'changelog_uri' => 'https://github.com/Syati/structured_params/blob/main/CHANGELOG.md',
+    'changelog_uri' => 'https://github.com/Syati/structured_params/blob/main/structured_params/CHANGELOG.md',
     'bug_tracker_uri' => 'https://github.com/Syati/structured_params/issues',
     'source_code_uri' => 'https://github.com/Syati/structured_params',
     'rubygems_mfa_required' => 'true'

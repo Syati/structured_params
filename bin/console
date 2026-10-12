@@ -9,7 +9,7 @@ require 'structured_params'
 # with your gem easier. You can also use a different console, if you like.
 require 'factory_bot'
 StructuredParams.register_types
-FactoryBot.definition_file_paths = [File.expand_path('../spec/factories', __dir__)]
+FactoryBot.definition_file_paths = [File.expand_path('../structured_params/spec/factories', __dir__)]
 FactoryBot.find_definitions
 
 require 'irb'

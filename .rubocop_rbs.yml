@@ -11,8 +11,8 @@ Style/RbsInline/MissingTypeAnnotation:
     - '**/spec/**/*'
 Style/RbsInline/UntypedInstanceVariable:
   Exclude:
-    - 'lib/structured_params/params.rb'
-    - 'lib/structured_params.rb'
+    - 'structured_params/lib/structured_params/params.rb'
+    - 'structured_params/lib/structured_params.rb'
     - 'structured_params-openapi/lib/structured_params/openapi/configuration.rb'
     - 'structured_params-openapi/lib/structured_params/openapi/registry.rb'
 
