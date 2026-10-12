@@ -22,9 +22,9 @@ module StructuredParams
       # @rbs @seen_pairs: Array[Array[untyped]]
 
       Issue = Struct.new(
-        :kind,    #: Symbol
-        :path,    #: String
-        :message, #: String
+        :kind,     #: Symbol
+        :path,     #: String
+        :message,  #: String
         keyword_init: true
       )
 
