@@ -187,6 +187,7 @@ RAILS_VERSION="~> 8.0.0" bundle update && bundle exec rake spec
 .                                     # repository root: README, Gemfile, Rakefile, Steepfile, lefthook.yml, RuboCop config
 ├── structured_params/                # core gem
 │   ├── structured_params.gemspec
+│   ├── Rakefile                      # build/release tasks for this gem
 │   ├── CHANGELOG.md
 │   ├── lib/
 │   │   ├── structured_params.rb      # Main entry point
@@ -203,8 +204,35 @@ RAILS_VERSION="~> 8.0.0" bundle update && bundle exec rake spec
 │   │   ├── support/                  # Test helpers
 │   │   └── *_spec.rb                 # Test files
 │   └── docs/                         # Documentation
-└── structured_params-openapi/        # OpenAPI drift check gem (same layout)
+└── structured_params-openapi/        # OpenAPI drift check gem (same layout: gemspec, Rakefile, CHANGELOG.md, lib/, sig/, spec/, docs/)
 ```
+
+## Releasing
+
+The repository holds two gems, each released from a GitHub Release with its own tag. The core gem is released first when a change needs both (the openapi gem depends on `structured_params >= 0.9.5`; raise that bound if it needs newer core behaviour).
+
+| Gem | Release tag | Workflow | Version file |
+|-----|-------------|----------|--------------|
+| `structured_params` | `vX.Y.Z` | `release.yml` | `structured_params/lib/structured_params/version.rb` |
+| `structured_params-openapi` | `openapi-vX.Y.Z` | `release-openapi.yml` | `structured_params-openapi/lib/structured_params/openapi/version.rb` |
+
+To release a gem:
+
+1. Make sure `main` contains the changes to ship and CI is green. **Do not edit `version.rb` or `CHANGELOG.md` yourself**; the workflow writes both.
+2. Create a GitHub Release (published, not a draft or pre-release) with a new tag from the table, targeting `main`, and write the release notes. Pushing a tag alone does nothing.
+3. Publishing the Release runs the workflow, which:
+   - checks that the tag looks like `vX.Y.Z` / `openapi-vX.Y.Z`, that its commit is on `main`, and that the version does not go backwards;
+   - sets `VERSION`, prepends the release notes to the gem's `CHANGELOG.md` and commits both;
+   - builds the gem, pushes that commit to `main`, moves the Release's tag onto it, then publishes the gem to RubyGems through Trusted Publishing.
+
+Things to know:
+
+- The Release creates its tag first, then the workflow commits the version and CHANGELOG and **force-moves the tag onto that commit**, so the tag contains exactly what is published. This needs permission to update tags (tag protection rules that forbid it would fail the job before anything is published).
+- If a run fails, re-run it: the steps are idempotent (the CHANGELOG entry is not added twice and an already pushed commit is a no-op). A gem that was already published to RubyGems cannot be published again, so a failure after publishing needs a new version.
+- Pre-releases are ignored by the workflows, and a tag that matches neither `v*` nor `openapi-v*` releases nothing. If `main` has branch protection, the `github-actions` bot must be allowed to push to it.
+- The two workflows share a `concurrency` group because both push to `main`; keep the tag prefixes consistent in three places: the workflow `if:` and tag parsing, and `tag_prefix` in the gem's `Rakefile`.
+
+One-time setup for a new gem: on rubygems.org, register a (pending) Trusted Publisher for `structured_params-openapi` with owner `Syati`, repository `structured_params`, workflow filename `release-openapi.yml` and no environment. The publisher is bound to the workflow's file name, so do not rename `release.yml` or `release-openapi.yml` without updating it. The first publish of a new gem name consumes the pending publisher.
 
 ## Submitting Changes
 

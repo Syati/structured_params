@@ -71,7 +71,7 @@ Style/RbsInline/MissingTypeAnnotation:
 
 ### RBS Signature Generation
 
-**DO NOT** manually edit files in `sig/` directory. These files are auto-generated from inline annotations.
+**DO NOT** manually edit files in the `sig/` directory of each gem (`structured_params/sig/`, `structured_params-openapi/sig/`). These files are auto-generated from inline annotations.
 
 To generate RBS signature files:
 
@@ -107,5 +107,5 @@ This gem supports both Strong Parameters validation and Form Object pattern:
 
 - Use RSpec for testing
 - Group tests by context (e.g., "API context", "Form Object context")
-- Test files are in `spec/` directory
-- Support files (test helper classes) are in `spec/support/`
+- Test files are in each gem's `spec/` directory (`structured_params/spec/`, `structured_params-openapi/spec/`)
+- Support files (test helper classes) are in `structured_params/spec/support/`
