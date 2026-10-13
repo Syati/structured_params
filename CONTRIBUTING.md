@@ -25,7 +25,15 @@ bin/setup
 ### Running Tests
 
 ```bash
-# Run all tests
+# Run the specs of every gem (from the repository root)
+bundle exec rake spec
+
+# The repository holds two gems, each in its own folder:
+#   structured_params/          the core gem
+#   structured_params-openapi/  the OpenAPI drift check gem
+cd structured_params
+
+# Run all tests of the gem
 bundle exec rspec
 
 # Run specific test file
@@ -62,15 +70,15 @@ Automatically regenerate signatures on file changes:
 ./bin/dev
 ```
 
-This command uses `fswatch` to monitor the `lib/` directory and automatically runs `rbs-inline` when files change.
+This command uses `fswatch` to monitor the `lib/` directory of each gem and automatically runs `rbs-inline` when files change.
 
 ### Manual Generation
 
 Generate all signatures manually:
 
 ```bash
-# Generate for all lib files
-bundle exec rbs-inline --output=sig lib/**/*.rb
+# Generate for all lib files (run inside each gem folder, e.g. structured_params/)
+cd structured_params && bundle exec rbs-inline --output=sig lib
 ```
 
 ### Automatic Generation (Git Hooks)
@@ -88,7 +96,7 @@ The git hook configuration is in `lefthook.yml`:
 prepare-commit-msg:
   commands:
     rbs-inline:
-      run: bundle exec rbs-inline --output=sig lib/**/*.rb
+      run: (cd structured_params && bundle exec rbs-inline --output=sig lib) && ...
 ```
 
 ## Coding Style
@@ -167,32 +175,35 @@ You can test against different Rails versions using the `RAILS_VERSION` environm
 
 ```bash
 # Test with Rails 7.2
-RAILS_VERSION="~> 7.2.0" bundle update && bundle exec rspec
+RAILS_VERSION="~> 7.2.0" bundle update && bundle exec rake spec
 
 # Test with Rails 8.0
-RAILS_VERSION="~> 8.0.0" bundle update && bundle exec rspec
+RAILS_VERSION="~> 8.0.0" bundle update && bundle exec rake spec
 ```
 
 ## Project Structure
 
 ```
-structured_params/
-├── lib/
-│   ├── structured_params.rb          # Main entry point
-│   ├── structured_params/
-│   │   ├── params.rb                 # Core Params class
-│   │   ├── errors.rb                 # Enhanced error handling
-│   │   ├── version.rb                # Version constant
-│   │   └── type/
-│   │       ├── array.rb              # Array type handler
-│   │       └── object.rb             # Object type handler
-├── sig/                              # Auto-generated RBS files
-│   └── generated/                    # DO NOT EDIT
-├── spec/                             # RSpec tests
-│   ├── factories/                    # Test parameter classes
-│   ├── support/                      # Test helpers
-│   └── *_spec.rb                     # Test files
-└── docs/                             # Documentation
+.                                     # repository root: README, Gemfile, Rakefile, Steepfile, lefthook.yml, RuboCop config
+├── structured_params/                # core gem
+│   ├── structured_params.gemspec
+│   ├── CHANGELOG.md
+│   ├── lib/
+│   │   ├── structured_params.rb      # Main entry point
+│   │   └── structured_params/
+│   │       ├── params.rb             # Core Params class
+│   │       ├── errors.rb             # Enhanced error handling
+│   │       ├── version.rb            # Version constant
+│   │       └── type/
+│   │           ├── array.rb          # Array type handler
+│   │           └── object.rb         # Object type handler
+│   ├── sig/                          # Auto-generated RBS files (DO NOT EDIT)
+│   ├── spec/                         # RSpec tests
+│   │   ├── factories/                # Test parameter classes
+│   │   ├── support/                  # Test helpers
+│   │   └── *_spec.rb                 # Test files
+│   └── docs/                         # Documentation
+└── structured_params-openapi/        # OpenAPI drift check gem (same layout)
 ```
 
 ## Submitting Changes
@@ -202,7 +213,7 @@ structured_params/
 1. **Fork the repository** and create your branch from `main`
 2. **Write tests** for your changes
 3. **Update documentation** if needed (README, docs/, inline comments)
-4. **Ensure all tests pass**: `bundle exec rspec`
+4. **Ensure all tests pass**: `bundle exec rake spec`
 5. **Ensure code quality**: `bundle exec rubocop`
 6. **Ensure type safety** (Ruby 3.3+): `bundle exec steep check`
 7. **RBS signatures will be auto-generated** by git hooks

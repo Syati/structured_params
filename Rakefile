@@ -1,12 +1,21 @@
 # frozen_string_literal: true
 # rbs_inline: enabled
 
-require 'bundler/gem_tasks'
-require 'rspec/core/rake_task'
-
-RSpec::Core::RakeTask.new(:spec)
-
 require 'rubocop/rake_task'
+
+# The repository holds two gems, each in its own directory with its own spec suite and its
+# own Rakefile for `build`/`install`/`release` (run those from the gem's directory).
+GEM_DIRS = %w[structured_params structured_params-openapi].freeze #: Array[String]
+
+GEM_DIRS.each do |gem_dir|
+  desc "Run the #{gem_dir} specs"
+  task "spec:#{gem_dir}" do
+    Dir.chdir(gem_dir) { sh 'bundle exec rspec' }
+  end
+end
+
+desc 'Run the specs of every gem'
+task spec: GEM_DIRS.map { |gem_dir| "spec:#{gem_dir}" }
 
 # Use RBS Inline configuration for Ruby 3.3+
 rubocop_config = if RUBY_VERSION >= '3.3.0'
@@ -27,12 +36,5 @@ if RUBY_VERSION >= '3.3.0'
   Steep::RakeTask.new
   default_tasks << :steep
 end
-
-# The OpenAPI plugin lives in its own gem directory with its own spec suite.
-desc 'Run the structured_params-openapi specs'
-task :spec_openapi do
-  Dir.chdir('structured_params-openapi') { sh 'bundle exec rspec' }
-end
-default_tasks << :spec_openapi
 
 task default: default_tasks

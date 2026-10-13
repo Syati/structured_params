@@ -123,14 +123,14 @@ bundle exec rake structured_params:openapi:drift_check
 
 ## ドキュメント
 
-- **[インストールとセットアップ](docs/installation.md)** - StructuredParams の始め方
-- **[基本的な使い方](docs/basic-usage.md)** - パラメータクラス、ネストオブジェクト、配列
-- **[バリデーション](docs/validation.md)** - ネスト構造での ActiveModel バリデーション
+- **[インストールとセットアップ](structured_params/docs/installation.md)** - StructuredParams の始め方
+- **[基本的な使い方](structured_params/docs/basic-usage.md)** - パラメータクラス、ネストオブジェクト、配列
+- **[バリデーション](structured_params/docs/validation.md)** - ネスト構造での ActiveModel バリデーション
 - **[OpenAPI Drift Check](structured_params-openapi/docs/drift-check_ja.md)** - OpenAPI schema と Params class の乖離検出(`structured_params-openapi` gem)
-- **[Strong Parameters](docs/strong-parameters.md)** - permit リストの自動生成
-- **[エラーハンドリング](docs/error-handling.md)** - フラット形式と構造化形式のエラー
-- **[シリアライゼーション](docs/serialization.md)** - パラメータのハッシュと JSON 変換
-- **[フォームオブジェクト](docs/form-objects.md)** - Rails ビューとのフォームオブジェクトパターン
+- **[Strong Parameters](structured_params/docs/strong-parameters.md)** - permit リストの自動生成
+- **[エラーハンドリング](structured_params/docs/error-handling.md)** - フラット形式と構造化形式のエラー
+- **[シリアライゼーション](structured_params/docs/serialization.md)** - パラメータのハッシュと JSON 変換
+- **[フォームオブジェクト](structured_params/docs/form-objects.md)** - Rails ビューとのフォームオブジェクトパターン
 
 ## コントリビューション
 

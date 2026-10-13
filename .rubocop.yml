@@ -5,10 +5,18 @@ plugins:
 
 AllCops:
   NewCops: enable
+  # Both gemspecs require Ruby >= 3.2.0; RuboCop cannot infer it from a gemspec in a subdirectory.
+  TargetRubyVersion: 3.2
 
 Style/OneClassPerFile:
   Exclude:
-    - spec/support/test_classes/**/*
+    - '**/spec/support/test_classes/**/*'
+
+# RuboCop's default excludes match spec/ at the repository root only.
+Style/Documentation:
+  Exclude:
+    - '**/spec/**/*'
+    - '**/test/**/*'
 
 Layout/LeadingCommentSpace:
   Enabled: false

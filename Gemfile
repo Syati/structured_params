@@ -3,7 +3,7 @@
 
 source 'https://rubygems.org'
 
-gemspec
+gemspec path: 'structured_params'
 gemspec path: 'structured_params-openapi'
 
 # Allow testing different Rails versions via environment variable

@@ -32,11 +32,11 @@ jobs:
       - name: Update version file
         run: |
           VERSION="${{ steps.extract_version.outputs.version }}"
-          sed -i "s/VERSION = '[^']*'/VERSION = '$VERSION'/" lib/structured_params/version.rb
+          sed -i "s/VERSION = '[^']*'/VERSION = '$VERSION'/" structured_params/lib/structured_params/version.rb
 
       - name: Commit version update
         run: |
-          git add lib/structured_params/version.rb
+          git add structured_params/lib/structured_params/version.rb
           if git diff --staged --quiet; then
             echo "No version changes to commit"
           else

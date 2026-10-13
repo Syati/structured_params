@@ -123,14 +123,14 @@ bundle exec rake structured_params:openapi:drift_check
 
 ## Documentation
 
-- **[Installation and Setup](docs/installation.md)** - Getting started with StructuredParams
-- **[Basic Usage](docs/basic-usage.md)** - Parameter classes, nested objects, and arrays
-- **[Validation](docs/validation.md)** - Using ActiveModel validations with nested structures
+- **[Installation and Setup](structured_params/docs/installation.md)** - Getting started with StructuredParams
+- **[Basic Usage](structured_params/docs/basic-usage.md)** - Parameter classes, nested objects, and arrays
+- **[Validation](structured_params/docs/validation.md)** - Using ActiveModel validations with nested structures
 - **[OpenAPI Drift Check](structured_params-openapi/docs/drift-check.md)** - Detect differences between request schemas and Params classes (`structured_params-openapi` gem)
-- **[Strong Parameters](docs/strong-parameters.md)** - Automatic permit list generation
-- **[Error Handling](docs/error-handling.md)** - Flat and structured error formats
-- **[Serialization](docs/serialization.md)** - Converting parameters to hashes and JSON
-- **[Form Objects](docs/form-objects.md)** - Form object pattern with Rails views
+- **[Strong Parameters](structured_params/docs/strong-parameters.md)** - Automatic permit list generation
+- **[Error Handling](structured_params/docs/error-handling.md)** - Flat and structured error formats
+- **[Serialization](structured_params/docs/serialization.md)** - Converting parameters to hashes and JSON
+- **[Form Objects](structured_params/docs/form-objects.md)** - Form object pattern with Rails views
 
 ## Contributing
 

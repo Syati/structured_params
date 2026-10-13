@@ -3,9 +3,9 @@
 
 # D = Steep::Diagnostic
 target :lib do
-  signature 'sig'
+  signature 'structured_params/sig'
 
-  check 'lib'
+  check 'structured_params/lib'
 
   # Suppress errors from broken library RBS files in gem_rbs_collection
   configure_code_diagnostics do |hash|
@@ -14,7 +14,7 @@ target :lib do
 end
 
 target :openapi do
-  signature 'sig', 'structured_params-openapi/sig'
+  signature 'structured_params/sig', 'structured_params-openapi/sig'
 
   check 'structured_params-openapi/lib'
 
